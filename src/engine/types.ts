@@ -57,6 +57,8 @@ export interface PlayerStats {
   levelUps: number;
   buzzes: number;
   summoned: number;
+  /** damage dealt to the enemy per card id (for the MVP display) */
+  dmgBy: Record<string, number>;
 }
 
 export interface Player {

@@ -6,6 +6,8 @@ import './styles/screens.css';
 import './engine/cards';
 import { audio } from './audio/audio';
 import { music } from './audio/music';
+import { PLAYABLE_CLASSES } from './engine';
+import { grantStarter, starterDeck } from './meta/economy';
 import { save } from './meta/save';
 import { battleScreen } from './ui/screens/battleScreen';
 import { decksScreen } from './ui/screens/decks';
@@ -25,6 +27,14 @@ function boot(): void {
   const app = document.getElementById('app') ?? document.body;
   stage.mount(app);
   save.load();
+  if (save.data.flags.onboarded && (!save.data.flags.starter || !save.data.decks.length)) {
+    save.update((d) => {
+      if (!d.flags.starter) grantStarter(d);
+      if (!d.decks.length) d.decks = PLAYABLE_CLASSES.map((c) => starterDeck(c, d));
+      d.flags.starter = true;
+      if (!d.decks.some((x) => x.id === d.activeDeck)) d.activeDeck = d.decks[0].id;
+    });
+  }
   applySettings();
   registerScreen('title', async () => titleScreen);
   registerScreen('onboard', async () => onboardScreen);

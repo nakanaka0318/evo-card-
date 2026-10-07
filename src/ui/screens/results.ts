@@ -7,8 +7,10 @@ import { progressBattle, refreshMissions } from '../../meta/missions';
 import { save } from '../../meta/save';
 import { STAGES, stageUnlocked, starsFor } from '../../meta/story';
 import type { BattleResult } from '../battle/battle';
+import { def } from '../../engine';
+import { staticCard } from '../cardview';
 import { btn, rewardModal } from '../common';
-import { countUp, fmtNum, h, wait } from '../dom';
+import { countUp, fmtNum, h, todayKey, wait } from '../dom';
 import { cutIn, flash, shake, toast } from '../fx/fx';
 import { particles } from '../fx/particles';
 import { go, type ScreenFn } from '../router';
@@ -24,6 +26,8 @@ export const resultsScreen: ScreenFn = (root, params) => {
   const before = { level: d.level, xp: d.xp, rank: d.rankPoints, coins: d.coins, high: d.highScore };
   const streakAfter = r.win ? d.winStreak + 1 : 0;
   const rw = battleRewards(r, score, streakAfter);
+  const firstWin = r.win && d.firstWinDay !== todayKey();
+  const firstWinBonus = firstWin ? 200 : 0;
   const out = { levelUps: [] as { level: number; reward: Reward }[], stars: 0, prevStars: 0, firstClear: null as Reward | null, threeStarBonus: false };
   save.update((s) => {
     refreshMissions(s);
@@ -49,7 +53,11 @@ export const resultsScreen: ScreenFn = (root, params) => {
     }
     s.winStreak = streakAfter;
     s.bestStreak = Math.max(s.bestStreak, s.winStreak);
-    s.coins += rw.coins;
+    s.coins += rw.coins + firstWinBonus;
+    if (firstWin) {
+      s.firstWinDay = todayKey();
+      s.gems += 20;
+    }
     s.rankPoints = Math.max(0, s.rankPoints + rw.rankDelta);
     s.bestRank = Math.max(s.bestRank, s.rankPoints);
     if (score.total > s.highScore) s.highScore = score.total;
@@ -91,6 +99,8 @@ export const resultsScreen: ScreenFn = (root, params) => {
   const coinsEl = h('div.res-reward', h('span', '🪙'), h('span.res-coins', '+0'));
   const rankBox = h('div.res-rank');
   const starBox = h('div.res-stars');
+  const mvpId = Object.entries(r.stats.dmgBy ?? {}).sort((a, b) => b[1] - a[1])[0];
+  const mvpBox = h('div.res-mvp');
   const stIdx = r.config.stageId ? STAGES.findIndex((x) => x.id === r.config.stageId) : -1;
   const next = stIdx >= 0 && stIdx + 1 < STAGES.length && stageUnlocked(save.data.story, stIdx + 1) ? STAGES[stIdx + 1] : null;
   const btns = h(
@@ -102,7 +112,7 @@ export const resultsScreen: ScreenFn = (root, params) => {
     btn('ホームへ', () => void go('home'), 'btn-big'),
   );
   btns.classList.add('hidden');
-  const panel = h('div.res-panel', head, h('div.res-main', h('div.res-left', lineBox, total), h('div.res-right', gradeEl, starBox)), xpBox, h('div.res-rewards', coinsEl, rankBox), btns);
+  const panel = h('div.res-panel', head, h('div.res-main', h('div.res-left', lineBox, total), h('div.res-right', gradeEl, starBox, mvpBox)), xpBox, h('div.res-rewards', coinsEl, rankBox), btns);
   root.append(h('div.res-bg', { style: { '--c1': CLASSES[r.config.playerCls].color, '--c2': CLASSES[r.config.playerCls].color2 } }), panel);
 
   let skip = false;
@@ -156,10 +166,23 @@ export const resultsScreen: ScreenFn = (root, params) => {
         await pause(260);
       }
     }
+    // MVP
+    if (mvpId && mvpId[1] > 0 && r.config.mode !== 'story') {
+      mvpBox.append(h('div.mvp-label', 'MVP'), h('div.mvp-card', staticCard(mvpId[0], 'collection')), h('div.mvp-dmg', `${def(mvpId[0]).name}  ${mvpId[1]}ダメージ`));
+      mvpBox.classList.add('in');
+      audio.play('gachaSR');
+      await pause(500);
+    }
     // coins
-    void countUp(coinsEl.querySelector('.res-coins') as HTMLElement, 0, rw.coins, skip ? 0 : 600, (v) => `+${fmtNum(v)}`);
+    void countUp(coinsEl.querySelector('.res-coins') as HTMLElement, 0, rw.coins + firstWinBonus, skip ? 0 : 600, (v) => `+${fmtNum(v)}`);
     audio.play('coins');
     if (rw.streakBonus) coinsEl.append(h('span.res-streak', `🔥${streakAfter}連勝ボーナス +${rw.streakBonus}`));
+    if (firstWinBonus) {
+      await pause(300);
+      coinsEl.append(h('span.res-streak.first-win', `☀️本日初勝利 🪙+${firstWinBonus} 💎+20`));
+      audio.play('gem');
+      particles.rain('💎', 16, 26);
+    }
     // xp bar
     const xpNeed0 = xpForLevel(before.level);
     xpFill.style.width = `${(before.xp / xpNeed0) * 100}%`;

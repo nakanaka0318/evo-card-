@@ -1,6 +1,5 @@
 import { audio } from '../../audio/audio';
 import { music } from '../../audio/music';
-import { def } from '../../engine';
 import { save } from '../../meta/save';
 import { staticCard } from '../cardview';
 import { h } from '../dom';
@@ -45,7 +44,6 @@ export const titleScreen: ScreenFn = (root) => {
   const spark = window.setInterval(() => {
     particles.burst(Math.random() * stage.w, Math.random() * stage.h, { n: 3, colors: ['#ffe14d', '#ff2e88', '#38d6ff'], speed: 2, type: 'star', size: 5, gravity: -0.02 });
   }, 260);
-  void def;
   return () => {
     window.removeEventListener('keydown', key);
     clearInterval(spark);

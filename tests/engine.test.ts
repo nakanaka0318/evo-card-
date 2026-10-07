@@ -232,10 +232,10 @@ describe('cards & mechanics', () => {
     const s = game();
     s.players[0].pp = 10;
     apply(s, { t: 'play', uid: give(s, 0, 'w_hiyoko').uid });
-    expect(s.players[0].sweet).toBe(1);
+    expect(s.players[0].sweet).toBe(2);
     const donut = put(s, 0, 'w_donut');
     apply(s, { t: 'play', uid: give(s, 0, 't_candy').uid });
-    expect(s.players[0].sweet).toBe(3);
+    expect(s.players[0].sweet).toBe(4);
     expect(donut.atk).toBe(3);
   });
 

@@ -6,7 +6,6 @@ import { CARD_H, CARD_W, fitCardText, staticCard } from '../cardview';
 import { h, wait } from '../dom';
 import { banner, cutIn, flash, notifySpam, popText, shake, slam, T, toast, vignette } from '../fx/fx';
 import { particles } from '../fx/particles';
-import { stage } from '../stage';
 import type { Battle } from './battle';
 import type { Pos } from './layout';
 
@@ -51,6 +50,35 @@ export class Animator {
       if (ev.t !== 'gacha') this.gachaChain = 0;
     }
     this.b.render();
+    await this.announce(evs);
+  }
+
+  /** multi-kill / big-play callouts after an action resolves */
+  private async announce(evs: GameEvent[]): Promise<void> {
+    if (this.b.destroyed || this.b.s.phase === 'over') return;
+    const kills = new Map<Side, number>();
+    let maxHit = 0;
+    for (const ev of evs) {
+      if (ev.t === 'destroy' && !ev.banish) {
+        const killer: Side = ev.side === 0 ? 1 : 0;
+        kills.set(killer, (kills.get(killer) ?? 0) + 1);
+      }
+      if (ev.t === 'damage') maxHit = Math.max(maxHit, ev.amount);
+    }
+    const last = evs[evs.length - 1]?.snap;
+    for (const [side, n] of kills) {
+      if (n < 2) continue;
+      const wiped = n >= 3 && last && last.p[side === 0 ? 1 : 0].board.filter((c) => def(c.id).type === 'follower').length === 0;
+      const text = wiped ? '全滅！！！' : n >= 4 ? 'クアドラキル！！' : n === 3 ? 'トリプルキル！！' : 'ダブルキル！';
+      audio.play(n >= 3 ? 'gachaSSR' : 'gachaSR');
+      if (side === 0) particles.rain('💥', 10 + n * 4, 30);
+      await slam(text, side === 0 ? (n >= 3 ? 'slam-ssr' : 'slam-gold') : 'slam-blue', 850, side === 0 ? `${n}体撃破` : '相手の連続撃破');
+      return;
+    }
+    if (maxHit >= 9) {
+      audio.play('gachaSR');
+      await slam(maxHit >= 12 ? '神ダメージ！！' : 'エグい！', 'slam-gold', 750, `${maxHit}ダメージ`);
+    }
   }
 
   private render(ev: GameEvent): void {
@@ -95,15 +123,58 @@ export class Animator {
     setTimeout(() => bub.remove(), 2600);
   }
 
+  private lastReact = 0;
+
+  /** the AI opponent occasionally talks back */
+  enemyReact(kind: 'emote' | 'hurt' | 'legend' | 'evolve' | 'kill'): void {
+    const now = performance.now();
+    if (now - this.lastReact < 4000) return;
+    const pool: Record<typeof kind, string[]> = {
+      emote: ['こっちこそ！', 'まだ本気出してないし', 'ふーん？', 'ドパドパ！'],
+      hurt: ['いたっ！', 'ちょ、待って！', 'それは効く…', 'うそでしょ！？'],
+      legend: ['それはズルい！', 'レジェンド！？', 'うわ、出た…'],
+      evolve: ['いくよ！', '進化の時間！', '見てて！'],
+      kill: ['ごめんね？', 'はい、退場〜', 'いただき！'],
+    };
+    const list = pool[kind];
+    this.lastReact = now;
+    this.say(1, list[Math.floor(Math.random() * list.length)]);
+  }
+
+  private async matchmaking(): Promise<void> {
+    const b = this.b;
+    const text = h('div.match-text', '対戦相手を探しています');
+    const sub = h('div.match-sub', 'ランクマッチ');
+    const ring = h('div.match-ring');
+    const el = h('div.matching', ring, text, sub);
+    b.root.append(el);
+    let dots = 0;
+    const t = window.setInterval(() => {
+      dots = (dots + 1) % 4;
+      text.textContent = '対戦相手を探しています' + '.'.repeat(dots);
+      audio.play('tick', { vol: 0.5 });
+    }, 220);
+    await wait(900 + Math.random() * 900);
+    clearInterval(t);
+    ring.remove();
+    text.replaceWith(h('div.match-found', 'MATCH!'));
+    audio.play('unlock');
+    await wait(T(550));
+    el.classList.add('out');
+    await wait(200);
+    el.remove();
+  }
+
   async versus(): Promise<void> {
     const b = this.b;
+    if (b.cfg.mode === 'rank') await this.matchmaking();
     const pc = CLASSES[b.cfg.playerCls];
     const ec = CLASSES[b.cfg.enemyCls];
     const side = (cls: string, c: typeof pc, art: string, name: string) =>
       h(`div.vs-side.${cls}`, { style: { '--c1': c.color, '--c2': c.color2 } }, h('div.vs-rays'), h('div.vs-art', art), h('div.vs-name', name), h('div.vs-sub', `${c.emoji} ${c.name}`));
     const el = h(
       'div.versus',
-      side('vs-p', pc, pc.leaderArt, save.data.name),
+      side('vs-p', pc, pc.leaderArt, save.data.winStreak >= 2 ? `${save.data.name} 🔥${save.data.winStreak}連勝中` : save.data.name),
       side('vs-e', ec, b.cfg.enemyArt ?? ec.leaderArt, b.cfg.enemyName),
       h('div.vs-mark', 'VS'),
     );
@@ -198,7 +269,13 @@ export class Animator {
         await banner('山札切れ…', { cls: 'b-enemy', ms: 1000 });
         return;
       case 'play': {
-        if (ev.side === 1) await this.revealEnemyPlay(ev.id, ev.enhanced);
+        const pd = def(ev.id);
+        if (pd.rarity === 'legend') {
+          const c = this.clsOf(ev.side);
+          audio.play('gachaSSR');
+          await cutIn({ art: pd.art, art2: pd.art2, name: pd.name, title: ev.side === 0 ? 'LEGEND' : '相手のLEGEND', color: c.color, color2: c.counter === 'combo' || c.counter === 'luck' ? '#ff3fa4' : '#ffe14d', kind: 'legend', enemy: ev.side === 1, line: pd.flavor });
+          if (ev.side === 0 && Math.random() < 0.6) this.enemyReact('legend');
+        } else if (ev.side === 1) await this.revealEnemyPlay(ev.id, ev.enhanced);
         this.render(ev);
         const pitch = Math.pow(2, (Math.min(ev.combo, 12) - 1) * (2 / 12));
         audio.play('play', { pitch });
@@ -315,6 +392,7 @@ export class Animator {
           const side = tgtSide(ev.target);
           const L = b.leaderRoot(side);
           this.bump(L, 'hurt');
+          if (side === 1 && n >= 4 && Math.random() < 0.5) this.enemyReact('hurt');
           audio.play('face', { vol: Math.min(1, 0.6 + n * 0.06) });
           if (side === 0) vignette(n >= 5 ? 'rgba(255,20,60,0.9)' : 'rgba(255,30,60,0.6)', 600);
           if (ev.fatal) {
@@ -418,6 +496,7 @@ export class Animator {
         const c = this.clsOf(side);
         audio.play(ev.sup ? 'super' : 'evolve');
         if (side === 0 && Math.random() < 0.6) this.say(0, c.lines.evolve);
+        if (side === 1 && Math.random() < 0.5) this.enemyReact('evolve');
         await cutIn({ art: d.art, art2: d.art2, name: d.name, title: ev.sup ? '超進化' : '進化', color: ev.sup ? '#ff3fa4' : c.color, color2: ev.sup ? '#ffe14d' : c.color2, kind: ev.sup ? 'super' : 'evolve', enemy: side === 1 });
         this.render(ev);
         const p = this.posOf(ev.uid);
@@ -662,7 +741,6 @@ export class Animator {
 
   async ending(win: boolean | null): Promise<void> {
     const b = this.b;
-    const g = b.g;
     music.stop();
     await wait(T(350));
     if (win === null) {
@@ -689,7 +767,5 @@ export class Animator {
       if (b.cfg.enemyLines?.win) this.say(1, b.cfg.enemyLines.win);
       await slam('LOSE…', 'slam-lose', 1700, '次は勝てる。たぶん。');
     }
-    void g;
-    void stage;
   }
 }

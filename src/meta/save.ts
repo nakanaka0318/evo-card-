@@ -81,6 +81,7 @@ export interface SaveData {
   flags: Record<string, boolean>;
   highScore: number;
   favoriteClass: ClassId;
+  firstWinDay: string;
 }
 
 export function defaultSettings(): Settings {
@@ -157,6 +158,7 @@ export function newSave(): SaveData {
     flags: {},
     highScore: 0,
     favoriteClass: 'gacha',
+    firstWinDay: '',
   };
 }
 

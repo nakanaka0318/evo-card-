@@ -22,6 +22,7 @@ import {
   type View,
 } from '../../engine';
 import { save } from '../../meta/save';
+import { confirmModal } from '../common';
 import { CARD_H, CARD_W, createCard, fitCardText, glossary, staticCard, updateCard } from '../cardview';
 import { clear, h, wait } from '../dom';
 import { fxConfig, T, toast } from '../fx/fx';
@@ -175,8 +176,8 @@ export class Battle {
     const enemyTag = h('div.enemy-tag', h('span.et-name', this.cfg.enemyName), h('span.et-diff', diffLabel(this.cfg.difficulty)));
     this.root.append(
       this.bg,
-      h('div.lane.lane-e'),
-      h('div.lane.lane-p'),
+      h('div.lane.lane-e', h('span.lane-mark', ec.emoji)),
+      h('div.lane.lane-p', h('span.lane-mark', pc.emoji)),
       this.leaders[1].root,
       this.leaders[0].root,
       this.leaders[0].pp,
@@ -252,9 +253,14 @@ export class Battle {
     const dopaNum = h('div.leader-dopa', '0');
     const lethal = h('div.leader-lethal', 'LETHAL!');
     const art = side === ENEMY && this.cfg.enemyArt ? this.cfg.enemyArt : cm.leaderArt;
+    const emote =
+      side === PLAYER
+        ? h('button.leader-emote', { type: 'button', 'aria-label': 'エモート', onclick: (e: Event) => { e.stopPropagation(); this.openEmotes(); } }, '💬')
+        : null;
     const root = h(
       `div.leader.side-${side}.cls-${cls}`,
       { 'data-leader': String(side), style: { '--c1': cm.color, '--c2': cm.color2 } },
+      emote,
       svg,
       h('div.leader-portrait', h('div.leader-bgfx'), h('span.leader-glyph', art)),
       dopaNum,
@@ -793,6 +799,22 @@ export class Battle {
     this.actionsEl.replaceChildren(wrap);
   }
 
+  /** valid target nearest to a stage point (within a forgiving radius) */
+  private nearestTarget(p: { x: number; y: number }, targets: Tgt[], radius = 80): Tgt | undefined {
+    let best: Tgt | undefined;
+    let bd = radius;
+    for (const t of targets) {
+      const tp = t < 0 ? this.g.leader[tgtSide(t)] : this.pos.get(t);
+      if (!tp) continue;
+      const d = Math.hypot(tp.x - p.x, tp.y - p.y);
+      if (d < bd) {
+        bd = d;
+        best = t;
+      }
+    }
+    return best;
+  }
+
   private hitTest(clientX: number, clientY: number): { card?: number; leader?: Side } {
     const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
     if (!el) return {};
@@ -818,7 +840,8 @@ export class Battle {
     const hit = this.hitTest(e.clientX, e.clientY);
     const st = this.input;
     if (st.k === 'targeting') {
-      const t = hit.card ?? (hit.leader !== undefined ? leaderTgt(hit.leader) : undefined);
+      let t = hit.card ?? (hit.leader !== undefined ? leaderTgt(hit.leader) : undefined);
+      if (t === undefined || !st.targets.includes(t)) t = this.nearestTarget(p, st.targets, 60) ?? t;
       if (t !== undefined && st.targets.includes(t)) {
         audio.play('tap');
         if (st.source === 'play') void this.commit({ t: 'play', uid: st.uid, target: t });
@@ -829,7 +852,8 @@ export class Battle {
       return;
     }
     if (st.k === 'selected') {
-      const t = hit.card ?? (hit.leader !== undefined ? leaderTgt(hit.leader) : undefined);
+      let t = hit.card ?? (hit.leader !== undefined ? leaderTgt(hit.leader) : undefined);
+      if (t === undefined || !st.targets.includes(t)) t = this.nearestTarget(p, st.targets, 60) ?? t;
       if (t !== undefined && st.targets.includes(t)) {
         void this.commit({ t: 'attack', uid: st.uid, target: t });
         return;
@@ -935,7 +959,8 @@ export class Battle {
     }
     if (st.k === 'attackDrag') {
       const hit = this.hitTest(e.clientX, e.clientY);
-      const t = hit.card ?? (hit.leader !== undefined ? leaderTgt(hit.leader) : undefined);
+      let t = hit.card ?? (hit.leader !== undefined ? leaderTgt(hit.leader) : undefined);
+      if (t === undefined || !st.targets.includes(t)) t = this.nearestTarget(p, st.targets);
       if (t !== undefined && st.targets.includes(t)) {
         void this.commit({ t: 'attack', uid: st.uid, target: t });
       } else {
@@ -1192,11 +1217,43 @@ export class Battle {
         h('div.menu-title', 'メニュー'),
         h('button.btn', { type: 'button', onclick: () => { close(); this.showRules(); } }, '遊び方'),
         h('button.btn', { type: 'button', onclick: () => { close(); this.toggleHints(); } }, save.data.settings.hints ? 'ヒント：ON' : 'ヒント：OFF'),
-        h('button.btn.btn-danger', { type: 'button', onclick: () => { close(); this.concede(); } }, '降参する'),
+        h('button.btn.btn-danger', { type: 'button', onclick: async () => {
+          close();
+          if (await confirmModal('降参する？ この試合は負けになるよ。', '降参する', '続ける')) void this.concede();
+        } }, '降参する'),
         h('button.btn.btn-hot', { type: 'button', onclick: () => { audio.play('back'); close(); } }, 'バトルに戻る'),
       ),
     );
     stage.overlay.append(ov);
+  }
+
+  private lastEmote = 0;
+
+  private openEmotes(): void {
+    audio.play('tap');
+    const old = this.root.querySelector('.emote-menu');
+    if (old) {
+      old.remove();
+      return;
+    }
+    const lines = ['よろしく！', 'ナイス！', 'ドパドパ！', 'うそでしょ…', 'まだまだ！', 'GG！'];
+    const L = this.g.leader[PLAYER];
+    const menu = h(
+      'div.emote-menu',
+      { style: { left: `${L.x - 90}px`, top: `${L.y - 90}px` } },
+      lines.map((t) =>
+        h('button.emote-opt', { type: 'button', onclick: (e: Event) => {
+          e.stopPropagation();
+          menu.remove();
+          if (performance.now() - this.lastEmote < 2500) return;
+          this.lastEmote = performance.now();
+          this.anim.say(PLAYER, t);
+          audio.play('notify');
+          if (Math.random() < 0.45) setTimeout(() => this.anim.enemyReact('emote'), 900);
+        } }, t),
+      ),
+    );
+    this.root.append(menu);
   }
 
   private toggleHints(): void {

@@ -1,6 +1,6 @@
 import { audio } from '../../audio/audio';
 import { music } from '../../audio/music';
-import { CLASSES, def } from '../../engine';
+import { CLASSES } from '../../engine';
 import { grant, rankInfo, rewardText } from '../../meta/economy';
 import { pickupClass } from '../../meta/gacha';
 import { claimLogin, LOGIN_REWARDS, ROULETTE, spinRoulette } from '../../meta/login';
@@ -187,5 +187,4 @@ function openRoulette(): void {
     await rewardModal(slot.weight <= 3 ? '大当たり！！！' : '当たり！', slot.reward);
     void go('home');
   };
-  void def;
 }

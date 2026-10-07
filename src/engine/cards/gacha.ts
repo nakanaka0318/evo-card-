@@ -245,7 +245,7 @@ export const GACHA = [
     hp: 5,
     kw: ['ward'],
     art: '🏯',
-    text: '《守護》【ファンファーレ】運気+2\n【ラストワード】ガチャ\nN:自分のリーダーを2回復 R:カードを1枚引く SR:「SSRスター」を1体出す SSR:「SSRスター」を2体出す',
+    text: '《守護》【ファンファーレ】運気+2\n【ラストワード】ガチャ\nN:自分のリーダーを2回復 R:カードを1枚引く SR:「SSRスター」を1体出す SSR:「SSRスター」を1体出し、カードを1枚引く',
     flavor: '天井まで、あと少し。',
     fanfare: (c) => c.luck(2),
     lastWords: (c) => {
@@ -253,7 +253,10 @@ export const GACHA = [
         N: (c) => c.heal(2),
         R: (c) => c.draw(1),
         SR: (c) => c.summon('t_star'),
-        SSR: (c) => c.summon('t_star', 2),
+        SSR: (c) => {
+          c.summon('t_star');
+          c.draw(1);
+        },
       });
     },
   }),

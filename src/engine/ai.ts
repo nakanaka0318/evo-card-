@@ -13,10 +13,10 @@ export interface AiProfile {
 }
 
 const DIFF = {
-  easy: { beam: 1, depth: 1, noise: 5, budget: 200 },
-  normal: { beam: 3, depth: 4, noise: 1.2, budget: 700 },
-  hard: { beam: 5, depth: 6, noise: 0, budget: 1600 },
-  oni: { beam: 7, depth: 8, noise: 0, budget: 3000 },
+  easy: { beam: 1, depth: 1, noise: 5, budget: 200, reply: 0 },
+  normal: { beam: 3, depth: 4, noise: 1.2, budget: 700, reply: 0 },
+  hard: { beam: 5, depth: 6, noise: 0, budget: 1600, reply: 2 },
+  oni: { beam: 7, depth: 8, noise: 0, budget: 3000, reply: 4 },
 } as const;
 
 function hpVal(h: number): number {
@@ -102,6 +102,30 @@ interface Node {
   v: number;
 }
 
+/** play out the opponent's greedy reply turn and score the result for `me` */
+function afterReply(st: GameState, me: Side, aggro: number): number {
+  const c = cloneForSim(st, false);
+  apply(c, { t: 'end' });
+  for (let guard = 0; c.phase === 'main' && c.active !== me && guard < 12; guard++) {
+    const opp = c.active;
+    let best: Action = { t: 'end' };
+    let bv = evaluate(c, opp);
+    for (const a of legalActions(c)) {
+      if (a.t === 'end') continue;
+      const cc = cloneForSim(c, false);
+      apply(cc, a);
+      const v = evaluate(cc, opp);
+      if (v > bv + 0.05) {
+        bv = v;
+        best = a;
+      }
+    }
+    apply(c, best);
+    if (best.t === 'end') break;
+  }
+  return evaluate(c, me, aggro);
+}
+
 /** Choose the next action for the active player. */
 export function chooseAction(s: GameState, prof: AiProfile): Action {
   const me = s.active;
@@ -112,6 +136,8 @@ export function chooseAction(s: GameState, prof: AiProfile): Action {
   let budget: number = cfg.budget;
   let beam: Node[] = [{ st: root, seq: [], v: baseV }];
   let best: Node = beam[0];
+  // best leaf found for each distinct first action (for the 2-ply re-score)
+  const byFirst = new Map<string, Node>();
   for (let depth = 0; depth < cfg.depth && budget > 0; depth++) {
     const next: Node[] = [];
     for (const node of beam) {
@@ -123,7 +149,13 @@ export function chooseAction(s: GameState, prof: AiProfile): Action {
         apply(c, a);
         let v = evaluate(c, me, aggro);
         if (cfg.noise && depth === 0) v += (Math.random() - 0.5) * cfg.noise;
-        next.push({ st: c, seq: [...node.seq, a], v });
+        const n: Node = { st: c, seq: [...node.seq, a], v };
+        next.push(n);
+        if (cfg.reply) {
+          const key = JSON.stringify(n.seq[0]);
+          const prev = byFirst.get(key);
+          if (!prev || prev.v < v) byFirst.set(key, n);
+        }
       }
     }
     if (!next.length) break;
@@ -131,6 +163,22 @@ export function chooseAction(s: GameState, prof: AiProfile): Action {
     beam = next.slice(0, cfg.beam);
     if (beam[0].v > best.v) best = beam[0];
     if (best.v >= 1e6) break;
+  }
+  if (best.v >= 1e6) return best.seq[0];
+  if (cfg.reply && byFirst.size) {
+    // re-score the top candidate plans by the opponent's best reply
+    const cands = [...byFirst.values()].sort((a, b) => b.v - a.v).slice(0, cfg.reply);
+    let pick: Action = { t: 'end' };
+    let pv = afterReply(root, me, aggro) + 0.05;
+    for (const n of cands) {
+      if (n.st.phase === 'over') continue;
+      const v = afterReply(n.st, me, aggro);
+      if (v > pv) {
+        pv = v;
+        pick = n.seq[0];
+      }
+    }
+    return pick;
   }
   if (!best.seq.length || best.v <= baseV + 0.05) return { t: 'end' };
   return best.seq[0];

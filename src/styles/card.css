@@ -137,14 +137,14 @@
   opacity: 0.55;
 }
 
-.r-gold .art-pattern,
-.r-legend .art-pattern {
+.card.r-gold .art-pattern,
+.card.r-legend .art-pattern {
   background-image: repeating-conic-gradient(from 0deg at 50% 62%, rgba(255, 255, 255, 0.22) 0 6deg, transparent 6deg 18deg);
   background-size: auto;
   opacity: 0.8;
 }
 
-.r-legend .art-pattern {
+.card.r-legend .art-pattern {
   animation: spin 18s linear infinite;
   inset: -40%;
 }
@@ -153,6 +153,60 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* class motifs behind the glyph */
+.cls-gacha .art-pattern {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.4) 2.5px, transparent 3px),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.12) 0 6px, transparent 6px 16px);
+  background-size: 18px 18px, auto;
+}
+
+.cls-stream .art-pattern {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 4px),
+    radial-gradient(circle at 80% 18%, rgba(255, 60, 90, 0.9) 0 4px, transparent 5px);
+  background-size: auto, 100% 100%;
+}
+
+.cls-sweets .art-pattern {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 1.5px, transparent 2px),
+    radial-gradient(circle, rgba(255, 120, 180, 0.6) 1.5px, transparent 2px),
+    radial-gradient(circle, rgba(120, 255, 210, 0.6) 1.5px, transparent 2px);
+  background-size: 14px 14px, 19px 19px, 23px 23px;
+  background-position: 0 0, 5px 7px, 11px 3px;
+}
+
+.cls-swipe .art-pattern {
+  background-image: repeating-linear-gradient(100deg, transparent 0 9px, rgba(255, 255, 255, 0.28) 9px 10px, transparent 10px 23px);
+}
+
+.cls-gamer .art-pattern {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 8px);
+}
+
+.card-cls {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  background: color-mix(in srgb, var(--c1) 70%, #fff);
+  display: grid;
+  place-items: center;
+  font: 16px/1 var(--f-emoji);
+  z-index: 3;
+}
+
+.zone-board .card-cls,
+.zone-detail .card-cls {
+  display: none;
 }
 
 .art-glyph {
@@ -319,6 +373,18 @@
 
 .t-follower .card-text {
   bottom: 44px;
+}
+
+.card-text.flavor-only {
+  font-style: italic;
+  color: #5a4a7a;
+  display: none;
+}
+
+.zone-detail .card-text.flavor-only {
+  display: grid;
+  place-items: center;
+  text-align: center;
 }
 
 .card-text .ab {
@@ -911,4 +977,8 @@
   position: relative;
   transition: none;
   will-change: auto;
+}
+
+.card-type:empty {
+  display: none;
 }

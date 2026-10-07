@@ -1,6 +1,6 @@
 import { audio } from '../audio/audio';
 import { claimableAchievements } from '../meta/achievements';
-import { rankInfo, rewardText, xpForLevel, type Reward } from '../meta/economy';
+import { rankInfo, xpForLevel, type Reward } from '../meta/economy';
 import { claimableMissions } from '../meta/missions';
 import { save } from '../meta/save';
 import { countUp, fmtNum, h, todayKey } from './dom';
@@ -166,7 +166,6 @@ export function rewardModal(title: string, r: Reward, sub?: string): Promise<voi
       ],
       { title, cls: 'reward-modal', onClose: () => res() },
     );
-    void rewardText;
   });
 }
 

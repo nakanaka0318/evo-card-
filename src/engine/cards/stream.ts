@@ -11,9 +11,9 @@ export const STREAM = [
     atk: 1,
     hp: 2,
     art: '🎤',
-    text: '【ファンファーレ】いいね+1',
+    text: '【ファンファーレ】いいね+2',
     flavor: '同接3人からのスタート。',
-    fanfare: (c) => c.likes(1),
+    fanfare: (c) => c.likes(2),
   }),
   follower({
     id: 's_sakura',
@@ -106,11 +106,11 @@ export const STREAM = [
     cost: 3,
     rarity: 'silver',
     art: '🔥',
-    text: '相手のフォロワーすべてに1ダメージ\n【バズ6】かわりに3ダメージ\nその後、いいね+1',
+    text: '相手のフォロワーすべてに1ダメージ\n【バズ6】かわりに3ダメージ\nその後、いいね+2',
     flavor: '燃えれば燃えるほど、伸びる。',
     spell: (c) => {
       if (!c.buzz(6, (c) => c.dmgAll(c.enemies(), 3))) c.dmgAll(c.enemies(), 1);
-      c.likes(1);
+      c.likes(2);
     },
   }),
   follower({
@@ -119,7 +119,7 @@ export const STREAM = [
     cls: 'stream',
     cost: 2,
     rarity: 'silver',
-    atk: 1,
+    atk: 2,
     hp: 1,
     art: '✂️',
     text: '【ファンファーレ】「切り抜き動画」を1枚手札に加える',
@@ -222,11 +222,11 @@ export const STREAM = [
     hp: 5,
     art: '🦊',
     art2: '💖',
-    text: '【ファンファーレ】いいね+2\n【バズ10】相手のリーダーに6ダメージ\n【進化時】いいね+4',
+    text: '【ファンファーレ】いいね+3\n【バズ10】相手のリーダーに7ダメージ\n【進化時】いいね+4',
     flavor: '「こんバズ〜！ 今日も10万いいね、いっちゃお？」',
     fanfare: (c) => {
-      c.likes(2);
-      c.buzz(10, (c) => c.face(6));
+      c.likes(3);
+      c.buzz(10, (c) => c.face(7));
     },
     evolve: (c) => c.likes(4),
   }),

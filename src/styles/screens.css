@@ -3058,6 +3058,10 @@
   text-shadow: none;
 }
 
+.res-streak.first-win {
+  background: linear-gradient(90deg, #ffb000, #ff2e88);
+}
+
 .res-rank {
   flex: 1;
   min-width: 260px;
@@ -3121,4 +3125,89 @@
 
 .res-btns.pop-in {
   animation: say-in 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.res-mvp {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.res-mvp.in {
+  display: flex;
+  animation: say-in 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.mvp-label {
+  font: 22px/1 var(--f-display);
+  color: #1a1238;
+  background: linear-gradient(90deg, #ffe14d, #ff9f1a);
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 3px 12px 5px;
+  transform: rotate(-4deg);
+}
+
+.mvp-card {
+  width: 90px;
+  height: 126px;
+  position: relative;
+}
+
+.mvp-card .card {
+  transform: scale(0.5);
+  transform-origin: 0 0;
+}
+
+.mvp-dmg {
+  font: 900 12px/1.2 var(--f-body);
+  color: var(--volt);
+  text-align: center;
+}
+
+/* ranked matchmaking */
+.matching {
+  position: absolute;
+  inset: 0;
+  z-index: 58;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: radial-gradient(ellipse at 50% 50%, #241c58, #05030f 75%);
+}
+
+.matching.out {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.match-ring {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 10px solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--hot);
+  border-right-color: var(--volt);
+  animation: spin 0.7s linear infinite;
+}
+
+.match-text {
+  font: 30px/1 var(--f-display);
+  color: #fff;
+  text-shadow: var(--outline-s);
+}
+
+.match-sub {
+  font: 900 15px/1 var(--f-body);
+  color: var(--mute);
+}
+
+.match-found {
+  font: 48px/1 var(--f-display);
+  color: var(--volt);
+  text-shadow: var(--outline);
+  animation: slam-in 0.3s cubic-bezier(0.2, 1.6, 0.4, 1) both;
 }

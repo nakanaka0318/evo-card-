@@ -211,6 +211,7 @@ function emptyStats(): PlayerStats {
     levelUps: 0,
     buzzes: 0,
     summoned: 0,
+    dmgBy: {},
   };
 }
 
@@ -381,6 +382,7 @@ export function damage(s: GameState, src: Card | null, tgt: Tgt, n: number, comb
     const overkill = Math.max(0, n - Math.max(0, before));
     emit(s, { t: 'damage', target: tgt, amount: n, source: src?.uid ?? 0, overkill, combat, fatal: p.hp <= 0 });
     if (srcSide !== side) {
+      if (src) st.dmgBy[src.id] = (st.dmgBy[src.id] ?? 0) + n;
       st.dmgDealt += n;
       st.leaderDmg += n;
       st.maxHit = Math.max(st.maxHit, n);
@@ -406,6 +408,7 @@ export function damage(s: GameState, src: Card | null, tgt: Tgt, n: number, comb
   const overkill = Math.max(0, n - before);
   emit(s, { t: 'damage', target: tgt, amount: n, source: src?.uid ?? 0, overkill, combat, fatal: hpOf(c) <= 0 });
   if (srcSide !== c.owner) {
+    if (src) st.dmgBy[src.id] = (st.dmgBy[src.id] ?? 0) + n;
     st.dmgDealt += n;
     st.maxHit = Math.max(st.maxHit, n);
     if (overkill > 0) st.overkill += overkill;
@@ -605,7 +608,7 @@ export function gachaRoll(s: GameState, src: Card): GachaTier {
     if (p.kakuhen > 0) {
       p.kakuhen--;
       kakuhen = true;
-      tier = r < 0.25 + 0.08 * p.luck ? 'SSR' : 'SR';
+      tier = r < 0.2 + 0.06 * p.luck ? 'SSR' : 'SR';
     } else {
       const ssr = 0.03 + 0.03 * p.luck;
       tier = r < ssr ? 'SSR' : r < ssr + 0.15 ? 'SR' : r < ssr + 0.45 ? 'R' : 'N';

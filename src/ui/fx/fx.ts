@@ -128,7 +128,7 @@ export function cutIn(o: CutInOpts): Promise<void> {
       h('div.ci-art', h('span.ci-glyph', o.art), o.art2 ? h('span.ci-glyph2', o.art2) : null),
       h('div.ci-title', o.title),
       h('div.ci-name', o.name),
-      o.line ? h('div.ci-line', `「${o.line}」`) : null,
+      o.line ? h('div.ci-line', o.line.startsWith('「') ? o.line : `「${o.line}」`) : null,
     );
     let done = false;
     const finish = () => {

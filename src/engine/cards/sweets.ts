@@ -11,10 +11,10 @@ export const SWEETS = [
     atk: 1,
     hp: 2,
     art: '🐤',
-    text: '【ファンファーレ】自分のリーダーを1回復',
+    text: '【ファンファーレ】自分のリーダーを2回復',
     flavor: 'ピヨッ（あまい）',
     fanfare: (c) => {
-      c.heal(1);
+      c.heal(2);
     },
   }),
   follower({
@@ -24,7 +24,7 @@ export const SWEETS = [
     cost: 2,
     rarity: 'bronze',
     atk: 1,
-    hp: 4,
+    hp: 5,
     kw: ['ward'],
     art: '🍮',
     text: '《守護》',
@@ -37,12 +37,12 @@ export const SWEETS = [
     cost: 1,
     rarity: 'bronze',
     art: '🍬',
-    text: '相手のフォロワー1体に1ダメージ。自分のリーダーを2回復',
+    text: '相手のフォロワー1体に1ダメージ。自分のリーダーを3回復',
     flavor: '当たると痛い。舐めると甘い。',
     target: { kind: 'enemyFollower' },
     spell: (c) => {
       c.dmg(c.target, 1);
-      c.heal(2);
+      c.heal(3);
     },
   }),
   follower({
@@ -52,7 +52,7 @@ export const SWEETS = [
     cost: 3,
     rarity: 'bronze',
     atk: 2,
-    hp: 3,
+    hp: 4,
     art: '🍩',
     text: '自分のリーダーが回復するたび、+1/+0',
     flavor: '穴の分だけ、強くなる。',
@@ -157,11 +157,11 @@ export const SWEETS = [
     cost: 4,
     rarity: 'silver',
     art: '🍫',
-    text: '相手のフォロワーすべてに2ダメージ。自分のリーダーを2回復',
+    text: '相手のフォロワーすべてに2ダメージ。自分のリーダーを3回復',
     flavor: 'フォンダンショコラの中身が噴火した。',
     spell: (c) => {
       c.dmgAll(c.enemies(), 2);
-      c.heal(2);
+      c.heal(3);
     },
   }),
   // ---------------- gold
