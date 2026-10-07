@@ -26,6 +26,7 @@ export async function go(name: string, params: Record<string, unknown> = {}): Pr
   if (typeof cleanup === 'function') cleanup();
   cleanup = undefined;
   clear(stage.overlay);
+  stage.setMode(name === 'battle' ? 'battle' : 'menu');
   const root = stage.screen;
   clear(root);
   root.className = `layer layer-screen scr-${name}`;

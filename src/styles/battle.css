@@ -1787,3 +1787,59 @@
 .portrait .emote-menu {
   transform: translate(-30%, -100%);
 }
+
+/* phones held upright: make inspection readable */
+.portrait .inspect-card {
+  width: 396px;
+  height: 554px;
+}
+
+.portrait .inspect-card .card {
+  transform: scale(2.2);
+}
+
+.portrait .inspect-side {
+  width: 600px;
+  gap: 12px;
+}
+
+.portrait .inspect .gloss {
+  font-size: 19px;
+  padding: 10px 14px;
+}
+
+.portrait .inspect .gloss b {
+  font-size: 20px;
+}
+
+.portrait .inspect-flavor {
+  font-size: 19px;
+  text-align: center;
+}
+
+.portrait .inspect-btns {
+  justify-content: center;
+}
+
+.portrait .inspect-btns .btn {
+  font-size: 26px;
+  padding: 16px 30px 18px;
+}
+
+.portrait .li-name {
+  font-size: 34px;
+}
+
+.portrait .li-mech p,
+.portrait .li-stats {
+  font-size: 19px;
+}
+
+.portrait .li-mech b {
+  font-size: 21px;
+}
+
+.portrait .emote-opt {
+  font-size: 20px;
+  padding: 12px 16px;
+}

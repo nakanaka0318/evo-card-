@@ -31,6 +31,8 @@ class StageImpl {
   oy = 0;
   portrait = false;
   dpr = 1;
+  /** menus use a denser (larger-looking) stage on phones held upright */
+  mode: 'battle' | 'menu' = 'menu';
   private fns = new Set<ResizeFn>();
 
   mount(host: HTMLElement): void {
@@ -58,8 +60,8 @@ class StageImpl {
     let w: number;
     let hh: number;
     if (portrait) {
-      w = 720;
-      hh = Math.round(Math.min(1600, Math.max(1120, (720 * vh) / vw)));
+      w = this.mode === 'menu' ? 560 : 720;
+      hh = Math.round(Math.min(w * 2.22, Math.max(w * 1.555, (w * vh) / vw)));
     } else {
       hh = 720;
       w = Math.round(Math.min(1600, Math.max(1120, (720 * vw) / vh)));
@@ -87,6 +89,12 @@ class StageImpl {
       this.canvas.height = ch;
     }
     if (changed) for (const f of this.fns) f();
+  }
+
+  setMode(mode: 'battle' | 'menu'): void {
+    if (this.mode === mode) return;
+    this.mode = mode;
+    this.fit();
   }
 
   onResize(fn: ResizeFn): () => void {
