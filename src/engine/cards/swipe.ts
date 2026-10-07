@@ -34,13 +34,14 @@ export const SWIPE = [
     id: 'x_skip',
     name: 'スキップ',
     cls: 'swipe',
-    cost: 0,
+    cost: 2,
     rarity: 'bronze',
     art: '⏭️',
-    text: 'カードを1枚引く',
-    flavor: 'イントロは飛ばす。',
+    text: 'カードを1枚引く。その後、コスト0の「スキップ」を1枚手札に加える',
+    flavor: 'イントロは飛ばす。次のイントロも飛ばす。',
     spell: (c) => {
       c.draw(1);
+      for (const k of c.addHand('x_skip')) k.costMod = -2;
     },
   }),
   follower({
@@ -52,11 +53,14 @@ export const SWIPE = [
     atk: 2,
     hp: 2,
     art: '⏩',
-    text: '【ファンファーレ】【コンボ1】相手のフォロワー1体に2ダメージ',
+    text: '【ファンファーレ】【コンボ1】相手のフォロワー1体に2ダメージ\n【進化時】カードを2枚引く',
     flavor: '倍速視聴で修行を終えた。',
     target: { kind: 'enemyFollower', cond: (_s, _c, i) => i.combo >= 1 },
     fanfare: (c) => {
       if (c.comboAt(1)) c.dmg(c.target, 2);
+    },
+    evolve: (c) => {
+      c.draw(2);
     },
   }),
   follower({
@@ -79,11 +83,14 @@ export const SWIPE = [
     cost: 2,
     rarity: 'bronze',
     art: '🪩',
-    text: '「バックダンサー」を2体出す\n【コンボ3】さらに1体出す',
+    text: '「バックダンサー」を2体出す\n【コンボ3】さらに1体出す。その後、自分の「バックダンサー」すべてを+1/+0',
     flavor: '突然始まって、突然終わる。',
     spell: (c) => {
       c.summon('t_dancer', 2);
-      if (c.comboAt(3)) c.summon('t_dancer', 1);
+      if (c.comboAt(3)) {
+        c.summon('t_dancer', 1);
+        c.buffAll(c.allies().filter((a) => a.id === 't_dancer'), 1, 0);
+      }
     },
   }),
   // ---------------- silver
@@ -109,23 +116,28 @@ export const SWIPE = [
     cost: 1,
     rarity: 'silver',
     art: '🗡️',
-    text: '相手のフォロワー1体に1ダメージ\n【コンボ2】かわりに3ダメージ',
+    text: '相手のフォロワー1体に1ダメージ\n【コンボ2】PPを1回復し、カードを1枚引く',
     flavor: '次の動画へ、物理的に。',
     target: { kind: 'enemyFollower' },
     spell: (c) => {
-      c.dmg(c.target, c.comboAt(2) ? 3 : 1);
+      c.dmg(c.target, 1);
+      if (c.comboAt(2)) {
+        c.pp(1);
+        c.draw(1);
+      }
     },
   }),
   follower({
     id: 'x_dancer',
     name: 'バズダンサー',
     cls: 'swipe',
-    cost: 2,
+    cost: 3,
     rarity: 'silver',
-    atk: 1,
+    atk: 0,
     hp: 2,
+    kw: ['storm'],
     art: '🕺',
-    text: '【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+1',
+    text: '《疾走》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+1',
     flavor: '流行りの振り付けは全部踊れる。',
     fanfare: (c) => c.buff(c.self, c.combo, c.combo),
   }),
@@ -207,7 +219,7 @@ export const SWIPE = [
     cls: 'swipe',
     cost: 5,
     rarity: 'legend',
-    atk: 4,
+    atk: 2,
     hp: 3,
     kw: ['storm'],
     art: '🐆',

@@ -3,7 +3,7 @@ import { music } from '../../audio/music';
 import { buildDeck, CLASSES, collectible, def, PLAYABLE_CLASSES, RARITY, RULES, sortDeck, validateDeck, type ClassId, type Rarity } from '../../engine';
 import { totalOwned } from '../../meta/economy';
 import { save, type DeckSave } from '../../meta/save';
-import { fitCardText, glossary, staticCard } from '../cardview';
+import { fitCardText, glossary, relatedBlock, staticCard } from '../cardview';
 import { bottomNav, btn, confirmModal, modal, topBar } from '../common';
 import { h } from '../dom';
 import { toast } from '../fx/fx';
@@ -314,6 +314,7 @@ export function inspectCard(id: string, onChange?: () => void): void {
         h('div.ic-meta', `${CLASSES[d.cls].emoji}${CLASSES[d.cls].name} ／ `, h('span', { style: { color: r.color } }, r.name)),
         h('div.inspect-flavor', d.flavor ?? ''),
         h('div.detail-gloss', glossary(d).map((g) => h('div.gloss', h('b', g.name), h('span', g.desc)))),
+        relatedBlock(d),
         ownEl,
         btns,
       ),

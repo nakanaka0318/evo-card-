@@ -83,7 +83,7 @@ describe('combat', () => {
     const d = put(s, 1, 'n_cat');
     apply(s, { t: 'attack', uid: a.uid, target: d.uid });
     expect(s.players[1].board.includes(d)).toBe(false);
-    expect(E.hpOf(a)).toBe(4);
+    expect(E.hpOf(a)).toBe(5);
   });
 
   it('bane, drain and barrier', () => {
@@ -162,7 +162,7 @@ describe('evolution', () => {
     const e = put(s, 1, 'n_cat');
     expect(apply(s, { t: 'evolve', uid: c.uid, sup: false }).length).toBe(0);
     apply(s, { t: 'evolve', uid: c.uid, sup: false, target: e.uid });
-    expect(E.hpOf(e)).toBe(1);
+    expect(s.players[1].board.includes(e)).toBe(false);
   });
 });
 
@@ -211,9 +211,10 @@ describe('cards & mechanics', () => {
     const e = put(s, 1, 'n_bear');
     const sp = give(s, 0, 's_comment');
     apply(s, { t: 'play', uid: sp.uid, target: e.uid });
-    // +1 like from playing, then buzz 4 spends 4
+    // +1 like from playing, then buzz 4 spends 4: 4 damage + 2 to the leader
     expect(s.players[0].likes).toBe(0);
-    expect(E.hpOf(e)).toBe(1);
+    expect(E.hpOf(e)).toBe(3);
+    expect(s.players[1].hp).toBe(18);
   });
 
   it('combo counts other cards played this turn', () => {
@@ -222,7 +223,7 @@ describe('cards & mechanics', () => {
     for (let i = 0; i < 2; i++) apply(s, { t: 'play', uid: give(s, 0, 'x_skip').uid });
     const d = give(s, 0, 'x_dancer');
     apply(s, { t: 'play', uid: d.uid });
-    expect(d.atk).toBe(3);
+    expect(d.atk).toBe(2);
     expect(d.maxHp).toBe(4);
     const runner = give(s, 0, 'x_runner');
     expect(E.costOf(s, runner)).toBe(3);
@@ -236,7 +237,46 @@ describe('cards & mechanics', () => {
     const donut = put(s, 0, 'w_donut');
     apply(s, { t: 'play', uid: give(s, 0, 't_candy').uid });
     expect(s.players[0].sweet).toBe(4);
-    expect(donut.atk).toBe(3);
+    expect(donut.atk).toBe(2);
+  });
+
+  it('skip hands back a free skip, and the chain stops at a full hand', () => {
+    const s = game();
+    s.players[0].pp = 2;
+    s.players[0].hand = [];
+    const first = give(s, 0, 'x_skip');
+    expect(E.costOf(s, first)).toBe(2);
+    apply(s, { t: 'play', uid: first.uid });
+    const free = s.players[0].hand.find((c) => c.id === 'x_skip');
+    expect(free && E.costOf(s, free)).toBe(0);
+    let plays = 0;
+    for (;;) {
+      const k = s.players[0].hand.find((c) => c.id === 'x_skip' && E.costOf(s, c) === 0);
+      if (!k || plays > 20) break;
+      apply(s, { t: 'play', uid: k.uid });
+      plays++;
+    }
+    expect(plays).toBeLessThan(12);
+    expect(s.players[0].hand.length).toBeLessThanOrEqual(RULES.handMax);
+  });
+
+  it('mid boss always hits a follower; 課金 also hits the leader', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    const e = put(s, 1, 'n_bear');
+    apply(s, { t: 'play', uid: give(s, 0, 'm_boss').uid, target: e.uid });
+    expect(E.hpOf(e)).toBe(2);
+    expect(s.players[1].hp).toBe(15);
+  });
+
+  it('level-ups restore the follower to full health', () => {
+    const s = game();
+    const h = put(s, 0, 'm_hero');
+    const e = put(s, 1, 'n_slime');
+    apply(s, { t: 'attack', uid: h.uid, target: e.uid });
+    expect(h.level).toBeGreaterThan(1);
+    expect(h.dmg).toBe(0);
   });
 
   it('enhance pays the higher cost when affordable', () => {

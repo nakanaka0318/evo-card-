@@ -9,9 +9,10 @@ export const STREAM = [
     cost: 1,
     rarity: 'bronze',
     atk: 1,
-    hp: 2,
+    hp: 1,
+    kw: ['rush'],
     art: '🎤',
-    text: '【ファンファーレ】いいね+2',
+    text: '《突進》\n【ファンファーレ】いいね+2',
     flavor: '同接3人からのスタート。',
     fanfare: (c) => c.likes(2),
   }),
@@ -37,11 +38,15 @@ export const STREAM = [
     cost: 2,
     rarity: 'bronze',
     art: '💬',
-    text: '相手のフォロワー1体に2ダメージ\n【バズ4】かわりに4ダメージ',
+    text: '相手のフォロワー1体に2ダメージ\n【バズ4】かわりに4ダメージを与え、相手のリーダーに2ダメージ',
     flavor: '草草草草草草草草',
     target: { kind: 'enemyFollower' },
     spell: (c) => {
-      if (!c.buzz(4, (c) => c.dmg(c.target, 4))) c.dmg(c.target, 2);
+      const hit = c.buzz(4, (c) => {
+        c.dmg(c.target, 4);
+        c.face(2);
+      });
+      if (!hit) c.dmg(c.target, 2);
     },
   }),
   follower({
@@ -53,9 +58,9 @@ export const STREAM = [
     atk: 2,
     hp: 2,
     art: '🐧',
-    text: '【ファンファーレ】いいね+1\n【進化時】いいね+2',
+    text: '【ファンファーレ】いいね+2\n【進化時】いいね+2',
     flavor: '盛れる角度を研究して3年。',
-    fanfare: (c) => c.likes(1),
+    fanfare: (c) => c.likes(2),
     evolve: (c) => c.likes(2),
   }),
   follower({
@@ -68,8 +73,11 @@ export const STREAM = [
     hp: 4,
     kw: ['ward'],
     art: '🙋',
-    text: '《守護》\n【ラストワード】いいね+2',
+    text: '《守護》\n【進化時】「古参ファン」を2体出す\n【ラストワード】いいね+2',
     flavor: '「初配信から見てました」',
+    evolve: (c) => {
+      c.summon('s_fan', 2);
+    },
     lastWords: (c) => c.likes(2),
   }),
   spell({
@@ -79,10 +87,16 @@ export const STREAM = [
     cost: 3,
     rarity: 'bronze',
     art: '🤝',
-    text: '自分のフォロワーすべてを+1/+1\n【バズ5】かわりに+2/+2',
+    text: '自分のフォロワーすべてを+1/+1\n【バズ5】かわりに+2/+2し、《突進》を与える',
     flavor: '1+1が3にも4にもなる。',
     spell: (c) => {
-      if (!c.buzz(5, (c) => c.buffAll(c.allies(), 2, 2))) c.buffAll(c.allies(), 1, 1);
+      const hit = c.buzz(5, (c) => {
+        for (const a of c.allies()) {
+          c.buff(a, 2, 2);
+          c.give(a, 'rush');
+        }
+      });
+      if (!hit) c.buffAll(c.allies(), 1, 1);
     },
   }),
   // ---------------- silver
@@ -95,9 +109,13 @@ export const STREAM = [
     atk: 2,
     hp: 3,
     art: '🦚',
-    text: '【ファンファーレ】自分の場のフォロワー1体につき、いいね+1',
+    text: '【ファンファーレ】自分の場のフォロワー1体につき、いいね+1\n【進化時】「サクラ」を2体出す。その後、ファンファーレ効果が発動する',
     flavor: '映えるためなら羽も広げる。',
     fanfare: (c) => c.likes(c.allies().length),
+    evolve: (c) => {
+      c.summon('t_sakura', 2);
+      c.likes(c.allies().length);
+    },
   }),
   spell({
     id: 's_flame',
@@ -122,9 +140,12 @@ export const STREAM = [
     atk: 2,
     hp: 1,
     art: '✂️',
-    text: '【ファンファーレ】「切り抜き動画」を1枚手札に加える',
+    text: '【ファンファーレ】「切り抜き動画」を1枚手札に加える\n【進化時】ファンファーレ効果が発動する',
     flavor: '神回だけを、45秒に。',
     fanfare: (c) => {
+      c.addHand('t_clip');
+    },
+    evolve: (c) => {
       c.addHand('t_clip');
     },
   }),
@@ -171,12 +192,13 @@ export const STREAM = [
     atk: 4,
     hp: 4,
     art: '🌟',
-    text: '【ファンファーレ】【バズ6】相手のフォロワーすべてに3ダメージ\n【進化時】いいね+3',
+    text: '【ファンファーレ】【バズ6】相手のフォロワーすべてに3ダメージ\n【進化時】いいね+3\n【超進化時】さらにいいね+3',
     flavor: 'トレンド1位は、だいたい一瞬。',
     fanfare: (c) => {
       c.buzz(6, (c) => c.dmgAll(c.enemies(), 3));
     },
     evolve: (c) => c.likes(3),
+    superEvolve: (c) => c.likes(3),
   }),
   amulet({
     id: 's_live',
@@ -238,9 +260,10 @@ export const STREAM = [
     rarity: 'legend',
     atk: 6,
     hp: 6,
+    kw: ['ward', 'rush', 'bane'],
     art: '👁️',
     art2: '📈',
-    text: '【ファンファーレ】いいねの数だけ（最大10回）、ランダムな相手のフォロワーかリーダーに1ダメージ',
+    text: '《守護》《突進》《必殺》\n【ファンファーレ】いいねの数だけ（最大10回）、ランダムな相手のフォロワーかリーダーに1ダメージ',
     flavor: 'あなたのおすすめは、すべて見られている。',
     fanfare: (c) => c.ping(Math.min(10, c.P.likes), 1),
   }),

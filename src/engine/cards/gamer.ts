@@ -11,9 +11,9 @@ export const GAMER = [
     atk: 1,
     hp: 2,
     art: '💧',
-    text: '【レベル】EXP1ごとに+1/+1（最大Lv3）',
+    text: '【レベル】EXP1ごとに+1/+1（最大Lv4）',
     flavor: '最初の敵にして、最初の仲間。',
-    level: { exp: 1, max: 3, gain: [1, 1] },
+    level: { exp: 1, max: 4, gain: [1, 1] },
   }),
   follower({
     id: 'm_hero',
@@ -24,9 +24,9 @@ export const GAMER = [
     atk: 2,
     hp: 3,
     art: '🤺',
-    text: '【レベル】EXP2ごとに+1/+1（最大Lv4）',
+    text: '【レベル】EXP1ごとに+1/+1（最大Lv4）',
     flavor: 'レベル上げは、裏切らない。',
-    level: { exp: 2, max: 4, gain: [1, 1] },
+    level: { exp: 1, max: 4, gain: [1, 1] },
   }),
   spell({
     id: 'm_potion',
@@ -54,11 +54,15 @@ export const GAMER = [
     hp: 4,
     kw: ['ward'],
     art: '🛡️',
-    text: '《守護》\n【課金5】+3/+3',
+    text: '《守護》\n【課金5】+3/+3\n【進化時】相手のフォロワー1体に3ダメージ',
     flavor: 'ヘイトは全部、俺が買う。',
     enhance: 5,
     fanfare: (c) => {
       if (c.enhanced) c.buff(c.self, 3, 3);
+    },
+    evoTarget: { kind: 'enemyFollower' },
+    evolve: (c) => {
+      c.dmg(c.target, 3);
     },
   }),
   follower({
@@ -89,12 +93,13 @@ export const GAMER = [
     atk: 5,
     hp: 5,
     art: '👹',
-    text: '【課金7】【ファンファーレ】相手のフォロワー1体に5ダメージ',
+    text: '【ファンファーレ】相手のフォロワー1体に5ダメージ\n【課金7】さらに相手のリーダーに5ダメージ',
     flavor: '「フフフ……ここまで来たか」（3回目）',
     enhance: 7,
-    target: { kind: 'enemyFollower', cond: (_s, _c, i) => i.enhanced },
+    target: { kind: 'enemyFollower' },
     fanfare: (c) => {
-      if (c.enhanced) c.dmg(c.target, 5);
+      c.dmg(c.target, 5);
+      if (c.enhanced) c.face(5);
     },
   }),
   // ---------------- silver
@@ -107,11 +112,14 @@ export const GAMER = [
     atk: 2,
     hp: 2,
     art: '💳',
-    text: '【課金4】+3/+3',
+    text: '【課金4】+3/+3と《突進》《守護》《必殺》を得る',
     flavor: '強さは、お金で買える（PPで）。',
     enhance: 4,
     fanfare: (c) => {
-      if (c.enhanced) c.buff(c.self, 3, 3);
+      if (c.enhanced) {
+        c.buff(c.self, 3, 3);
+        c.give(c.self, 'rush', 'ward', 'bane');
+      }
     },
   }),
   follower({
@@ -137,9 +145,9 @@ export const GAMER = [
     cost: 2,
     rarity: 'silver',
     art: '🎯',
-    text: '相手のフォロワー1体に3ダメージ\n【課金5】かわりに5ダメージを与え、自分のフォロワーすべてにEXP+1',
+    text: '相手のフォロワー1体に3ダメージ\n【課金3】かわりに5ダメージを与え、自分のフォロワーすべてにEXP+1',
     flavor: 'ゲージ満タンで出すと気持ちいい。',
-    enhance: 5,
+    enhance: 3,
     target: { kind: 'enemyFollower' },
     spell: (c) => {
       if (c.enhanced) {
@@ -175,9 +183,9 @@ export const GAMER = [
     atk: 3,
     hp: 4,
     art: '🧙',
-    text: '【レベル】EXP2ごとに+1/+1（最大Lv3）\nレベルアップするたび、相手のフォロワーすべてに1ダメージ',
+    text: '【レベル】EXP1ごとに+1/+1（最大Lv3）\nレベルアップするたび、相手のフォロワーすべてに1ダメージ',
     flavor: '経験を積むほど、範囲が広がる。',
-    level: { exp: 2, max: 3, gain: [1, 1] },
+    level: { exp: 1, max: 3, gain: [1, 1] },
     onLevelUp: (c) => c.dmgAll(c.enemies(), 1),
   }),
   // ---------------- gold
@@ -206,8 +214,9 @@ export const GAMER = [
     rarity: 'gold',
     atk: 3,
     hp: 4,
+    kw: ['barrier'],
     art: '🦸',
-    text: '【レベル】EXP2ごとに+2/+2（最大Lv4）\nLv4になったとき《連撃》を得る',
+    text: '《バリア》\n【レベル】EXP2ごとに+2/+2（最大Lv4）\nLv4になったとき《連撃》を得る',
     flavor: 'カンストした先に、伝説がある。',
     level: { exp: 2, max: 4, gain: [2, 2] },
     onLevelUp: (c) => {
@@ -222,8 +231,9 @@ export const GAMER = [
     rarity: 'gold',
     atk: 3,
     hp: 3,
+    kw: ['rush', 'bane'],
     art: '📦',
-    text: '【ラストワード】ランダムな自分のフォロワー1体を+1/+1し、EXP+3',
+    text: '《突進》《必殺》\n【ラストワード】ランダムな自分のフォロワー1体を+1/+1し、EXP+3',
     flavor: '開けたら噛まれた。でも中身は本物。',
     lastWords: (c) => {
       const t = c.pick(c.allies());

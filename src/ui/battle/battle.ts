@@ -24,7 +24,7 @@ import {
 } from '../../engine';
 import { save } from '../../meta/save';
 import { confirmModal } from '../common';
-import { CARD_H, CARD_W, createCard, fitCardText, glossary, staticCard, updateCard } from '../cardview';
+import { CARD_H, CARD_W, createCard, fitCardText, glossary, relatedBlock, staticCard, updateCard } from '../cardview';
 import { clear, h, wait } from '../dom';
 import { fxConfig, T, toast } from '../fx/fx';
 import { particles } from '../fx/particles';
@@ -1081,6 +1081,7 @@ export class Battle {
     this.detailEl.replaceChildren(
       h('div.detail-card', big),
       h('div.detail-gloss', glossary(d).map((g) => h('div.gloss', h('b', g.name), h('span', g.desc)))),
+      ...[relatedBlock(d)].filter((x): x is HTMLElement => !!x),
     );
     this.detailEl.classList.add('on');
     this.detailEl.classList.toggle('right', (this.pos.get(uid)?.x ?? 0) < this.g.W * 0.35);
@@ -1123,7 +1124,7 @@ export class Battle {
     big.classList.add('zone-detail');
     const ov = h(
       'div.inspect',
-      h('div.inspect-body', h('div.inspect-card', big), h('div.inspect-side', h('div.inspect-flavor', d.flavor ?? ''), h('div.detail-gloss', glossary(d).map((g) => h('div.gloss', h('b', g.name), h('span', g.desc)))), h('div.inspect-btns', btns))),
+      h('div.inspect-body', h('div.inspect-card', big), h('div.inspect-side', h('div.inspect-flavor', d.flavor ?? ''), h('div.detail-gloss', glossary(d).map((g) => h('div.gloss', h('b', g.name), h('span', g.desc)))), relatedBlock(d), h('div.inspect-btns', btns))),
     );
     closeOnTap(ov, close, true);
     stage.overlay.append(ov);

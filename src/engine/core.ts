@@ -644,6 +644,8 @@ export function gainExp(s: GameState, c: Card, n: number): void {
     c.maxHp += L.gain[1];
     s.players[c.owner].stats.levelUps++;
     emit(s, { t: 'levelUp', uid: c.uid, level: c.level });
+    // level-ups also restore the follower to full health
+    if (c.dmg > 0) healUnit(s, c, c.dmg);
     addDopa(s, c.owner, 1);
     trigger(s, c, 'onLevelUp');
   }

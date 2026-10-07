@@ -9,9 +9,10 @@ export const SWEETS = [
     cost: 1,
     rarity: 'bronze',
     atk: 1,
-    hp: 2,
+    hp: 1,
+    kw: ['ward'],
     art: '🐤',
-    text: '【ファンファーレ】自分のリーダーを2回復',
+    text: '《守護》\n【ファンファーレ】自分のリーダーを2回復',
     flavor: 'ピヨッ（あまい）',
     fanfare: (c) => {
       c.heal(2);
@@ -23,7 +24,7 @@ export const SWEETS = [
     cls: 'sweets',
     cost: 2,
     rarity: 'bronze',
-    atk: 1,
+    atk: 0,
     hp: 5,
     kw: ['ward'],
     art: '🍮',
@@ -51,10 +52,11 @@ export const SWEETS = [
     cls: 'sweets',
     cost: 3,
     rarity: 'bronze',
-    atk: 2,
+    atk: 1,
     hp: 4,
+    kw: ['storm'],
     art: '🍩',
-    text: '自分のリーダーが回復するたび、+1/+0',
+    text: '《疾走》\n自分のリーダーが回復するたび、+1/+0',
     flavor: '穴の分だけ、強くなる。',
     onHeal: (c) => c.buff(c.self, 1, 0),
   }),
@@ -81,10 +83,13 @@ export const SWEETS = [
     hp: 6,
     kw: ['ward'],
     art: '🍨',
-    text: '《守護》【ファンファーレ】自分のリーダーを3回復',
+    text: '《守護》【ファンファーレ】自分のリーダーを3回復\n【進化時】「パフェタワー」を1体出す',
     flavor: '層が多いほど、幸せも多い。',
     fanfare: (c) => {
       c.heal(3);
+    },
+    evolve: (c) => {
+      c.summon('w_parfait');
     },
   }),
   // ---------------- silver
@@ -174,10 +179,13 @@ export const SWEETS = [
     atk: 3,
     hp: 5,
     art: '🧁',
-    text: '自分のリーダーが回復するたび、ランダムな相手のフォロワー1体に1ダメージ',
+    text: '自分のリーダーが回復するたび、ランダムな相手のフォロワー1体に1ダメージ\n【進化時】【シュガーハイ20】相手のフォロワーすべてに5ダメージ',
     flavor: '甘い顔して、容赦ない。',
     onHeal: (c) => {
       c.dmg(c.pick(c.enemies()), 1);
+    },
+    evolve: (c) => {
+      if (c.sugarHigh(20)) c.dmgAll(c.enemies(), 5);
     },
   }),
   amulet({
@@ -205,9 +213,9 @@ export const SWEETS = [
     rarity: 'gold',
     atk: 5,
     hp: 7,
-    kw: ['ward', 'drain'],
+    kw: ['ward', 'drain', 'rush'],
     art: '🎂',
-    text: '《守護》《ドレイン》\n【ファンファーレ】【シュガーハイ15】+3/+3',
+    text: '《守護》《ドレイン》《突進》\n【ファンファーレ】【シュガーハイ15】+3/+3',
     flavor: '入刀したら、反撃された。',
     fanfare: (c) => {
       if (c.sugarHigh(15)) c.buff(c.self, 3, 3);

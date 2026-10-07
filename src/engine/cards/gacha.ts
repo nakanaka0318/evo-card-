@@ -101,23 +101,17 @@ export const GACHA = [
     rarity: 'bronze',
     atk: 4,
     hp: 4,
+    kw: ['ward'],
     art: '🦍',
-    text: '【ファンファーレ】ガチャ\nN:《守護》 R:+1/+1と《守護》 SR:+2/+2と《守護》 SSR:+3/+3と《守護》《必殺》',
+    text: '《守護》\n【ファンファーレ】ガチャ\nN:ハズレ R:+1/+1 SR:+2/+2 SSR:+3/+3と《必殺》',
     flavor: 'クレーンゲームで取れた。重い。',
     fanfare: (c) => {
       c.gacha({
-        N: (c) => c.give(c.self, 'ward'),
-        R: (c) => {
-          c.buff(c.self, 1, 1);
-          c.give(c.self, 'ward');
-        },
-        SR: (c) => {
-          c.buff(c.self, 2, 2);
-          c.give(c.self, 'ward');
-        },
+        R: (c) => c.buff(c.self, 1, 1),
+        SR: (c) => c.buff(c.self, 2, 2),
         SSR: (c) => {
           c.buff(c.self, 3, 3);
-          c.give(c.self, 'ward', 'bane');
+          c.give(c.self, 'bane');
         },
       });
     },
@@ -145,14 +139,14 @@ export const GACHA = [
     atk: 1,
     hp: 1,
     art: '🪙',
-    text: '【ファンファーレ】コイントス\n表:+1/+0と《疾走》 裏:+0/+2と《守護》',
+    text: '【ファンファーレ】コイントス\n表:+1/+0と《疾走》 裏:+0/+1と《守護》',
     flavor: '表でも裏でも、投げる瞬間が楽しい。',
     fanfare: (c) => {
       if (c.coin()) {
         c.buff(c.self, 1, 0);
         c.give(c.self, 'storm');
       } else {
-        c.buff(c.self, 0, 2);
+        c.buff(c.self, 0, 1);
         c.give(c.self, 'ward');
       }
     },
@@ -202,8 +196,9 @@ export const GACHA = [
     rarity: 'silver',
     atk: 3,
     hp: 4,
+    kw: ['rush'],
     art: '🃏',
-    text: '【進化時】ガチャ\nN:自分のフォロワーすべてを+1/+0 R:+1/+1 SR:+2/+1 SSR:+2/+2',
+    text: '《突進》\n【進化時】ガチャ\nN:自分のフォロワーすべてを+1/+0 R:+1/+1 SR:+2/+1 SSR:+2/+2',
     flavor: '「ベットは済んだかい？」',
     evolve: (c) => {
       c.gacha({
@@ -264,7 +259,7 @@ export const GACHA = [
     id: 'g_jackpot',
     name: 'ジャックポットドラゴン',
     cls: 'gacha',
-    cost: 6,
+    cost: 7,
     rarity: 'gold',
     atk: 5,
     hp: 5,

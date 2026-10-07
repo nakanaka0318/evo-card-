@@ -35,7 +35,7 @@ export const NEUTRAL = [
     cls: 'neutral',
     cost: 2,
     rarity: 'bronze',
-    atk: 1,
+    atk: 2,
     hp: 3,
     kw: ['ward'],
     art: '😼',
@@ -48,7 +48,7 @@ export const NEUTRAL = [
     cls: 'neutral',
     cost: 3,
     rarity: 'bronze',
-    atk: 3,
+    atk: 2,
     hp: 1,
     kw: ['storm'],
     art: '🚀',
@@ -61,8 +61,8 @@ export const NEUTRAL = [
     cls: 'neutral',
     cost: 3,
     rarity: 'bronze',
-    atk: 2,
-    hp: 2,
+    atk: 3,
+    hp: 3,
     art: '🔊',
     text: '【ファンファーレ】相手のフォロワー1体に2ダメージ',
     flavor: '音量MAX以外は認めない。',
@@ -96,8 +96,11 @@ export const NEUTRAL = [
     hp: 5,
     kw: ['ward'],
     art: '🗿',
-    text: '《守護》',
+    text: '《守護》\n【進化時】「ドパスライム」を2体出す',
     flavor: '無表情だが内心ノリノリ。',
+    evolve: (c) => {
+      c.summon('n_slime', 2);
+    },
   }),
   follower({
     id: 'n_bear',
@@ -105,9 +108,8 @@ export const NEUTRAL = [
     cls: 'neutral',
     cost: 5,
     rarity: 'bronze',
-    atk: 5,
-    hp: 5,
-    evo: [7, 7],
+    atk: 7,
+    hp: 7,
     art: '🐻',
     text: '',
     flavor: 'メガ盛りの、さらに上。',
@@ -122,11 +124,12 @@ export const NEUTRAL = [
     atk: 2,
     hp: 2,
     art: '📣',
-    text: '【進化時】相手のフォロワー1体に2ダメージ',
+    text: '【進化時】相手のフォロワー1体を破壊する',
     flavor: '「ハイそこ！集中ッ！」',
     evoTarget: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
     evolve: (c) => {
-      c.dmg(c.target, 2);
+      c.destroy(c.targetCard());
     },
   }),
   follower({
@@ -150,8 +153,9 @@ export const NEUTRAL = [
     rarity: 'silver',
     atk: 2,
     hp: 3,
+    kw: ['rush'],
     art: '🍣',
-    text: '【ファンファーレ】カードを2枚引く',
+    text: '《突進》\n【ファンファーレ】カードを2枚引く',
     flavor: '次々流れてくるのがたまらない。',
     fanfare: (c) => {
       c.draw(2);
@@ -208,8 +212,9 @@ export const NEUTRAL = [
     rarity: 'gold',
     atk: 3,
     hp: 3,
+    kw: ['rush'],
     art: '🪅',
-    text: '【ラストワード】相手のフォロワーすべてに2ダメージ',
+    text: '《突進》\n【ラストワード】相手のフォロワーすべてに2ダメージ',
     flavor: '割ったら中身が爆発した。',
     lastWords: (c) => {
       c.dmgAll(c.enemies(), 2);
@@ -234,7 +239,7 @@ export const NEUTRAL = [
     id: 'n_reset',
     name: 'ハイパーリセット',
     cls: 'neutral',
-    cost: 5,
+    cost: 4,
     rarity: 'gold',
     art: '💥',
     text: 'すべてのフォロワーに3ダメージ',
@@ -247,7 +252,7 @@ export const NEUTRAL = [
     id: 'n_energy',
     name: 'エナドリ',
     cls: 'neutral',
-    cost: 2,
+    cost: 4,
     rarity: 'gold',
     art: '🥤',
     text: '自分のPP最大値+1。カードを1枚引く',

@@ -1,4 +1,4 @@
-import { ABILITIES, CLASSES, def, KEYWORDS, RARITY, type CardDef, type CardView, type Keyword } from '../engine';
+import { ABILITIES, allDefs, CLASSES, def, KEYWORDS, RARITY, type CardDef, type CardView, type Keyword } from '../engine';
 import { h } from './dom';
 
 export const CARD_W = 180;
@@ -65,6 +65,42 @@ export function glossary(d: CardDef): { name: string; desc: string }[] {
   if (d.text.includes('EXP')) add('EXP', ABILITIES['レベル']);
   if (d.text.includes('DOPA')) add('DOPAゲージ', 'カードを出したり敵を倒したりすると溜まる。満タンでFEVER発動！');
   return out;
+}
+
+/** cards named in 「」 in this card's text (tokens it makes, cards it adds…), excluding itself */
+export function relatedCards(d: CardDef): CardDef[] {
+  const out: CardDef[] = [];
+  for (const m of d.text.matchAll(/「([^」]+)」/g)) {
+    const r = allDefs().find((x) => x.name === m[1]);
+    if (r && r.id !== d.id && !out.includes(r)) out.push(r);
+  }
+  return out;
+}
+
+/** 関連カード block shown under a card's description */
+export function relatedBlock(d: CardDef): HTMLElement | null {
+  const list = relatedCards(d);
+  if (!list.length) return null;
+  return h(
+    'div.related',
+    h('div.related-h', '関連カード'),
+    list.map((r) =>
+      h(
+        'div.related-row',
+        h('div.related-card', staticCard(r.id, 'collection')),
+        h(
+          'div.related-info',
+          h('div.related-name', r.name),
+          h(
+            'div.related-meta',
+            `コスト${r.cost}`,
+            r.type === 'follower' ? `　${r.atk ?? 0}/${r.hp ?? 0}` : r.type === 'spell' ? '　スペル' : '　アミュレット',
+          ),
+          r.text ? h('div.related-text', { html: formatText(r.text) }) : h('div.related-text.flavor', r.flavor ?? ''),
+        ),
+      ),
+    ),
+  );
 }
 
 export interface CardElOpts {

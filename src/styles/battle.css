@@ -1854,3 +1854,107 @@
   font-size: 20px;
   padding: 12px 16px;
 }
+
+/* ---------------------------------------------------------------- 関連カード */
+.related {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.related-h {
+  font: 15px/1 var(--f-display);
+  color: var(--volt);
+  text-shadow: var(--outline-s);
+}
+
+.related-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 7px 9px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: rgba(13, 10, 36, 0.92);
+}
+
+.related-card {
+  flex: none;
+  width: 72px;
+  height: 101px;
+  position: relative;
+}
+
+.related-card .card {
+  position: absolute;
+  transform: scale(0.4);
+  transform-origin: 0 0;
+}
+
+.related-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.related-name {
+  font: 900 14px/1.2 var(--f-body);
+  color: #fff;
+}
+
+.related-meta {
+  font: 900 11px/1 var(--f-body);
+  color: var(--mute);
+}
+
+.related-text {
+  font: 700 12px/1.45 var(--f-body);
+  color: var(--paper);
+}
+
+.related-text.flavor {
+  color: var(--mute);
+  font-style: italic;
+}
+
+.related-text .ab {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: #3b2a8a;
+  color: #fff;
+}
+
+.related-text .kw {
+  color: var(--volt);
+  font-weight: 900;
+}
+
+.portrait .inspect .related-h {
+  font-size: 20px;
+}
+
+.portrait .inspect .related-row {
+  padding: 10px 14px;
+}
+
+.portrait .inspect .related-name {
+  font-size: 19px;
+}
+
+.portrait .inspect .related-meta {
+  font-size: 15px;
+}
+
+.portrait .inspect .related-text {
+  font-size: 17px;
+}
+
+/* the hover panel is height-limited: list related cards as text only */
+.bf-detail .related-card {
+  display: none;
+}
+
+.bf-detail .related-row {
+  padding: 6px 9px;
+}
