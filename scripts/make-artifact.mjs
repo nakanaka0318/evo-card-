@@ -7,11 +7,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const html = readFileSync(resolve(root, 'dist/index.html'), 'utf8');
+const html = readFileSync(resolve(root, 'dist/dev.html'), 'utf8');
 
 const pick = (re, label) => {
   const all = [...html.matchAll(re)].map((m) => m[0]);
-  if (!all.length) throw new Error(`missing ${label} in dist/index.html`);
+  if (!all.length) throw new Error(`missing ${label} in dist/dev.html`);
   return all;
 };
 

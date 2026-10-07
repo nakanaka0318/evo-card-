@@ -8,11 +8,17 @@
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # dist/index.html（単一ファイル。ダブルクリックでも動く）
+npm run dev        # http://localhost:5173/dev.html（開発用エントリは dev.html）
+npm run build      # dist/dev.html（単一ファイル。ダブルクリックでも動く）
+npm run site       # ビルドして ./index.html と ./docs/index.html を更新（GitHub Pages 用）
 npm test           # ルールエンジンのテスト
 npm run sim -- 10  # AI同士の自動対戦でクラス勝率を確認
 ```
+
+**ブラウザで遊ぶ:** https://nakanaka0318.github.io/evo-card-/
+
+GitHub Pages は「Deploy from a branch」（`/ (root)` でも `/docs` でも可）か「GitHub Actions」のどちらでも動きます。
+ゲーム本体を変更したら `npm run site` で `index.html` / `docs/index.html` を作り直してコミットしてください。
 
 ## ルール（シャドバ準拠）
 
