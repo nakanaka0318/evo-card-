@@ -1,0 +1,914 @@
+/* ---------------------------------------------------------------- card base (180 × 252) */
+.card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 180px;
+  height: 252px;
+  transform-origin: 50% 50%;
+  transition:
+    transform var(--mv) cubic-bezier(0.2, 0.85, 0.25, 1.12),
+    filter 0.2s,
+    opacity 0.25s;
+  will-change: transform;
+  --frame: linear-gradient(140deg, #6b3d1f, #d08a4e 45%, #8a5530 70%, #e5a66d);
+}
+
+.card.no-trans {
+  transition: none !important;
+}
+
+.card-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform calc(450ms / var(--spd)) cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+.card.facedown .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-face,
+.card-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.card-face {
+  background: var(--frame);
+  border: 2px solid #000;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55);
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  border: 3px solid #000;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 46, 136, 0.55) 0 18%, transparent 19%),
+    repeating-conic-gradient(from 0deg, #2b1f6e 0 10deg, #1a1348 10deg 20deg),
+    #1a1348;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55);
+}
+
+.back-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font: 64px/1 var(--f-display);
+  color: var(--volt);
+  text-shadow: var(--outline);
+}
+
+.r-silver {
+  --frame: linear-gradient(140deg, #7d879c, #f2f6ff 40%, #9aa4b8 65%, #e6ecf7);
+}
+.r-gold {
+  --frame: linear-gradient(140deg, #9a6a12, #ffe27a 35%, #c48a14 60%, #fff3b0 80%, #b07a12);
+}
+.r-legend {
+  --frame: linear-gradient(140deg, #4a127a, #ff5fd2 30%, #ffe14d 50%, #ff5fd2 70%, #4a127a);
+}
+.r-legend .card-face {
+  background-size: 300% 300%;
+  animation: legend-frame 4s linear infinite;
+}
+
+@keyframes legend-frame {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+/* art */
+.card-art {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  top: 7px;
+  height: 148px;
+  border-radius: 10px 10px 4px 4px;
+  overflow: hidden;
+  border: 2px solid rgba(0, 0, 0, 0.75);
+  transition:
+    height 0.2s,
+    bottom 0.2s;
+}
+
+.art-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 62%, color-mix(in srgb, var(--c1) 85%, white) 0%, var(--c1) 22%, transparent 62%),
+    linear-gradient(165deg, var(--c2) 0%, color-mix(in srgb, var(--c2) 35%, #120d33) 55%, #0d0a24 100%);
+}
+
+.t-spell .art-bg {
+  background:
+    conic-gradient(from 0deg at 50% 60%, transparent 0 20deg, color-mix(in srgb, var(--c1) 70%, transparent) 20deg 40deg, transparent 40deg 80deg, color-mix(in srgb, var(--c2) 60%, transparent) 80deg 100deg, transparent 100deg 160deg, color-mix(in srgb, var(--c1) 70%, transparent) 160deg 180deg, transparent 180deg 240deg, color-mix(in srgb, var(--c2) 60%, transparent) 240deg 260deg, transparent 260deg),
+    radial-gradient(circle at 50% 60%, var(--c1), #1a1348 70%);
+}
+
+.t-amulet .art-bg {
+  background:
+    repeating-linear-gradient(60deg, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px 14px),
+    repeating-linear-gradient(-60deg, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px 14px),
+    radial-gradient(circle at 50% 55%, var(--c1), color-mix(in srgb, var(--c2) 40%, #120d33) 75%);
+}
+
+.art-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.35) 1.2px, transparent 1.6px);
+  background-size: 9px 9px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 70%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 70%);
+  opacity: 0.55;
+}
+
+.r-gold .art-pattern,
+.r-legend .art-pattern {
+  background-image: repeating-conic-gradient(from 0deg at 50% 62%, rgba(255, 255, 255, 0.22) 0 6deg, transparent 6deg 18deg);
+  background-size: auto;
+  opacity: 0.8;
+}
+
+.r-legend .art-pattern {
+  animation: spin 18s linear infinite;
+  inset: -40%;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.art-glyph {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  transform: translate(-50%, -50%);
+  font: 92px/1 var(--f-emoji);
+  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.45)) drop-shadow(0 0 14px color-mix(in srgb, var(--c1) 70%, transparent));
+}
+
+.art-glyph2 {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  font: 40px/1 var(--f-emoji);
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.5));
+  transform: rotate(12deg);
+}
+
+.art-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 45%, transparent 55%);
+  background-size: 260% 100%;
+  background-position: 150% 0;
+  opacity: 0;
+}
+
+.r-gold .art-shine,
+.r-legend .art-shine {
+  opacity: 1;
+  animation: shine 3.2s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0%,
+  60% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -60% 0;
+  }
+}
+
+/* prism (cosmetic foil) */
+.card.prism .card-face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(255, 0, 128, 0.35), rgba(255, 220, 0, 0.3), rgba(0, 255, 200, 0.3), rgba(80, 120, 255, 0.35), rgba(255, 0, 200, 0.35));
+  background-size: 300% 300%;
+  mix-blend-mode: color-dodge;
+  animation: legend-frame 3s linear infinite;
+  pointer-events: none;
+}
+
+.card-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+/* cost gem */
+.card-cost {
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  width: 50px;
+  height: 50px;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background: linear-gradient(160deg, #a8fff0 0%, #19c7a8 45%, #0a6b62 100%);
+  display: grid;
+  place-items: center;
+  z-index: 3;
+}
+
+.card-cost::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  clip-path: inherit;
+  background: linear-gradient(160deg, #5ff5dc, #0e9e88 60%, #07574f);
+}
+
+.cost-num {
+  position: relative;
+  font: 30px/1 var(--f-display);
+  color: #fff;
+  text-shadow: var(--outline-s);
+}
+
+.card.cost-down .cost-num {
+  color: var(--mint);
+}
+.card.cost-up .cost-num {
+  color: #ff9a9a;
+}
+.card.enhanced .card-cost {
+  background: linear-gradient(160deg, #fff27a, #ffb000 60%, #a86a00);
+}
+.card.enhanced .card-cost::before {
+  background: linear-gradient(160deg, #ffe14d, #ff9f1a 60%, #8a5600);
+}
+
+/* name band */
+.card-name {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  top: 152px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, #221a52, #120d33);
+  border: 2px solid #000;
+  border-radius: 4px;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.card-name span {
+  font: 900 14px/1 var(--f-body);
+  color: #fff;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 0 #000;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: clip;
+  padding: 0 4px;
+}
+
+.card-type {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 9px;
+  text-align: center;
+  font: 900 12px/1 var(--f-body);
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 2px 0 #000;
+  z-index: 2;
+}
+
+.card-text {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  top: 182px;
+  bottom: 30px;
+  font: 700 9.5px/1.38 var(--f-body);
+  color: #241a3f;
+  background: rgba(255, 250, 240, 0.94);
+  border-radius: 4px;
+  padding: 4px 5px;
+  overflow: hidden;
+  display: none;
+}
+
+.t-follower .card-text {
+  bottom: 44px;
+}
+
+.card-text .ab {
+  display: inline-block;
+  font-weight: 900;
+  color: #fff;
+  background: #3b2a8a;
+  border-radius: 3px;
+  padding: 0 3px;
+  margin-right: 1px;
+  line-height: 1.35;
+}
+
+.card-text .ab-buzz {
+  background: #e3307e;
+}
+.card-text .ab-sugar {
+  background: #e8763c;
+}
+.card-text .ab-combo {
+  background: #1d9fd1;
+}
+.card-text .ab-enhance {
+  background: #c48a00;
+}
+.card-text .ab-gacha {
+  background: linear-gradient(90deg, #ff3fa4, #ffb000);
+}
+.card-text .ab-level {
+  background: #1f9d5a;
+}
+.card-text .kw {
+  font-weight: 900;
+  color: #2a1a8a;
+}
+.card-text .tier {
+  display: inline-block;
+  font: 900 9px/1.3 var(--f-body);
+  padding: 0 3px;
+  border-radius: 3px;
+  color: #fff;
+}
+.tier-N {
+  background: #7d86a8;
+}
+.tier-NR {
+  background: #4f8fb8;
+}
+.tier-R {
+  background: #2aa7d8;
+}
+.tier-SR {
+  background: #d7a400;
+}
+.tier-SSR {
+  background: linear-gradient(90deg, #ff3fa4, #ffb000);
+}
+.card-text .ref {
+  font-weight: 900;
+  color: #8a2a5a;
+}
+
+/* stats */
+.card-atk,
+.card-hp {
+  position: absolute;
+  bottom: -2px;
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  z-index: 3;
+}
+
+.card-atk {
+  left: -2px;
+  background: linear-gradient(160deg, #fff2a0, #ffb21a 50%, #b46a00);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.card-hp {
+  right: -2px;
+  background: linear-gradient(160deg, #ffb3b3, #ff3b4f 50%, #8e0f22);
+  border-radius: 50% 50% 46% 46%;
+  border: 2px solid #000;
+}
+
+.stat-num {
+  position: relative;
+  font: 28px/1 var(--f-display);
+  color: #fff;
+  text-shadow: var(--outline-s);
+}
+
+.card-atk.buffed .stat-num,
+.card-hp.buffed .stat-num {
+  color: var(--mint);
+}
+.card-atk.nerfed .stat-num {
+  color: #ffb3b3;
+}
+.card-hp.damaged .stat-num {
+  color: #ff8a8a;
+}
+
+.card-kws {
+  position: absolute;
+  top: 44px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 3;
+}
+
+.kw-icon {
+  font: 22px/1 var(--f-emoji);
+  filter: drop-shadow(0 2px 0 #000);
+}
+
+.zone-hand .card-kws,
+.zone-detail .card-kws,
+.zone-collection .card-kws {
+  display: none;
+}
+
+.card-badges {
+  position: absolute;
+  left: 8px;
+  top: 48px;
+  z-index: 3;
+}
+
+.badge-evo,
+.badge-super {
+  display: inline-block;
+  font: 22px/1 var(--f-display);
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 2px solid #000;
+  color: #fff;
+  text-shadow: var(--outline-s);
+}
+
+.badge-evo {
+  background: linear-gradient(180deg, #ffe14d, #ff9f1a);
+}
+
+.badge-super {
+  background: linear-gradient(120deg, #ff3fa4, #ffb23f, #38d6ff);
+  background-size: 200% 100%;
+  animation: hue-slide 1.5s linear infinite;
+}
+
+.card-lv {
+  position: absolute;
+  left: 50px;
+  right: 50px;
+  bottom: 6px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.lv-num {
+  font: 16px/1 var(--f-display);
+  color: var(--mint);
+  text-shadow: var(--outline-s);
+}
+
+.lv-bar {
+  width: 100%;
+  height: 7px;
+  border-radius: 4px;
+  background: #000;
+  border: 1px solid #000;
+  overflow: hidden;
+}
+
+.lv-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #3dff95, #ffe14d);
+  transition: width 0.3s;
+}
+
+.card-cd {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid #000;
+  background: radial-gradient(circle at 40% 35%, #fff, #c9c2ff 40%, #5a4bc7);
+  display: grid;
+  place-items: center;
+  font: 24px/1 var(--f-display);
+  color: #fff;
+  text-shadow: var(--outline-s);
+  z-index: 3;
+}
+
+/* ---------------------------------------------------------------- zones */
+.zone-detail .card-art {
+  height: 104px;
+}
+
+.zone-detail .art-glyph {
+  font-size: 72px;
+  top: 54%;
+}
+
+.zone-detail .art-glyph2 {
+  font-size: 30px;
+}
+
+.zone-detail .card-name {
+  top: 113px;
+}
+
+.zone-detail .card-text {
+  display: block;
+  top: 142px;
+  bottom: 34px;
+}
+
+.zone-detail.t-spell .card-text,
+.zone-detail.t-amulet .card-text {
+  bottom: 9px;
+}
+
+.zone-detail .card-type {
+  bottom: auto;
+  top: 13px;
+  left: auto;
+  right: 13px;
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.zone-detail .card-atk,
+.zone-detail .card-hp {
+  width: 40px;
+  height: 40px;
+}
+
+.zone-detail .stat-num {
+  font-size: 22px;
+}
+
+.zone-detail .card-cd {
+  bottom: auto;
+  top: 72px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+}
+
+.zone-board .card-art {
+  height: auto;
+  bottom: 7px;
+  border-radius: 10px;
+}
+
+.zone-board .art-glyph {
+  font-size: 108px;
+  top: 47%;
+}
+
+.zone-board .card-name,
+.zone-board .card-cost,
+.zone-board .card-type,
+.zone-board .card-text {
+  display: none;
+}
+
+.zone-board .card-atk,
+.zone-board .card-hp {
+  width: 64px;
+  height: 64px;
+}
+
+.zone-board .stat-num {
+  font-size: 38px;
+}
+
+.zone-board.t-amulet .art-glyph {
+  top: 50%;
+}
+
+/* keyword visuals on board */
+.zone-board.kw-ward .card-face {
+  box-shadow:
+    0 0 0 5px #9ad9ff,
+    0 0 0 8px #000,
+    0 6px 16px rgba(0, 0, 0, 0.6);
+}
+
+.zone-board.kw-ward::after {
+  content: '🛡️';
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  transform: translateX(-50%);
+  font: 38px/1 var(--f-emoji);
+  filter: drop-shadow(0 3px 0 #000);
+}
+
+.zone-board.kw-ambush .card-inner {
+  opacity: 0.55;
+  filter: saturate(0.4) brightness(0.8);
+}
+
+.zone-board.kw-barrier .card-face::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(120, 220, 255, 0.55) 80%, rgba(255, 255, 255, 0.8) 100%);
+  pointer-events: none;
+}
+
+.zone-board.kw-aura .card-inner {
+  filter: drop-shadow(0 0 10px #fff3a0);
+}
+
+.card.evolved .card-face {
+  box-shadow:
+    0 0 0 4px var(--volt),
+    0 0 26px var(--volt),
+    0 6px 14px rgba(0, 0, 0, 0.55);
+}
+
+@property --ang {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.card.super::before {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border-radius: 22px;
+  background: conic-gradient(from var(--ang), #ff3fa4, #ffe14d, #38d6ff, #3dff95, #a066ff, #ff3fa4);
+  animation: ang-spin 1.6s linear infinite;
+  filter: blur(3px);
+  z-index: -1;
+}
+
+@keyframes ang-spin {
+  to {
+    --ang: 360deg;
+  }
+}
+
+.card.sick.zone-board:not(.kw-storm):not(.kw-rush):not(.evolved):not(.super) .art-glyph {
+  filter: grayscale(0.2) brightness(0.9) drop-shadow(0 6px 0 rgba(0, 0, 0, 0.45));
+}
+
+.card.sick.zone-board:not(.kw-storm):not(.kw-rush):not(.evolved):not(.super):not(.t-amulet) .card-badges::after {
+  content: '💤';
+  display: block;
+  font: 26px/1 var(--f-emoji);
+  animation: float-z 1.6s ease-in-out infinite;
+}
+
+@keyframes float-z {
+  50% {
+    transform: translate(4px, -6px) rotate(10deg);
+  }
+}
+
+/* interaction states */
+.card.playable .card-face {
+  box-shadow:
+    0 0 0 4px var(--mint),
+    0 0 22px var(--mint),
+    0 6px 14px rgba(0, 0, 0, 0.55);
+}
+
+.card.playable {
+  filter: brightness(1.08);
+}
+
+.card.can-attack .card-face {
+  box-shadow:
+    0 0 0 4px #fff27a,
+    0 0 28px #ffd23f,
+    0 6px 14px rgba(0, 0, 0, 0.55);
+  animation: ready-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes ready-pulse {
+  50% {
+    box-shadow:
+      0 0 0 6px #fff27a,
+      0 0 40px #ffd23f,
+      0 6px 14px rgba(0, 0, 0, 0.55);
+  }
+}
+
+.card.can-evolve::before {
+  content: '進化OK';
+  position: absolute;
+  left: 50%;
+  top: -34px;
+  transform: translateX(-50%);
+  font: 18px/1 var(--f-display);
+  color: #fff;
+  background: linear-gradient(120deg, #ff3fa4, #ffb23f);
+  padding: 5px 10px 6px;
+  border-radius: 10px;
+  border: 2px solid #000;
+  text-shadow: var(--outline-s);
+  white-space: nowrap;
+  z-index: 5;
+  animation: float-y 1.2s ease-in-out infinite;
+}
+
+@keyframes float-y {
+  50% {
+    transform: translateX(-50%) translateY(-6px);
+  }
+}
+
+.card.targetable .card-face {
+  box-shadow:
+    0 0 0 5px #ff3b4f,
+    0 0 30px #ff3b4f,
+    0 6px 14px rgba(0, 0, 0, 0.55);
+  animation: target-pulse 0.7s ease-in-out infinite;
+}
+
+@keyframes target-pulse {
+  50% {
+    box-shadow:
+      0 0 0 8px #ff7a88,
+      0 0 46px #ff3b4f,
+      0 6px 14px rgba(0, 0, 0, 0.55);
+  }
+}
+
+.card.aim .card-inner {
+  transform: scale(1.12);
+}
+
+.card.selected .card-face {
+  box-shadow:
+    0 0 0 5px #fff,
+    0 0 36px #fff,
+    0 10px 20px rgba(0, 0, 0, 0.6);
+}
+
+.card.selected .card-inner {
+  transform: translateY(-14px) scale(1.06);
+}
+
+.card.dragging {
+  transition: none !important;
+  filter: drop-shadow(0 26px 30px rgba(0, 0, 0, 0.6));
+  pointer-events: none;
+}
+
+.card.dragging.over-line .card-face {
+  box-shadow:
+    0 0 0 6px var(--mint),
+    0 0 50px var(--mint);
+}
+
+.card.pending {
+  transition: transform 0.25s;
+}
+
+.card.pending .card-face {
+  box-shadow:
+    0 0 0 5px var(--volt),
+    0 0 40px var(--volt);
+}
+
+.card.lunge {
+  transition: transform calc(110ms / var(--spd)) cubic-bezier(0.5, 0, 0.8, 0.4) !important;
+}
+
+.card.leaving {
+  opacity: 0;
+  transform: scale(0.2) !important;
+  transition:
+    opacity 0.3s,
+    transform 0.3s !important;
+}
+
+.card.banished {
+  opacity: 0;
+  filter: brightness(3) blur(4px);
+}
+
+.card.hit .card-inner {
+  animation: card-hit 0.32s ease-out;
+}
+
+@keyframes card-hit {
+  0% {
+    transform: translateX(0);
+    filter: brightness(3) sepia(1) hue-rotate(-50deg) saturate(6);
+  }
+  25% {
+    transform: translateX(-10px) rotate(-3deg);
+  }
+  50% {
+    transform: translateX(8px) rotate(2deg);
+  }
+  75% {
+    transform: translateX(-4px);
+  }
+  100% {
+    transform: translateX(0);
+    filter: none;
+  }
+}
+
+.card.triggered .card-inner {
+  animation: trig 0.45s ease-out;
+}
+
+@keyframes trig {
+  0% {
+    filter: brightness(1);
+  }
+  30% {
+    filter: brightness(2) drop-shadow(0 0 24px #fff);
+    transform: scale(1.08);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+}
+
+.card.buffed-flash .card-inner {
+  animation: buffed 0.4s ease-out;
+}
+
+@keyframes buffed {
+  40% {
+    filter: brightness(1.8) drop-shadow(0 0 18px var(--volt));
+    transform: scale(1.06);
+  }
+}
+
+.card.evo-flash .card-inner {
+  animation: evo-flash 0.7s ease-out;
+}
+
+@keyframes evo-flash {
+  0% {
+    filter: brightness(4);
+    transform: scale(1.3);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+}
+
+.card.flip-up .card-inner {
+  animation: flip-up 0.45s ease-out;
+}
+
+@keyframes flip-up {
+  0% {
+    transform: rotateY(180deg);
+  }
+  100% {
+    transform: rotateY(0);
+  }
+}
+
+/* static collection cards don't animate position */
+.zone-detail,
+.zone-collection,
+.zone-mini {
+  position: relative;
+  transition: none;
+  will-change: auto;
+}

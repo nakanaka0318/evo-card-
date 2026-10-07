@@ -1,3 +1,4 @@
+// Print a turn-by-turn log of one AI vs AI game: npx tsx scripts/log-game.ts swipe gamer
 import { apply, buildDeck, chooseAction, chooseMulligan, def, E, type ClassId } from '../src/engine';
 const a = (process.argv[2] ?? 'swipe') as ClassId, b = (process.argv[3] ?? 'gacha') as ClassId;
 const d0 = buildDeck(a), d1 = buildDeck(b);
