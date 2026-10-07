@@ -419,7 +419,11 @@ export class Battle {
     this.afterAction();
   }
 
+  private finishing = false;
+
   private async finish(): Promise<void> {
+    if (this.finishing) return;
+    this.finishing = true;
     this.busy = true;
     const w = this.s.winner;
     const win = w === PLAYER;

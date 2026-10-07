@@ -144,6 +144,8 @@ class Music {
     const d = this.def;
     if (!ctx || !d || !this.enabled) return;
     if (ctx.state !== 'running') return;
+    // after a suspend (tab hidden, slow unlock) skip ahead instead of bursting old notes
+    if (this.nextTime < ctx.currentTime - 0.1) this.nextTime = ctx.currentTime + 0.05;
     const spb = 60 / d.bpm / 4;
     while (this.nextTime < ctx.currentTime + 0.15) {
       this.schedule(d, this.step, this.nextTime);
