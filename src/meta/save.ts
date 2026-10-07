@@ -174,6 +174,7 @@ function hydrate(raw: unknown): SaveData | null {
   const base = newSave();
   const r = raw as Partial<SaveData>;
   if (r.v !== 1) return null;
+  if (Array.isArray(r.decks)) r.decks = r.decks.map((d) => ({ ...d, name: renameDeck(d.name) }));
   return {
     ...base,
     ...r,
@@ -182,6 +183,20 @@ function hydrate(raw: unknown): SaveData | null {
     missions: { ...base.missions, ...(r.missions ?? {}) },
     login: { ...base.login, ...(r.login ?? {}) },
   } as SaveData;
+}
+
+/** class names were unified (ガチャ→ガチャラー …); carry auto-named decks over */
+const OLD_CLASS_NAMES: [string, string][] = [
+  ['ガチャ', 'ガチャラー'],
+  ['配信', 'ストリーマー'],
+  ['スイーツ', 'シュガラー'],
+  ['スワイプ', 'スワイパー'],
+];
+function renameDeck(name: string): string {
+  for (const [from, to] of OLD_CLASS_NAMES) {
+    if (name === `${from}スターター` || name === `${from}デッキ`) return to + name.slice(from.length);
+  }
+  return name;
 }
 
 type CloudDoc = { get(): Promise<{ exists: boolean; data(): Record<string, unknown> | undefined }>; set(d: Record<string, unknown>): Promise<void> };

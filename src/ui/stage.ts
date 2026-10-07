@@ -44,6 +44,7 @@ class StageImpl {
     this.root.id = 'stage';
     this.screen = h('div.layer.layer-screen');
     this.canvas = h('canvas.layer.layer-fx') as HTMLCanvasElement;
+    this.canvas.style.visibility = 'hidden';
     this.overlay = h('div.layer.layer-overlay');
     this.toasts = h('div.layer.layer-toast');
     this.root.append(this.screen, this.canvas, this.overlay, this.toasts);

@@ -34,7 +34,7 @@ export const gachaScreen: ScreenFn = (root, params) => {
       { style: { '--c1': pick.color, '--c2': pick.color2 } },
       h('div.gb-rays'),
       h('div.gb-art', pick.leaderArt),
-      h('div.gb-text', h('div.gb-kicker', '本日のピックアップ'), h('div.gb-title', `${pick.emoji} ${pick.name}クラス`), h('div.gb-sub', 'ピックアップクラスのカードが出やすい！')),
+      h('div.gb-text', h('div.gb-kicker', '本日のピックアップ'), h('div.gb-title', `${pick.emoji} ${pick.name}`), h('div.gb-sub', 'ピックアップクラスのカードが出やすい！')),
       h('div.gb-pity', h('span', `レジェンド確定まで あと${pityLeft}回`), h('div.gb-pity-bar', h('div.gb-pity-fill', { style: { width: `${(d.pity / PITY) * 100}%` } }))),
     );
     const rateBtn = h('button.rate-btn', { type: 'button', onclick: () => showRates() }, '排出率');

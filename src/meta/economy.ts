@@ -1,4 +1,4 @@
-import { buildDeck, collectible, PLAYABLE_CLASSES, type ClassId, type Difficulty, type PlayerStats } from '../engine';
+import { buildDeck, CLASSES, collectible, PLAYABLE_CLASSES, type ClassId, type Difficulty, type PlayerStats } from '../engine';
 import type { BattleResult } from '../ui/battle/battle';
 import { save, type SaveData } from './save';
 
@@ -168,7 +168,7 @@ export function starterDeck(cls: ClassId, d: SaveData, name?: string) {
   };
   return {
     id: `deck_${cls}_${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`,
-    name: name ?? `${cls === 'gacha' ? 'ガチャ' : cls === 'stream' ? '配信' : cls === 'sweets' ? 'スイーツ' : cls === 'swipe' ? 'スワイプ' : 'ゲーマー'}スターター`,
+    name: name ?? `${CLASSES[cls].name}スターター`,
     cls,
     cards: buildDeck(cls, { owned: d.collection, rand, quality: 0.6 }),
   };

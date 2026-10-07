@@ -35,7 +35,7 @@ export const perfConfig = {
 /** animations that tell the player something (can act, can target, low HP…) */
 const INDICATORS = new Set(['hp-low', 'pulse-glow', 'rank-btn', 'lethal-pop']);
 /** compositor-only, but big enough to be worth dropping in the lighter modes */
-const HEAVY_TRANSFORM = new Set(['fever-stripes']);
+const HEAVY_TRANSFORM = new Set(['fever-stripes', 'spot-drift']);
 const PAINT_PROPS = /(^|-)(shadow|filter|background|color|clip-path|mask|stroke|fill|width|height|left|top|right|bottom|outline|border|font|spacing|padding|margin)|^--/;
 
 export function isTouchDevice(): boolean {

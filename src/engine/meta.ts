@@ -37,12 +37,12 @@ export const CLASSES: Record<ClassId, ClassMeta> = {
   },
   gacha: {
     id: 'gacha',
-    name: 'ガチャ',
+    name: 'ガチャラー',
     tag: '一発逆転',
     emoji: '🎰',
     color: '#ffc531',
     color2: '#ff3fa4',
-    leaderName: 'ガチャ姫 ルーレ',
+    leaderName: 'ガチャラー ルーレ',
     leaderArt: '👸',
     mechanic: 'ガチャ・運気',
     mechanicDesc:
@@ -60,12 +60,12 @@ export const CLASSES: Record<ClassId, ClassMeta> = {
   },
   stream: {
     id: 'stream',
-    name: '配信',
-    tag: 'バズり',
+    name: 'ストリーマー',
+    tag: '拡散爆発',
     emoji: '📱',
     color: '#ff4f9a',
     color2: '#27d8ff',
-    leaderName: '配信者 バズリン',
+    leaderName: 'ストリーマー バズリン',
     leaderArt: '🦊',
     mechanic: 'いいね・バズ',
     mechanicDesc:
@@ -83,12 +83,12 @@ export const CLASSES: Record<ClassId, ClassMeta> = {
   },
   sweets: {
     id: 'sweets',
-    name: 'スイーツ',
-    tag: '回復と成長',
+    name: 'シュガラー',
+    tag: '回復増強',
     emoji: '🍰',
     color: '#ff9f6e',
     color2: '#7ff0c8',
-    leaderName: 'パティシエ アマミ',
+    leaderName: 'シュガラー アマミ',
     leaderArt: '🐰',
     mechanic: '糖度・シュガーハイ',
     mechanicDesc:
@@ -106,8 +106,8 @@ export const CLASSES: Record<ClassId, ClassMeta> = {
   },
   swipe: {
     id: 'swipe',
-    name: 'スワイプ',
-    tag: '秒速コンボ',
+    name: 'スワイパー',
+    tag: '秒速連打',
     emoji: '⚡',
     color: '#ffe53d',
     color2: '#25e0ff',
@@ -130,7 +130,7 @@ export const CLASSES: Record<ClassId, ClassMeta> = {
   gamer: {
     id: 'gamer',
     name: 'ゲーマー',
-    tag: 'レベル上げ',
+    tag: '育成無双',
     emoji: '🎮',
     color: '#3dff95',
     color2: '#a066ff',

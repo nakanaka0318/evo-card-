@@ -665,6 +665,12 @@
   font: 30px/1 var(--f-display);
   text-shadow: var(--outline-s);
   color: #fff;
+  white-space: nowrap;
+}
+
+.landscape .cp-name {
+  font-size: 26px;
+  letter-spacing: -0.03em;
 }
 
 .cp-tag {

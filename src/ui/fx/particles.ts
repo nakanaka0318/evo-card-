@@ -42,6 +42,8 @@ export interface BurstOpts {
 
 /** sprite supersampling so cached glyphs stay sharp on hi-dpi canvases */
 const SPRITE_RES = 2;
+const GLOW_RES = 64;
+const ADDITIVE = new Set<PType>(['dot', 'orb', 'spark', 'star', 'ring', 'glow']);
 
 class ParticleSystem {
   private list: P[] = [];
@@ -53,6 +55,7 @@ class ParticleSystem {
   maxCount = 1400;
   private lines = 0;
   private sprites = new Map<string, HTMLCanvasElement>();
+  private glows = new Map<string, HTMLCanvasElement>();
   private lineColor = '#fff';
   private lineT = 0;
 
@@ -235,6 +238,8 @@ class ParticleSystem {
 
   private start(): void {
     if (this.raf) return;
+    // a hidden canvas costs nothing to composite; a transparent visible one is a full-screen layer every frame
+    stage.canvas.style.visibility = '';
     this.last = performance.now();
     this.raf = requestAnimationFrame((t) => this.frame(t));
   }
@@ -278,15 +283,18 @@ class ParticleSystem {
       p.x += p.vx * f;
       p.y += p.vy * f;
       p.rot += p.vr * f;
-      this.draw(ctx, p);
+      this.draw(ctx, p, k);
       alive.push(p);
     }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
     this.list = alive;
     if (this.list.length || this.lines > 0) this.raf = requestAnimationFrame((tt) => this.frame(tt));
     else {
       this.raf = 0;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, stage.canvas.width, stage.canvas.height);
+      stage.canvas.style.visibility = 'hidden';
     }
   }
 
@@ -336,29 +344,46 @@ class ParticleSystem {
     return c;
   }
 
-  private draw(ctx: CanvasRenderingContext2D, p: P): void {
+  /** radial-gradient discs baked once per colour: building a gradient per particle per frame was the hot path */
+  private glowSprite(color: string, core: boolean): HTMLCanvasElement {
+    const key = `${core ? 'c' : 'g'}${color}`;
+    let c = this.glows.get(key);
+    if (!c) {
+      if (this.glows.size > 80) this.glows.clear();
+      c = document.createElement('canvas');
+      c.width = c.height = GLOW_RES;
+      const g = c.getContext('2d');
+      if (g) {
+        const half = GLOW_RES / 2;
+        const grad = g.createRadialGradient(half, half, 0, half, half, half);
+        if (core) {
+          grad.addColorStop(0, '#fff');
+          grad.addColorStop(0.3, color);
+        } else grad.addColorStop(0, color);
+        grad.addColorStop(1, 'transparent');
+        g.fillStyle = grad;
+        g.fillRect(0, 0, GLOW_RES, GLOW_RES);
+      }
+      this.glows.set(key, c);
+    }
+    return c;
+  }
+
+  private draw(ctx: CanvasRenderingContext2D, p: P, scale: number): void {
     const k = p.life / p.max;
     const a = 1 - k;
-    ctx.save();
+    // absolute transform per particle instead of save()/restore()
+    ctx.setTransform(scale, 0, 0, scale, p.x * scale, p.y * scale);
     ctx.globalAlpha = Math.max(0, a);
-    ctx.translate(p.x, p.y);
+    ctx.globalCompositeOperation = ADDITIVE.has(p.type) ? 'lighter' : 'source-over';
     switch (p.type) {
       case 'dot':
       case 'orb': {
-        ctx.globalCompositeOperation = 'lighter';
-        const r = Math.max(0.1, p.size * (p.type === 'orb' ? 1 : a));
-        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 2);
-        g.addColorStop(0, '#fff');
-        g.addColorStop(0.3, p.color);
-        g.addColorStop(1, 'transparent');
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(0, 0, r * 2, 0, Math.PI * 2);
-        ctx.fill();
+        const r = Math.max(0.1, p.size * (p.type === 'orb' ? 1 : a)) * 2;
+        ctx.drawImage(this.glowSprite(p.color, true), -r, -r, r * 2, r * 2);
         break;
       }
       case 'spark': {
-        ctx.globalCompositeOperation = 'lighter';
         ctx.rotate(Math.atan2(p.vy, p.vx));
         const len = p.size * 2 + Math.hypot(p.vx, p.vy) * 2.5;
         ctx.fillStyle = p.color;
@@ -386,7 +411,6 @@ class ParticleSystem {
         break;
       }
       case 'star': {
-        ctx.globalCompositeOperation = 'lighter';
         ctx.rotate(p.rot);
         ctx.fillStyle = p.color;
         const s = p.size;
@@ -408,7 +432,6 @@ class ParticleSystem {
         break;
       }
       case 'ring': {
-        ctx.globalCompositeOperation = 'lighter';
         const r = Math.max(0.1, p.size * (0.2 + 0.8 * (1 - Math.pow(1 - k, 3))));
         ctx.strokeStyle = p.color;
         ctx.lineWidth = (p.w ?? 10) * a;
@@ -418,13 +441,8 @@ class ParticleSystem {
         break;
       }
       case 'glow': {
-        ctx.globalCompositeOperation = 'lighter';
         const r = Math.max(0.1, p.size * (0.6 + 0.4 * k));
-        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
-        g.addColorStop(0, p.color);
-        g.addColorStop(1, 'transparent');
-        ctx.fillStyle = g;
-        ctx.fillRect(-r, -r, r * 2, r * 2);
+        ctx.drawImage(this.glowSprite(p.color, false), -r, -r, r * 2, r * 2);
         break;
       }
       case 'coin':
@@ -439,7 +457,6 @@ class ParticleSystem {
       case 'line':
         break;
     }
-    ctx.restore();
   }
 }
 

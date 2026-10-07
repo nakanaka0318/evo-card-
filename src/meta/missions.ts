@@ -18,7 +18,7 @@ export interface MissionDef {
 
 const classWin = (cls: ClassId): MissionDef => ({
   id: `win_${cls}`,
-  text: `${CLASSES[cls].name}クラスで1勝する`,
+  text: `${CLASSES[cls].name}で1勝する`,
   goal: 1,
   reward: { coins: 200 },
   xp: 120,

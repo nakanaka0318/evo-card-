@@ -1123,9 +1123,9 @@ export class Battle {
     big.classList.add('zone-detail');
     const ov = h(
       'div.inspect',
-      { onclick: (e: Event) => { if (e.target === ov) close(); } },
       h('div.inspect-body', h('div.inspect-card', big), h('div.inspect-side', h('div.inspect-flavor', d.flavor ?? ''), h('div.detail-gloss', glossary(d).map((g) => h('div.gloss', h('b', g.name), h('span', g.desc)))), h('div.inspect-btns', btns))),
     );
+    closeOnTap(ov, close, true);
     stage.overlay.append(ov);
     fitCardText(ov);
   }
@@ -1141,7 +1141,6 @@ export class Battle {
     };
     const ov = h(
       'div.inspect',
-      { onclick: () => close() },
       h(
         'div.inspect-body.leader-info',
         h('div.li-art', { style: { '--c1': cm.color, '--c2': cm.color2 } }, side === ENEMY && this.cfg.enemyArt ? this.cfg.enemyArt : cm.leaderArt),
@@ -1154,6 +1153,7 @@ export class Battle {
         ),
       ),
     );
+    closeOnTap(ov, close, false);
     stage.overlay.append(ov);
   }
 
@@ -1214,7 +1214,6 @@ export class Battle {
     };
     const ov = h(
       'div.inspect',
-      { onclick: (e: Event) => { if (e.target === ov) close(); } },
       h(
         'div.menu-panel',
         h('div.menu-title', 'メニュー'),
@@ -1234,6 +1233,7 @@ export class Battle {
         h('button.btn.btn-hot', { type: 'button', onclick: () => { audio.play('back'); close(); } }, 'バトルに戻る'),
       ),
     );
+    closeOnTap(ov, close, true);
     stage.overlay.append(ov);
   }
 
@@ -1347,4 +1347,20 @@ export function isPrism(id: string): boolean {
 function perfLabel(): string {
   const i = PERF_INFO[save.data.settings.perf];
   return `動作：${i.emoji}${i.name}`;
+}
+
+/**
+ * Close an overlay when tapped (`backdropOnly`: only on its dimmed backdrop).
+ * Overlays open on pointerdown/up, so the click that follows the opening tap
+ * lands on the fresh overlay — only count taps that also *started* on it.
+ */
+function closeOnTap(ov: HTMLElement, close: () => void, backdropOnly: boolean): void {
+  let armed = false;
+  ov.addEventListener('pointerdown', (e) => {
+    armed = !backdropOnly || e.target === ov;
+  });
+  ov.addEventListener('click', (e) => {
+    if (armed && (!backdropOnly || e.target === ov)) close();
+    armed = false;
+  });
 }
