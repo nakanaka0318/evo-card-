@@ -1,0 +1,74 @@
+import { follower, spell } from './util';
+
+export const TOKENS = [
+  follower({
+    id: 't_star',
+    name: 'SSRスター',
+    cls: 'gacha',
+    cost: 3,
+    rarity: 'gold',
+    atk: 3,
+    hp: 3,
+    kw: ['ward'],
+    art: '⭐',
+    text: '《守護》',
+    flavor: '排出率0.6%の輝き。',
+    token: true,
+  }),
+  follower({
+    id: 't_sakura',
+    name: 'サクラ',
+    cls: 'stream',
+    cost: 1,
+    rarity: 'bronze',
+    atk: 1,
+    hp: 1,
+    art: '🌸',
+    text: '',
+    flavor: '「わこつ〜」しか言わない。',
+    token: true,
+  }),
+  spell({
+    id: 't_clip',
+    name: '切り抜き動画',
+    cls: 'stream',
+    cost: 0,
+    rarity: 'bronze',
+    art: '✂️',
+    text: 'ランダムな相手のフォロワー1体に1ダメージ。いいね+1',
+    flavor: '本編より伸びる。',
+    token: true,
+    spell: (c) => {
+      c.dmg(c.pick(c.enemies()), 1);
+      c.likes(1);
+    },
+  }),
+  spell({
+    id: 't_candy',
+    name: 'キャンディ',
+    cls: 'sweets',
+    cost: 0,
+    rarity: 'bronze',
+    art: '🍬',
+    text: '自分のリーダーを2回復',
+    flavor: 'ポケットに常備。',
+    token: true,
+    spell: (c) => {
+      c.heal(2);
+    },
+  }),
+  follower({
+    id: 't_dancer',
+    name: 'バックダンサー',
+    cls: 'swipe',
+    cost: 1,
+    rarity: 'bronze',
+    atk: 1,
+    hp: 1,
+    kw: ['rush'],
+    art: '💃',
+    text: '《突進》',
+    flavor: '15秒だけ全力。',
+    token: true,
+  }),
+];
