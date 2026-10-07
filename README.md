@@ -13,6 +13,8 @@ npm run build      # dist/dev.html（単一ファイル。ダブルクリック�
 npm run site       # ビルドして ./index.html と ./docs/index.html を更新（GitHub Pages 用）
 npm test           # ルールエンジンのテスト
 npm run sim -- 10  # AI同士の自動対戦でクラス勝率を確認
+npx tsx scripts/duel.ts 40 hard normal   # AIの強さ比較（同じデッキ・先後入れ替え）
+npx tsx scripts/cardpower.ts 400 0       # カード強さの計測（NPCデッキ構築用 src/engine/cardpower.ts の元データ）
 ```
 
 **ブラウザで遊ぶ:** https://nakanaka0318.github.io/evo-card-/
@@ -70,7 +72,7 @@ GitHub Pages は「Deploy from a branch」（`/ (root)` でも `/docs` でも可
 ## 構成
 
 ```
-src/engine/   ルール本体（純データの状態 + カード定義のフック関数）、AI（ビームサーチ）
+src/engine/   ルール本体（純データの状態 + カード定義のフック関数）、AI（ビームサーチ＋相手ターン読み＋乱数の複数サンプル）、NPCデッキはシミュレーションで測ったカード強さで構築
 src/ui/       ステージ（横 1280×720 / 縦 720×1280 基準で拡縮）、バトル画面、演出、各画面
 src/audio/    WebAudio の効果音とチップチューン BGM シーケンサ
 src/meta/     セーブ、経済、ガチャ、ミッション、実績、ストーリー

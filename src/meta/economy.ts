@@ -64,11 +64,11 @@ export interface RankTier {
 
 export const RANKS: RankTier[] = [
   { name: 'ビギナー', min: 0, emblem: '🌱', color: '#7ff0c8', diff: 'easy' },
-  { name: 'ブロンズ', min: 300, emblem: '🥉', color: '#d08a4e', diff: 'easy' },
+  { name: 'ブロンズ', min: 300, emblem: '🥉', color: '#d08a4e', diff: 'normal' },
   { name: 'シルバー', min: 800, emblem: '🥈', color: '#cfd8e8', diff: 'normal' },
-  { name: 'ゴールド', min: 1500, emblem: '🥇', color: '#ffd23f', diff: 'normal' },
+  { name: 'ゴールド', min: 1500, emblem: '🥇', color: '#ffd23f', diff: 'hard' },
   { name: 'プラチナ', min: 2500, emblem: '💠', color: '#7fe7ff', diff: 'hard' },
-  { name: 'ダイヤ', min: 3800, emblem: '💎', color: '#9bb8ff', diff: 'hard' },
+  { name: 'ダイヤ', min: 3800, emblem: '💎', color: '#9bb8ff', diff: 'oni' },
   { name: 'マスター', min: 5500, emblem: '👑', color: '#ff5fd2', diff: 'oni' },
   { name: 'ドパマスター', min: 8000, emblem: '🌌', color: '#ffe14d', diff: 'oni' },
 ];

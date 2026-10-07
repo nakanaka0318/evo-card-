@@ -1,3 +1,4 @@
+import { CARD_POWER } from './cardpower';
 import { collectible, def } from './defs';
 import { RULES } from './rules';
 import type { CardDef, ClassId } from './types';
@@ -19,6 +20,8 @@ export interface DeckOptions {
   quality?: number;
   /** extra card ids to prioritise */
   favor?: string[];
+  /** NPC decks: weigh simulated card strength (scaled by quality) */
+  smart?: boolean;
 }
 
 function bucket(cost: number): number {
@@ -38,7 +41,8 @@ export function buildDeck(cls: ClassId, opts: DeckOptions = {}): string[] {
       let sc = 3 + (RARITY_SCORE[d.rarity] - 3) * quality;
       if (d.cls === cls) sc += 2.2;
       if (favor.has(d.id)) sc += 5;
-      sc += rand() * 2.5;
+      if (opts.smart) sc += (CARD_POWER[d.id] ?? 0) * 5 * quality;
+      sc += rand() * (opts.smart ? 2.5 - 1.5 * quality : 2.5);
       return { d, sc };
     })
     .sort((a, b) => b.sc - a.sc);

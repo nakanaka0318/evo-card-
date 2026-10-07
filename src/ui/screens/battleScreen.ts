@@ -33,7 +33,8 @@ export const battleScreen: ScreenFn = (root, params) => {
     cfg = {
       playerDeck: me.cards,
       playerCls: me.cls,
-      enemyDeck: buildDeck(st.cls, { quality: st.quality, favor: st.favor }),
+      // the tutorial stays gentle; every other NPC builds from the strongest cards
+      enemyDeck: st.id === '1-1' ? buildDeck(st.cls, { quality: st.quality, favor: st.favor }) : buildDeck(st.cls, { quality: Math.min(1, st.quality + 0.3), favor: st.favor, smart: true }),
       enemyCls: st.cls,
       enemyName: st.enemy,
       enemyArt: st.art,
@@ -51,7 +52,7 @@ export const battleScreen: ScreenFn = (root, params) => {
     cfg = {
       playerDeck: me.cards,
       playerCls: me.cls,
-      enemyDeck: buildDeck(cls, { quality: Math.min(1, 0.4 + r.i * 0.1) }),
+      enemyDeck: buildDeck(cls, { quality: Math.min(1, 0.6 + r.i * 0.1), smart: true }),
       enemyCls: cls,
       enemyName: HANDLES[Math.floor(Math.random() * HANDLES.length)],
       difficulty: r.cur.diff,
@@ -63,7 +64,7 @@ export const battleScreen: ScreenFn = (root, params) => {
     cfg = {
       playerDeck: me.cards,
       playerCls: me.cls,
-      enemyDeck: buildDeck(cls, { quality: diff === 'easy' ? 0.3 : diff === 'normal' ? 0.6 : 1 }),
+      enemyDeck: buildDeck(cls, { quality: diff === 'easy' ? 0.5 : diff === 'normal' ? 0.8 : 1, smart: true }),
       enemyCls: cls,
       enemyName: `${CLASSES[cls].leaderName}`,
       difficulty: diff,

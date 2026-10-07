@@ -10,14 +10,35 @@ export interface AiProfile {
   difficulty: Difficulty;
   /** weight on enemy leader HP (aggression) */
   aggro?: number;
+  /** override search settings (tuning / tests) */
+  tune?: Partial<SearchCfg>;
 }
 
-const DIFF = {
-  easy: { beam: 1, depth: 1, noise: 5, budget: 200, reply: 0 },
-  normal: { beam: 3, depth: 4, noise: 1.2, budget: 700, reply: 0 },
-  hard: { beam: 5, depth: 6, noise: 0, budget: 1600, reply: 2 },
-  oni: { beam: 7, depth: 8, noise: 0, budget: 3000, reply: 4 },
-} as const;
+interface SearchCfg {
+  beam: number;
+  depth: number;
+  noise: number;
+  budget: number;
+  reply: number;
+  /** random-outcome samples for first actions */
+  samples: number;
+}
+
+const DIFF: Record<Difficulty, SearchCfg> = {
+  easy: { beam: 2, depth: 3, noise: 2.5, budget: 400, reply: 0, samples: 1 },
+  normal: { beam: 4, depth: 6, noise: 0.3, budget: 1200, reply: 2, samples: 3 },
+  hard: { beam: 6, depth: 8, noise: 0, budget: 2400, reply: 4, samples: 4 },
+  oni: { beam: 8, depth: 10, noise: 0, budget: 4000, reply: 6, samples: 5 },
+};
+
+/** evaluation weights (exported so tuning scripts can try variations) */
+export const W = {
+  hand: 1.1,
+  oppHand: 0.6,
+  lethalThreat: 18,
+  threat: 0.25,
+  myLethal: 6,
+};
 
 function hpVal(h: number): number {
   if (h <= 0) return -60;
@@ -71,7 +92,7 @@ export function evaluate(s: GameState, me: Side, aggro = 1): number {
   let v = 0;
   v += hpVal(P.hp) - hpVal(O.hp) * aggro;
   v += boardVal(s, P) - boardVal(s, O);
-  v += Math.min(P.hand.length, RULES.handMax) * 1.1 - Math.min(O.hand.length, RULES.handMax) * 0.6;
+  v += Math.min(P.hand.length, RULES.handMax) * W.hand - Math.min(O.hand.length, RULES.handMax) * W.oppHand;
   v += P.ep * 1.6 + P.sep * 2.4;
   v += P.dopa * 0.2 + (P.dopa >= RULES.dopaMax && !P.fever ? 1.5 : 0);
   v += Math.min(P.likes, 15) * 0.25 + P.luck * 0.35 + P.kakuhen * 1.2 + Math.min(P.sweet, 25) * 0.06;
@@ -80,11 +101,11 @@ export function evaluate(s: GameState, me: Side, aggro = 1): number {
   const oppWards = O.board.some((c) => E.has(c, 'ward') && E.alive(c));
   const threat = faceThreat(s, O);
   if (!myWards) {
-    if (threat >= P.hp) v -= 18;
-    else v -= threat * 0.25;
+    if (threat >= P.hp) v -= W.lethalThreat;
+    else v -= threat * W.threat;
   }
   const mine = faceThreat(s, P);
-  if (!oppWards && mine >= O.hp) v += 6;
+  if (!oppWards && mine >= O.hp) v += W.myLethal;
   if (P.deck.length <= 2) v -= (3 - P.deck.length) * 4;
   return v;
 }
@@ -129,7 +150,7 @@ function afterReply(st: GameState, me: Side, aggro: number): number {
 /** Choose the next action for the active player. */
 export function chooseAction(s: GameState, prof: AiProfile): Action {
   const me = s.active;
-  const cfg = DIFF[prof.difficulty];
+  const cfg = { ...DIFF[prof.difficulty], ...prof.tune };
   const aggro = prof.aggro ?? 1;
   const root = prepRoot(s);
   const baseV = evaluate(root, me, aggro);
@@ -148,6 +169,17 @@ export function chooseAction(s: GameState, prof: AiProfile): Action {
         const c = cloneForSim(node.st, false);
         apply(c, a);
         let v = evaluate(c, me, aggro);
+        if (depth === 0 && cfg.samples > 1) {
+          // random effects (gacha, dice, random pings): average a few rolls so
+          // the plan isn't chosen for one lucky simulated outcome
+          for (let k = 1; k < cfg.samples; k++) {
+            const alt = cloneForSim(node.st, false);
+            alt.rng = (alt.rng + k * 0x9e3779b9) >>> 0;
+            apply(alt, a);
+            v += evaluate(alt, me, aggro);
+          }
+          v /= cfg.samples;
+        }
         if (cfg.noise && depth === 0) v += (Math.random() - 0.5) * cfg.noise;
         const n: Node = { st: c, seq: [...node.seq, a], v };
         next.push(n);
@@ -167,12 +199,14 @@ export function chooseAction(s: GameState, prof: AiProfile): Action {
   if (best.v >= 1e6) return best.seq[0];
   if (cfg.reply && byFirst.size) {
     // re-score the top candidate plans by the opponent's best reply
+    // blend with the static score: the reply alone over-rewards passivity
+    // (cards kept in hand are always "safe" from the opponent's turn)
     const cands = [...byFirst.values()].sort((a, b) => b.v - a.v).slice(0, cfg.reply);
     let pick: Action = { t: 'end' };
-    let pv = afterReply(root, me, aggro) + 0.05;
+    let pv = (baseV + afterReply(root, me, aggro)) / 2 + 0.05;
     for (const n of cands) {
       if (n.st.phase === 'over') continue;
-      const v = afterReply(n.st, me, aggro);
+      const v = (n.v + afterReply(n.st, me, aggro)) / 2;
       if (v > pv) {
         pv = v;
         pick = n.seq[0];
