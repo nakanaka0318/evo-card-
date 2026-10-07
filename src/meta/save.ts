@@ -23,6 +23,8 @@ export interface Settings {
   vibrate: boolean;
   hints: boolean;
   autoEnd: boolean;
+  /** 動作モード: 0 = サクサク, 1 = バランス, 2 = キラキラ */
+  perf: 0 | 1 | 2;
 }
 
 export interface LifetimeStats {
@@ -86,6 +88,7 @@ export interface SaveData {
 
 export function defaultSettings(): Settings {
   const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const touch = typeof window !== 'undefined' && (!!window.matchMedia?.('(pointer: coarse)').matches || 'ontouchstart' in window);
   return {
     sfx: 0.8,
     bgm: 0.5,
@@ -95,6 +98,7 @@ export function defaultSettings(): Settings {
     vibrate: true,
     hints: true,
     autoEnd: false,
+    perf: touch ? 1 : 2,
   };
 }
 

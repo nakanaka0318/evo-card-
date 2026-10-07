@@ -31,6 +31,8 @@ class StageImpl {
   oy = 0;
   portrait = false;
   dpr = 1;
+  /** effect-canvas resolution cap (動作モード) */
+  dprCap = 2;
   /** menus use a denser (larger-looking) stage on phones held upright */
   mode: 'battle' | 'menu' = 'menu';
   private fns = new Set<ResizeFn>();
@@ -81,7 +83,7 @@ class StageImpl {
     this.root.classList.toggle('landscape', !portrait);
     this.root.style.setProperty('--sw', `${w}px`);
     this.root.style.setProperty('--sh', `${hh}px`);
-    this.dpr = Math.min(2, window.devicePixelRatio || 1);
+    this.dpr = Math.min(this.dprCap, window.devicePixelRatio || 1);
     const cw = Math.round(w * scale * this.dpr);
     const ch = Math.round(hh * scale * this.dpr);
     if (this.canvas.width !== cw || this.canvas.height !== ch) {
@@ -89,6 +91,12 @@ class StageImpl {
       this.canvas.height = ch;
     }
     if (changed) for (const f of this.fns) f();
+  }
+
+  setDprCap(cap: number): void {
+    if (this.dprCap === cap) return;
+    this.dprCap = cap;
+    if (this.root) this.fit();
   }
 
   setMode(mode: 'battle' | 'menu'): void {

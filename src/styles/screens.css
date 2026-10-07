@@ -3211,3 +3211,162 @@
   text-shadow: var(--outline);
   animation: slam-in 0.3s cubic-bezier(0.2, 1.6, 0.4, 1) both;
 }
+
+/* ---------------------------------------------------------------- 動作モード (perf) */
+.perf-opts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.perf-opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px 12px;
+  border-radius: 18px;
+  border: 3px solid #000;
+  background: linear-gradient(180deg, #2a2166, #17123a);
+  color: var(--paper);
+  box-shadow: 0 5px 0 #000;
+  transition: transform 0.15s;
+}
+
+.perf-opt:active {
+  transform: translateY(3px);
+}
+
+.perf-opt.on {
+  background: linear-gradient(180deg, #ffe14d, #ffb000);
+  color: #1a1238;
+}
+
+.perf-emoji {
+  font: 30px/1 var(--f-emoji);
+}
+
+.perf-name {
+  font: 20px/1.1 var(--f-display);
+}
+
+.perf-opt:not(.on) .perf-name {
+  text-shadow: var(--outline-s);
+}
+
+.perf-desc {
+  font: 700 12px/1.35 var(--f-body);
+  color: var(--mute);
+  text-align: center;
+}
+
+.perf-opt.on .perf-desc {
+  color: #3a2a00;
+}
+
+.perf-rec {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-4deg);
+  padding: 3px 9px 4px;
+  border-radius: 9px;
+  border: 2px solid #000;
+  background: var(--hot);
+  color: #fff;
+  font: 900 12px/1 var(--f-body);
+  white-space: nowrap;
+}
+
+.perf-pick {
+  width: min(640px, 100%);
+}
+
+.perf-holder {
+  width: 100%;
+  padding-top: 8px;
+}
+
+.perf-meter {
+  font: 700 13px/1.4 var(--f-body);
+  color: var(--mute);
+  text-align: center;
+  min-height: 18px;
+}
+
+.portrait .perf-opts {
+  grid-template-columns: 1fr;
+}
+
+.portrait .perf-opt {
+  display: grid;
+  grid-template-columns: 44px auto 1fr;
+  align-items: center;
+  column-gap: 10px;
+  text-align: left;
+  padding: 12px 14px;
+}
+
+.portrait .perf-desc {
+  text-align: left;
+}
+
+.set-row-col {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.title-gear {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px 8px 10px;
+  border-radius: 14px;
+  border: 3px solid #000;
+  background: rgba(23, 18, 58, 0.85);
+  color: #fff;
+  box-shadow: 0 4px 0 #000;
+  font: 900 14px/1 var(--f-body);
+}
+
+.tg-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.qs-modal {
+  width: min(620px, 100%);
+}
+
+.qs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.qs-h {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+  font: 18px/1 var(--f-display);
+  color: var(--volt);
+  text-shadow: var(--outline-s);
+}
+
+.qs-h small {
+  font: 700 12px/1 var(--f-body);
+  color: var(--mute);
+  text-shadow: none;
+}
+
+.qs .perf-opts {
+  padding-top: 6px;
+}

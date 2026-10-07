@@ -2,10 +2,11 @@ import { audio } from '../../audio/audio';
 import { music } from '../../audio/music';
 import { CLASSES, PLAYABLE_CLASSES } from '../../engine';
 import { save } from '../../meta/save';
-import { btn, confirmModal, topBar } from '../common';
+import { btn, confirmModal, modal, topBar } from '../common';
 import { fmtNum, h } from '../dom';
 import { fxConfig, toast } from '../fx/fx';
 import { particles } from '../fx/particles';
+import { applyPerf, PERF_INFO, type PerfLevel } from '../perf';
 import { go, type ScreenFn } from '../router';
 
 export function applySettings(): void {
@@ -18,6 +19,67 @@ export function applySettings(): void {
   particles.intensity = s.intensity;
   document.documentElement.classList.toggle('calm', s.intensity === 0);
   document.documentElement.classList.toggle('flash-reduce', s.flashReduce);
+  applyPerf(s.perf);
+}
+
+export function setPerf(level: PerfLevel): void {
+  save.update((d) => {
+    d.settings.perf = level;
+    d.flags.perfChosen = true;
+  });
+  applySettings();
+}
+
+/** the three 動作モード cards; `recommended` gets an おすすめ badge */
+export function perfChoices(onPick?: (l: PerfLevel) => void, recommended?: PerfLevel): HTMLElement {
+  const wrap = h('div.perf-opts');
+  const draw = () => {
+    const cur = save.data.settings.perf;
+    wrap.replaceChildren(
+      ...([0, 1, 2] as PerfLevel[]).map((l) =>
+        h(
+          `button.perf-opt${cur === l ? '.on' : ''}`,
+          {
+            type: 'button',
+            'data-perf': String(l),
+            'aria-pressed': String(cur === l),
+            onclick: () => {
+              setPerf(l);
+              audio.play('tap');
+              draw();
+              onPick?.(l);
+            },
+          },
+          recommended === l ? h('span.perf-rec', 'おすすめ') : null,
+          h('span.perf-emoji', PERF_INFO[l].emoji),
+          h('span.perf-name', PERF_INFO[l].name),
+          h('span.perf-desc', PERF_INFO[l].desc),
+        ),
+      ),
+    );
+  };
+  draw();
+  return wrap;
+}
+
+/** small settings sheet reachable from the title screen, before any tutorial */
+export function quickSettingsModal(): void {
+  const body = h('div.qs');
+  const draw = () => {
+    const s = save.data.settings;
+    const chip = <T,>(cur: T, v: T, label: string, set: (v: T) => void) =>
+      h(`button.f-chip${cur === v ? '.on' : ''}`, { type: 'button', onclick: () => { save.update(() => set(v)); applySettings(); audio.play('tap'); draw(); } }, label);
+    body.replaceChildren(
+      h('div.qs-h', '動作モード', h('small', 'カクつく時は「サクサク」')),
+      perfChoices(),
+      h('div.qs-h', 'ドパ度', h('small', '演出の派手さ')),
+      h('div.set-chips', chip(s.intensity, 0, '控えめ', (v) => (save.data.settings.intensity = v)), chip(s.intensity, 1, '普通', (v) => (save.data.settings.intensity = v)), chip(s.intensity, 2, 'MAX', (v) => (save.data.settings.intensity = v))),
+      h('div.qs-h', 'フラッシュ軽減', h('small', '画面の点滅を弱くする')),
+      h('div.set-chips', chip(s.flashReduce, false, 'OFF', (v) => (save.data.settings.flashReduce = v)), chip(s.flashReduce, true, 'ON', (v) => (save.data.settings.flashReduce = v))),
+    );
+  };
+  draw();
+  modal(body, { title: 'かんたん設定', cls: 'qs-modal' });
 }
 
 export const settingsScreen: ScreenFn = (root) => {
@@ -69,6 +131,7 @@ export const settingsScreen: ScreenFn = (root) => {
       h(
         'div.set-section',
         h('div.set-h', '演出'),
+        h('div.set-row.set-row-col', h('span.set-label', '動作モード', h('small', 'スマホでカクつく時は「サクサク」にすると軽くなる')), perfChoices()),
         choice('ドパ度', [[0, '控えめ'], [1, '普通'], [2, 'MAX']], s.intensity, (v) => (save.data.settings.intensity = v)),
         choice('バトル速度', [[1, 'x1'], [1.5, 'x1.5'], [2, 'x2'], [3, 'x3']], s.speed, (v) => (save.data.settings.speed = v)),
         toggle('フラッシュ軽減', '画面の点滅を弱くする', s.flashReduce, (v) => (save.data.settings.flashReduce = v)),

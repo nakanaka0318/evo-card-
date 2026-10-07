@@ -40,12 +40,19 @@ export interface BurstOpts {
   glyph?: string;
 }
 
+/** sprite supersampling so cached glyphs stay sharp on hi-dpi canvases */
+const SPRITE_RES = 2;
+
 class ParticleSystem {
   private list: P[] = [];
   private raf = 0;
   private last = 0;
   intensity = 1;
+  /** 動作モード multiplier on particle counts */
+  quality = 1;
+  maxCount = 1400;
   private lines = 0;
+  private sprites = new Map<string, HTMLCanvasElement>();
   private lineColor = '#fff';
   private lineT = 0;
 
@@ -54,11 +61,11 @@ class ParticleSystem {
   }
 
   private scaleN(n: number): number {
-    return Math.max(1, Math.round(n * (this.intensity === 0 ? 0.3 : this.intensity === 1 ? 0.65 : 1)));
+    return Math.max(1, Math.round(n * this.quality * (this.intensity === 0 ? 0.3 : this.intensity === 1 ? 0.65 : 1)));
   }
 
   private push(p: Partial<P> & { x: number; y: number }): void {
-    if (this.list.length > 1400) return;
+    if (this.list.length > this.maxCount) return;
     this.list.push({
       type: 'dot',
       vx: 0,
@@ -290,7 +297,7 @@ class ParticleSystem {
     ctx.save();
     ctx.fillStyle = this.lineColor;
     ctx.globalAlpha = Math.min(1, this.lines * 3) * 0.55;
-    const n = 70;
+    const n = Math.round(70 * Math.max(0.5, this.quality));
     const seed = Math.floor(this.lineT * 24);
     for (let i = 0; i < n; i++) {
       const r1 = ((i * 9301 + seed * 49297) % 233280) / 233280;
@@ -307,6 +314,28 @@ class ParticleSystem {
     ctx.restore();
   }
 
+  /** emoji text is slow to rasterize every frame; draw each glyph once */
+  private sprite(glyph: string, size: number): HTMLCanvasElement {
+    const px = Math.max(8, Math.round(size / 4) * 4);
+    const key = `${glyph}|${px}`;
+    let c = this.sprites.get(key);
+    if (!c) {
+      if (this.sprites.size > 120) this.sprites.clear();
+      c = document.createElement('canvas');
+      const dim = Math.ceil(px * 1.4 * SPRITE_RES);
+      c.width = c.height = dim;
+      const g = c.getContext('2d');
+      if (g) {
+        g.font = `${px * SPRITE_RES}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.fillText(glyph, dim / 2, dim / 2);
+      }
+      this.sprites.set(key, c);
+    }
+    return c;
+  }
+
   private draw(ctx: CanvasRenderingContext2D, p: P): void {
     const k = p.life / p.max;
     const a = 1 - k;
@@ -317,7 +346,7 @@ class ParticleSystem {
       case 'dot':
       case 'orb': {
         ctx.globalCompositeOperation = 'lighter';
-        const r = p.size * (p.type === 'orb' ? 1 : a);
+        const r = Math.max(0.1, p.size * (p.type === 'orb' ? 1 : a));
         const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 2);
         g.addColorStop(0, '#fff');
         g.addColorStop(0.3, p.color);
@@ -380,7 +409,7 @@ class ParticleSystem {
       }
       case 'ring': {
         ctx.globalCompositeOperation = 'lighter';
-        const r = p.size * (0.2 + 0.8 * (1 - Math.pow(1 - k, 3)));
+        const r = Math.max(0.1, p.size * (0.2 + 0.8 * (1 - Math.pow(1 - k, 3))));
         ctx.strokeStyle = p.color;
         ctx.lineWidth = (p.w ?? 10) * a;
         ctx.beginPath();
@@ -390,7 +419,7 @@ class ParticleSystem {
       }
       case 'glow': {
         ctx.globalCompositeOperation = 'lighter';
-        const r = p.size * (0.6 + 0.4 * k);
+        const r = Math.max(0.1, p.size * (0.6 + 0.4 * k));
         const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
         g.addColorStop(0, p.color);
         g.addColorStop(1, 'transparent');
@@ -402,10 +431,9 @@ class ParticleSystem {
       case 'heart':
       case 'glyph': {
         ctx.rotate(p.rot * 0.3);
-        ctx.font = `${p.size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(p.glyph ?? '★', 0, 0);
+        const sp = this.sprite(p.glyph ?? '★', p.size);
+        const d = sp.width / SPRITE_RES;
+        ctx.drawImage(sp, -d / 2, -d / 2, d, d);
         break;
       }
       case 'line':

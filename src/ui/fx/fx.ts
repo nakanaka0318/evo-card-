@@ -25,10 +25,13 @@ export function shake(power: number, ms = 260): void {
   if (fxConfig.vibrate && power >= 8) audio.vibrate(Math.min(80, power * 4));
   if (shakeRaf) return;
   const el = stage.screen;
+  // own layer while shaking: moving it is then a cheap composite, not a repaint
+  el.style.willChange = 'transform';
   const step = () => {
     const now = performance.now();
     if (now >= shakeUntil) {
       el.style.transform = '';
+      el.style.willChange = '';
       shakeRaf = 0;
       shakePower = 0;
       return;

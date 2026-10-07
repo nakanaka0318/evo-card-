@@ -8,6 +8,7 @@ import {
   def,
   E,
   leaderTgt,
+  legalActions,
   RULES,
   tgtSide,
   type Action,
@@ -27,6 +28,8 @@ import { CARD_H, CARD_W, createCard, fitCardText, glossary, staticCard, updateCa
 import { clear, h, wait } from '../dom';
 import { fxConfig, T, toast } from '../fx/fx';
 import { particles } from '../fx/particles';
+import { PERF_INFO, type PerfLevel } from '../perf';
+import { setPerf } from '../screens/settings';
 import { stage } from '../stage';
 import { Animator } from './anim';
 import { geometry, layout, type Geo, type Pos } from './layout';
@@ -1217,6 +1220,13 @@ export class Battle {
         h('div.menu-title', 'メニュー'),
         h('button.btn', { type: 'button', onclick: () => { close(); this.showRules(); } }, '遊び方'),
         h('button.btn', { type: 'button', onclick: () => { close(); this.toggleHints(); } }, save.data.settings.hints ? 'ヒント：ON' : 'ヒント：OFF'),
+        h('button.btn.perf-cycle', { type: 'button', onclick: (e: Event) => {
+          const next = ((save.data.settings.perf + 2) % 3) as PerfLevel;
+          setPerf(next);
+          audio.play('tap');
+          (e.currentTarget as HTMLElement).textContent = perfLabel();
+          toast(`動作モード：${PERF_INFO[next].name}`, PERF_INFO[next].emoji);
+        } }, perfLabel()),
         h('button.btn.btn-danger', { type: 'button', onclick: async () => {
           close();
           if (await confirmModal('降参する？ この試合は負けになるよ。', '降参する', '続ける')) void this.concede();
@@ -1302,6 +1312,7 @@ export class Battle {
       act(a: Action) {
         void b.commit(a);
       },
+      legal: () => legalActions(b.s),
     };
   }
 
@@ -1331,4 +1342,9 @@ function diffLabel(d: Difficulty): string {
 
 export function isPrism(id: string): boolean {
   return (save.data.prism[id] ?? 0) > 0;
+}
+
+function perfLabel(): string {
+  const i = PERF_INFO[save.data.settings.perf];
+  return `動作：${i.emoji}${i.name}`;
 }

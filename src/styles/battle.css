@@ -59,7 +59,7 @@
 
 .bf-mid {
   position: absolute;
-  left: 0;
+  left: -28px;
   right: 0;
   top: calc(var(--mid-y) - 3px);
   height: 6px;
@@ -67,9 +67,10 @@
   animation: mid-run 1.2s linear infinite;
 }
 
+/* moved with transform (composited) rather than background-position (repaint) */
 @keyframes mid-run {
   to {
-    background-position: 28px 0;
+    transform: translateX(28px);
   }
 }
 
@@ -475,15 +476,20 @@
   box-shadow:
     0 0 0 6px #ff3b4f,
     0 0 36px #ff3b4f;
-  animation: target-pulse-l 0.7s ease-in-out infinite;
 }
 
-@keyframes target-pulse-l {
-  50% {
-    box-shadow:
-      0 0 0 10px #ff7a88,
-      0 0 56px #ff3b4f;
-  }
+/* composited pulse (see .card.can-attack::after) */
+.leader.targetable::after {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow:
+    0 0 0 10px #ff7a88,
+    0 0 56px #ff3b4f;
+  animation: glow-breathe 0.7s ease-in-out infinite;
 }
 
 .leader.aim .leader-portrait {
@@ -685,16 +691,16 @@
   background:
     radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.5), transparent 50%),
     linear-gradient(180deg, #ffe14d, #ff8a00);
+  box-shadow:
+    inset 0 0 0 6px rgba(255, 255, 255, 0.2),
+    0 7px 0 #000,
+    0 0 32px #ffd23f;
   animation: end-ready 0.9s ease-in-out infinite;
 }
 
 @keyframes end-ready {
   50% {
     transform: translate(-50%, -50%) scale(1.08);
-    box-shadow:
-      inset 0 0 0 6px rgba(255, 255, 255, 0.2),
-      0 7px 0 #000,
-      0 0 40px #ffd23f;
   }
 }
 
