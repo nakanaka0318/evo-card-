@@ -206,6 +206,28 @@
     0 0 28px #2ee6d6;
 }
 
+.pop-treasure {
+  font-family: var(--f-body);
+  font-weight: 900;
+  color: #ffd76b;
+}
+
+.pop-rich {
+  color: #ffc23d;
+  text-shadow:
+    var(--outline),
+    0 0 28px #ffb000;
+}
+
+.pop-harmony {
+  font-style: italic;
+  color: #b8f4ff;
+  text-shadow:
+    var(--outline),
+    0 0 18px #4de1ff,
+    0 0 34px #ff4fd8;
+}
+
 .pop-exp {
   font-family: var(--f-body);
   font-weight: 900;

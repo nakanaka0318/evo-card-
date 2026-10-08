@@ -1771,3 +1771,330 @@
 .landscape .lg-complete {
   top: 48%;
 }
+
+/* ---------------------------------------------------------- 海賊女王ベル */
+.lg-r_queen {
+  background: linear-gradient(180deg, #ff9a4d, #7a2a5a 55%, #120a2a);
+}
+
+.lg-sea {
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+  height: 34%;
+  background:
+    radial-gradient(ellipse at 20% 0, #2d8fd6 0 30%, transparent 31%) 0 0 / 120px 40px repeat-x,
+    linear-gradient(180deg, #1d6aa8, #06243f);
+  animation: lg-waves calc(1.2s * var(--k)) linear infinite;
+}
+
+@keyframes lg-waves {
+  to {
+    background-position: 120px 0, 0 0;
+  }
+}
+
+.lg-flag {
+  left: 50%;
+  top: 8%;
+  translate: -50% 0;
+  font: 130px/1 var(--f-emoji);
+  animation: lg-rise calc(0.6s * var(--k)) cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+.lg-queen {
+  left: 50%;
+  top: 42%;
+  translate: -50% -50%;
+  font: 190px/1 var(--f-emoji);
+  animation: lg-zoom calc(0.4s * var(--k)) calc(1s * var(--k)) cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.lg-loot {
+  left: 0;
+  right: 0;
+  top: 60%;
+  text-align: center;
+  font: 64px/1 var(--f-display);
+  color: #ffd76b;
+  text-shadow:
+    var(--outline),
+    0 0 26px #ffb000;
+  animation: lg-slam calc(0.3s * var(--k)) calc(1.2s * var(--k)) cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+/* ---------------------------------------------------------- 財宝竜ファフニール */
+.lg-r_dragon {
+  background: radial-gradient(ellipse at 50% 90%, #4a3000, #0a0500 70%);
+}
+
+.lg-goldpile {
+  left: -10%;
+  right: -10%;
+  bottom: -8%;
+  height: 40%;
+  border-radius: 50% 50% 0 0;
+  background:
+    radial-gradient(circle at 30% 30%, #fff3b0 0 3px, transparent 4px) 0 0 / 26px 22px,
+    linear-gradient(180deg, #ffcf4d, #b07800 60%, #5a3a00);
+  box-shadow: 0 -10px 60px rgba(255, 190, 60, 0.45);
+}
+
+.lg-eyes {
+  left: 50%;
+  top: 30%;
+  translate: -50% 0;
+  display: flex;
+  gap: 120px;
+  animation: lg-hide calc(0.01s * var(--k)) calc(1.15s * var(--k)) forwards;
+}
+
+.lg-eyes span {
+  width: 70px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #fff 0 15%, #ffcf4d 30%, #ff5a00 70%);
+  box-shadow: 0 0 30px #ff9a00;
+  animation: lg-eyeopen calc(0.5s * var(--k)) calc(0.45s * var(--k)) ease-out both;
+}
+
+@keyframes lg-eyeopen {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.lg-wyrm {
+  left: 50%;
+  top: 40%;
+  translate: -50% -50%;
+  font: 300px/1 var(--f-emoji);
+  filter: drop-shadow(0 0 40px #ffb000);
+  animation: lg-rise calc(0.45s * var(--k)) calc(1.1s * var(--k)) cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+/* ---------------------------------------------------------- 黄金郷エルドラド */
+.lg-r_eldorado {
+  background: linear-gradient(180deg, #2a1650, #ff8a3d 60%, #ffd76b);
+}
+
+.lg-dawn {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30%;
+  background: linear-gradient(180deg, #3a2200, #120800);
+}
+
+.lg-rays {
+  left: 50%;
+  top: 70%;
+  width: 1600px;
+  height: 1600px;
+  margin: -800px 0 0 -800px;
+  background: repeating-conic-gradient(rgba(255, 240, 170, 0.35) 0 6deg, transparent 6deg 18deg);
+  animation:
+    lg-pop calc(0.6s * var(--k)) calc(0.3s * var(--k)) both,
+    lg-cog calc(12s * var(--k)) linear infinite;
+}
+
+.lg-city {
+  left: 50%;
+  top: 46%;
+  translate: -50% -50%;
+  font: 200px/1 var(--f-emoji);
+  filter: drop-shadow(0 0 30px #ffd76b);
+  animation: lg-rise calc(0.9s * var(--k)) calc(0.3s * var(--k)) cubic-bezier(0.2, 1, 0.4, 1) both;
+}
+
+.lg-eltitle {
+  left: 0;
+  right: 0;
+  top: 12%;
+  text-align: center;
+  font: 80px/1 var(--f-display);
+  color: #fff3b0;
+  letter-spacing: 0.06em;
+  text-shadow:
+    var(--outline),
+    0 0 30px #ffb000;
+  animation: lg-slam calc(0.3s * var(--k)) calc(1.25s * var(--k)) cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+/* ---------------------------------------------------------- 破滅の歌姫ルシエラ */
+.lg-h_diva {
+  background: #05020c;
+}
+
+.lg-spot {
+  left: 50%;
+  top: 0;
+  width: 560px;
+  height: 100%;
+  margin-left: -280px;
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, rgba(220, 200, 255, 0.6), rgba(220, 200, 255, 0.04));
+  animation: lg-pop calc(0.2s * var(--k)) calc(0.1s * var(--k)) both;
+}
+
+.lg-moon {
+  right: 10%;
+  top: 8%;
+  font: 110px/1 var(--f-emoji);
+  filter: drop-shadow(0 0 30px #b48cff);
+}
+
+.lg-diva {
+  left: 50%;
+  top: 42%;
+  translate: -50% -50%;
+  font: 200px/1 var(--f-emoji);
+  filter: drop-shadow(0 0 30px #b48cff);
+  animation: lg-zoom calc(0.6s * var(--k)) calc(0.2s * var(--k)) ease-out both;
+}
+
+.lg-void {
+  left: 50%;
+  top: 42%;
+  width: 200px;
+  height: 200px;
+  margin: -100px 0 0 -100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #000 55%, #6a1aa8 70%, transparent 72%);
+  animation: lg-swallow calc(0.5s * var(--k)) calc(1.2s * var(--k)) cubic-bezier(0.5, 0, 0.9, 0.5) both;
+}
+
+@keyframes lg-swallow {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(9);
+  }
+}
+
+.lg-finale {
+  left: 0;
+  right: 0;
+  top: 14%;
+  text-align: center;
+  font: 64px/1 var(--f-display);
+  color: #d6b8ff;
+  text-shadow:
+    var(--outline),
+    0 0 30px #7a2ad6;
+  animation: lg-slam calc(0.3s * var(--k)) calc(1.3s * var(--k)) cubic-bezier(0.2, 1.6, 0.4, 1) both;
+  z-index: 2;
+}
+
+/* ---------------------------------------------------------- 残響のセイレーン */
+.lg-h_siren {
+  background: radial-gradient(circle at 50% 42%, #0a5a8a, #01142a 75%);
+}
+
+.lg-deep {
+  inset: 0;
+  background: repeating-linear-gradient(100deg, transparent 0 60px, rgba(160, 230, 255, 0.07) 60px 90px);
+  animation: lg-waves calc(3s * var(--k)) linear infinite;
+}
+
+.lg-ripple {
+  left: 50%;
+  top: 42%;
+  width: 180px;
+  height: 180px;
+  margin: -90px 0 0 -90px;
+  border-radius: 50%;
+  border: 5px solid rgba(160, 240, 255, 0.85);
+  box-shadow: 0 0 18px #4de1ff;
+  animation: lg-echo calc(1.1s * var(--k)) ease-out both;
+}
+
+@keyframes lg-echo {
+  from {
+    transform: scale(0.2);
+    opacity: 1;
+  }
+  to {
+    transform: scale(4.5);
+    opacity: 0;
+  }
+}
+
+.lg-siren {
+  left: 50%;
+  top: 42%;
+  translate: -50% -50%;
+  font: 190px/1 var(--f-emoji);
+  animation:
+    lg-rise calc(0.8s * var(--k)) calc(0.4s * var(--k)) ease-out both,
+    lg-bob calc(0.9s * var(--k)) calc(1.2s * var(--k)) ease-in-out infinite alternate;
+}
+
+/* ---------------------------------------------------------- 神曲マエストロ */
+.lg-h_maestro {
+  background: radial-gradient(circle at 50% 40%, #4a1030, #0c0410 75%);
+}
+
+.lg-staff {
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: rgba(255, 230, 200, 0.75);
+  transform-origin: left;
+  animation: lg-drawline calc(0.4s * var(--k)) ease-out both;
+}
+
+@keyframes lg-drawline {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.lg-note {
+  left: 0;
+  font: 900 60px/1 var(--f-body);
+  color: #ffe6c8;
+  text-shadow: 0 0 12px #ff9ac8;
+  translate: 0 -50%;
+  animation: lg-notefly calc(0.9s * var(--k)) calc(var(--d) * var(--k)) linear both;
+}
+
+@keyframes lg-notefly {
+  from {
+    transform: translateX(-80px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  to {
+    transform: translateX(1400px);
+    opacity: 1;
+  }
+}
+
+.lg-violin {
+  left: 50%;
+  top: 58%;
+  translate: -50% -50%;
+  font: 180px/1 var(--f-emoji);
+  animation: lg-zoom calc(0.4s * var(--k)) calc(1.2s * var(--k)) cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.lg-baton {
+  right: 14%;
+  top: 14%;
+  font: 110px/1 var(--f-emoji);
+  transform-origin: 20% 80%;
+  animation: lg-conduct calc(0.3s * var(--k)) calc(1s * var(--k)) cubic-bezier(0.5, 0, 0.9, 1) both;
+}
+
+@keyframes lg-conduct {
+  from {
+    transform: rotate(-70deg);
+  }
+  to {
+    transform: rotate(40deg);
+  }
+}

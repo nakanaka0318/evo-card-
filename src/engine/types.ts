@@ -3,7 +3,7 @@
 // Card behaviour lives in CardDef hook functions, looked up by id.
 
 export type Side = 0 | 1;
-export type ClassId = 'neutral' | 'gacha' | 'stream' | 'sweets' | 'swipe' | 'gamer' | 'gadget';
+export type ClassId = 'neutral' | 'gacha' | 'stream' | 'sweets' | 'swipe' | 'gamer' | 'gadget' | 'treasure' | 'harmony';
 export type CardType = 'follower' | 'spell' | 'amulet';
 export type Rarity = 'bronze' | 'silver' | 'gold' | 'legend';
 export type Keyword = 'ward' | 'storm' | 'rush' | 'bane' | 'drain' | 'ambush' | 'barrier' | 'aura' | 'twin';
@@ -85,6 +85,10 @@ export interface Player {
   kakuhen: number;
   /** ガジェッター: distinct パーツ ids played or 合体'd this battle */
   parts: string[];
+  /** トレジャラー: 財宝 cards used this battle */
+  treasures: number;
+  /** ハモラー: how many 【ハモり】 effects fired this battle */
+  harmonies: number;
   dopa: number;
   fever: boolean;
   stats: PlayerStats;
@@ -219,6 +223,8 @@ export interface PlayerView {
   likes: number;
   sweet: number;
   parts: number;
+  treasures: number;
+  harmonies: number;
   luck: number;
   kakuhen: number;
   combo: number;
@@ -274,6 +280,9 @@ export type GameEvent = { snap?: View } & (
   | { t: 'parts'; side: Side; id: string; total: number }
   | { t: 'fuse'; side: Side; uid: number; ids: string[] }
   | { t: 'complete'; side: Side; uid: number; need: number }
+  | { t: 'treasure'; side: Side; id: string; total: number }
+  | { t: 'rich'; side: Side; uid: number; need: number }
+  | { t: 'harmony'; side: Side; uid: number; total: number }
   | { t: 'enhance'; side: Side; uid: number }
   | { t: 'exp'; uid: number; exp: number; need: number }
   | { t: 'levelUp'; uid: number; level: number }

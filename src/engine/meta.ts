@@ -12,7 +12,7 @@ export interface ClassMeta {
   leaderArt: string;
   mechanic: string;
   mechanicDesc: string;
-  counter: 'luck' | 'likes' | 'sweet' | 'combo' | 'level' | 'parts' | 'none';
+  counter: 'luck' | 'likes' | 'sweet' | 'combo' | 'level' | 'parts' | 'treasure' | 'harmony' | 'none';
   /** short pitch shown on class select */
   pitch: string;
   /** leader lines used in battle */
@@ -173,9 +173,55 @@ export const CLASSES: Record<ClassId, ClassMeta> = {
       fever: 'フルパワー合体、いっくよー！',
     },
   },
+  treasure: {
+    id: 'treasure',
+    name: 'トレジャラー',
+    tag: '一攫千金',
+    emoji: '💰',
+    color: '#ffc23d',
+    color2: '#c4174b',
+    leaderName: 'トレジャラー キンカ',
+    leaderArt: '🦜',
+    mechanic: '財宝',
+    mechanicDesc:
+      'カードの効果で「財宝」（金貨・宝石・黄金の杯・王冠の4種類）を手に入れる。財宝は安くて便利なスペル。使った財宝の枚数がたまるほど【財宝X】が発動！',
+    counter: 'treasure',
+    pitch: 'お宝ザクザク、ぜんぶ使って成り上がれ。',
+    lines: {
+      start: 'お宝のにおいがするねぇ！',
+      evolve: '大当たり、ゴールドラッシュ！',
+      win: '戦利品、ぜーんぶいただき！',
+      lose: '……宝の地図、逆さまだった？',
+      hurt: 'あたしの金貨がー！',
+      fever: '財宝フィーバー、開・封！',
+    },
+  },
+  harmony: {
+    id: 'harmony',
+    name: 'ハモラー',
+    tag: '共鳴',
+    emoji: '🎤',
+    color: '#4de1ff',
+    color2: '#ff4fd8',
+    leaderName: 'ハモラー リリカ',
+    leaderArt: '🐬',
+    mechanic: 'ハモり',
+    mechanicDesc:
+      '自分の山札が偶数枚のとき「ハモり」状態。【ハモり】の効果は、そのとき偶数なら発動！ ドローや「コーラス」を山札に加えるカードで偶数・奇数を切り替えよう。',
+    counter: 'harmony',
+    pitch: '山札とハモって、会場ごと震わせろ。',
+    lines: {
+      start: 'マイクチェック、ワン・ツー！',
+      evolve: 'サビ、いっくよー！',
+      win: 'アンコール、ありがとー！',
+      lose: '……音、外しちゃった。',
+      hurt: 'ノイズ入った！',
+      fever: '全員でハモって！',
+    },
+  },
 };
 
-export const PLAYABLE_CLASSES: ClassId[] = ['gacha', 'stream', 'sweets', 'swipe', 'gamer', 'gadget'];
+export const PLAYABLE_CLASSES: ClassId[] = ['gacha', 'stream', 'sweets', 'swipe', 'gamer', 'gadget', 'treasure', 'harmony'];
 
 export interface KeywordMeta {
   name: string;
@@ -216,6 +262,9 @@ export const ABILITIES: Record<string, string> = {
   バズ4: 'いいねが4以上あれば、4消費して発動。',
   バズ5: 'いいねが5以上あれば、5消費して発動。',
   パーツ: 'ガジェッターのトークン（ボルト・バネ・バッテリー・チップの4種類）。出しても合体に使ってもいい。',
+  財宝: 'トレジャラーのトークン（金貨・宝石・黄金の杯・王冠の4種類のスペル）。使った枚数が【財宝X】の条件になる。',
+  ハモり: '自分の山札が偶数枚なら発動。',
+  コーラス: 'ハモラーのトークン（0コストのスペル。カードを1枚引く）。山札に加えると偶数・奇数が入れかわる。',
   バズ6: 'いいねが6以上あれば、6消費して発動。',
   バズ10: 'いいねが10以上あれば、10消費して発動。',
   シュガーハイ10: '糖度が10以上なら発動（糖度は消費しない）。',

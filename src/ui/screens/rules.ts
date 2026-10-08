@@ -126,7 +126,7 @@ export function rulesTable(): HTMLElement {
   const evoP = (n: number) => `${n}`;
   const abilityRows: Row[] = Object.entries(ABILITIES)
     // numbered variants (バズ4, 課金5…) are covered by the generic X rows below
-    .filter(([k]) => !/^(カウントダウン|バズ|シュガーハイ|コンボ|課金|合体|コンプリート)\d+$/.test(k))
+    .filter(([k]) => !/^(カウントダウン|バズ|シュガーハイ|コンボ|課金|合体|コンプリート|財宝)\d+$|^ハモり$/.test(k))
     .map(([k, v]) => [h('b.rt-ab', `【${k}】`), v]);
   const generic: Row[] = [
     [h('b.rt-ab', '【バズX】'), 'いいねがX以上あれば、Xを消費して発動。'],
@@ -135,6 +135,8 @@ export function rulesTable(): HTMLElement {
     [h('b.rt-ab', '【課金X】'), 'PPがX以上あれば、XPPを払って強化版でプレイ。'],
     [h('b.rt-ab', '【合体X】'), '手札のパーツを最大X枚取り込む（取り込んだパーツも「使った」扱い）。取り込んだ枚数で効果が変わる。'],
     [h('b.rt-ab', '【コンプリートX】'), 'この対戦で出した／合体したパーツがX種類以上なら発動（最大4種類）。'],
+    [h('b.rt-ab', '【財宝X】'), 'この対戦で財宝（トレジャラーのトークン）をX枚以上使っていれば発動。'],
+    [h('b.rt-ab', '【ハモり】'), '自分の山札が偶数枚なら発動。ドローや「コーラス」を山札に加える効果で偶数・奇数が入れかわる。'],
     [h('b.rt-ab', '【カウントダウンX】'), '自分のターン開始時に1減り、0になると破壊される（アミュレット）。'],
   ];
   const rarities: Rarity[] = ['bronze', 'silver', 'gold', 'legend'];

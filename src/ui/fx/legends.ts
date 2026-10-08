@@ -385,6 +385,85 @@ const SCENES: Record<string, Scene> = {
       particles.burst(c.W / 2, c.H * 0.42, { n: 60, colors: ['#b48cff', '#2ee6d6', '#fff'], speed: 13, type: 'star', size: 7 });
     });
   },
+
+  // 海賊女王ベル: the jolly roger goes up, three cannon blasts, a rain of gold
+  r_queen: (c) => {
+    c.add(h('div.lg-sea'), h('div.lg-flag', '🏴‍☠️'), h('div.lg-queen', '👸'), h('div.lg-loot', '全部いただき！'));
+    seq([[NOTE(57), 0.05, 0.2], [NOTE(62), 0.25, 0.2], [NOTE(65), 0.45, 0.2], [NOTE(69), 0.65, 0.5]], 'sawtooth', 0.06, { filter: 1800 });
+    [450, 700, 950].forEach((ms, i) =>
+      c.at(ms, () => {
+        audio.play('bigHit', { pitch: 0.8 + i * 0.1 });
+        shake(8 + i * 4, 160);
+        flash('#ffdf80', 0.25, 120);
+        particles.burst(c.W * (0.2 + i * 0.3), c.H * 0.62, { n: 20, colors: ['#888', '#ffb000', '#fff'], speed: 9, size: 7 });
+      }),
+    );
+    c.at(1250, () => {
+      audio.play('cash');
+      particles.rain('🪙', 34, 30);
+    });
+  },
+
+  // 財宝竜ファフニール: two eyes open over a mountain of gold, then the dragon erupts
+  r_dragon: (c) => {
+    c.add(h('div.lg-goldpile'), h('div.lg-eyes', h('span'), h('span')), h('div.lg-wyrm', '🐉'));
+    audio.tone(48, 1.6 / fxConfig.speed, { type: 'sawtooth', vol: 0.1, slide: 70, filter: 300 });
+    c.at(500, () => audio.tone(1800, 0.12, { type: 'triangle', vol: 0.05 }));
+    c.at(1150, () => {
+      audio.play('bigHit');
+      audio.tone(90, 0.8, { type: 'sawtooth', vol: 0.12, slide: 40, filter: 900 });
+      shake(22, 420);
+      flash('#ffcf4d', 0.5, 260);
+      particles.burst(c.W / 2, c.H * 0.7, { n: 70, type: 'glyph', glyph: '🪙', speed: 15, size: 24, gravity: 0.35 });
+    });
+  },
+
+  // 黄金郷エルドラド: dawn breaks, golden rays, the city rises from the horizon
+  r_eldorado: (c) => {
+    c.add(h('div.lg-rays'), h('div.lg-dawn'), h('div.lg-city', '🏯'), h('div.lg-eltitle', 'EL DORADO'));
+    seq([[NOTE(72), 0.1, 0.6], [NOTE(76), 0.3, 0.6], [NOTE(79), 0.5, 0.6], [NOTE(84), 0.7, 1.0]], 'triangle', 0.08);
+    c.at(1250, () => {
+      audio.play('gachaSSR');
+      flash('#fff3b0', 0.6, 300);
+      particles.burst(c.W / 2, c.H * 0.45, { n: 70, colors: ['#ffe14d', '#ffb000', '#fff'], speed: 14, type: 'star', size: 8 });
+    });
+  },
+
+  // 破滅の歌姫ルシエラ: a single spotlight, one sung note, and darkness swallows the stage
+  h_diva: (c) => {
+    c.add(h('div.lg-spot'), h('div.lg-moon', '🌑'), h('div.lg-void'), h('div.lg-diva', '🧜‍♀️'), h('div.lg-finale', '— FINALE —'));
+    seq([[NOTE(69), 0.2, 0.9], [NOTE(76), 0.2, 0.9], [NOTE(68), 1.1, 0.8]], 'sine', 0.09, { vib: 6 });
+    c.at(1250, () => {
+      audio.play('shatter');
+      shake(16, 380);
+      particles.burst(c.W / 2, c.H * 0.42, { n: 60, colors: ['#3a0a5a', '#b48cff', '#000'], speed: 15, size: 8 });
+    });
+  },
+
+  // 残響のセイレーン: deep water, sonar rings echo outward, she rises with the bubbles
+  h_siren: (c) => {
+    const rings = Array.from({ length: 4 }, (_, i) => h('span.lg-ripple', { style: { animationDelay: `calc(${0.25 + i * 0.3}s * var(--k))` } }));
+    c.add(h('div.lg-deep'), ...rings, h('div.lg-siren', '🧚'));
+    particles.floatUp(c.W / 2, c.H * 0.85, '🫧', 18, 120);
+    [250, 550, 850, 1150].forEach((ms, i) => c.at(ms, () => audio.tone(NOTE(76 - i * 3), 0.6, { type: 'sine', vol: 0.07 - i * 0.012 })));
+    c.at(1300, () => {
+      audio.play('heal');
+      particles.ring(c.W / 2, c.H * 0.42, '#4de1ff', 240, 0.7, 10);
+    });
+  },
+
+  // 神曲マエストロ: the staff draws itself, notes rush across, the baton comes down
+  h_maestro: (c) => {
+    const lines = Array.from({ length: 5 }, (_, i) => h('span.lg-staff', { style: { top: `${36 + i * 4}%`, animationDelay: `calc(${i * 0.06}s * var(--k))` } }));
+    const notes = ['♪', '♫', '♩', '♬', '♪', '♫'].map((n, i) => h('span.lg-note', { style: { top: `${33 + (i % 5) * 4}%`, '--d': `${0.35 + i * 0.12}s` } }, n));
+    c.add(...lines, ...notes, h('div.lg-violin', '🎻'), h('div.lg-baton', '🪄'));
+    seq([[NOTE(60), 0.3, 0.25], [NOTE(64), 0.45, 0.25], [NOTE(67), 0.6, 0.25], [NOTE(72), 0.75, 0.25], [NOTE(76), 0.9, 0.25], [NOTE(79), 1.05, 0.25], [NOTE(84), 1.25, 0.9], [NOTE(72), 1.25, 0.9], [NOTE(76), 1.25, 0.9]], 'triangle', 0.07);
+    c.at(1250, () => {
+      shake(14, 300);
+      flash('#fff', 0.5, 240);
+      particles.burst(c.W / 2, c.H * 0.42, { n: 50, type: 'glyph', glyph: '🎵', speed: 12, size: 24, gravity: 0.1 });
+    });
+  },
 };
 
 export function hasLegendIntro(id: string): boolean {

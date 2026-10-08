@@ -164,6 +164,8 @@ export function view(s: GameState): View {
       likes: p.likes,
       sweet: p.sweet,
       parts: p.parts.length,
+      treasures: p.treasures,
+      harmonies: p.harmonies,
       luck: p.luck,
       kakuhen: p.kakuhen,
       combo: p.combo,
@@ -258,6 +260,8 @@ export function createGame(setup: GameSetup): GameState {
       luck: 0,
       kakuhen: 0,
       parts: [],
+      treasures: 0,
+      harmonies: 0,
       dopa: 0,
       fever: false,
       stats: emptyStats(),
@@ -854,6 +858,10 @@ export function playCard(s: GameState, uid: number, target?: Tgt): boolean {
   }
   resolve(s);
   if (d.tags?.includes('part')) addPart(s, p.side, c.id);
+  if (d.tags?.includes('treasure')) {
+    p.treasures++;
+    emit(s, { t: 'treasure', side: p.side, id: c.id, total: p.treasures });
+  }
   boardTrigger(s, p.side, 'onPlay', { other: c }, c);
   resolve(s);
   return true;

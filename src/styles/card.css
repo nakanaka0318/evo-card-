@@ -191,6 +191,19 @@
   background-size: 34px 34px;
 }
 
+.cls-treasure .art-pattern {
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(255, 236, 150, 0.55) 0 3px, transparent 4px),
+    radial-gradient(circle at 75% 60%, rgba(255, 236, 150, 0.45) 0 2px, transparent 3px),
+    repeating-linear-gradient(45deg, transparent 0 12px, rgba(255, 255, 255, 0.12) 12px 14px);
+  background-size: 30px 30px, 40px 40px, auto;
+}
+
+.cls-harmony .art-pattern {
+  background-image:
+    repeating-radial-gradient(circle at 50% 120%, transparent 0 10px, rgba(255, 255, 255, 0.2) 10px 12px);
+}
+
 .cls-gamer .art-pattern {
   background-image:
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 8px),
@@ -423,6 +436,12 @@
 }
 .card-text .ab-level {
   background: #1f9d5a;
+}
+.card-text .ab-treasure {
+  background: linear-gradient(90deg, #d99a00, #c4174b);
+}
+.card-text .ab-harmony {
+  background: linear-gradient(90deg, #1aa8d6, #d93ab8);
 }
 .card-text .ab-gadget {
   background: linear-gradient(90deg, #ff8a1f, #14a89c);

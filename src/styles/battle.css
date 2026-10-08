@@ -380,6 +380,10 @@
   font: 900 13px/1 var(--f-body);
   color: var(--mute);
 }
+.ctr-label.ctr-on {
+  color: #ff8de8;
+  text-shadow: 0 0 8px #ff4fd8;
+}
 .ctr-num {
   font: 22px/1 var(--f-display);
   color: #fff;

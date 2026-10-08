@@ -26,6 +26,8 @@ function abilityKind(a: string): string {
   if (a.startsWith('コンボ')) return 'combo';
   if (a.startsWith('課金')) return 'enhance';
   if (a.startsWith('合体') || a.startsWith('コンプリート')) return 'gadget';
+  if (a.startsWith('財宝')) return 'treasure';
+  if (a === 'ハモり') return 'harmony';
   if (a.startsWith('カウントダウン')) return 'cd';
   if (a === 'ガチャ' || a === '確変') return 'gacha';
   if (a === 'レベル') return 'level';
@@ -46,6 +48,8 @@ export function abilityDesc(label: string): string | null {
   if (m) return `手札のパーツを最大${m[1]}枚取り込む（手札から消える）。取り込んだ枚数で効果が変わる。`;
   m = label.match(/^コンプリート(\d+)$/);
   if (m) return `このバトルで出した／取り込んだパーツが${m[1]}種類以上なら発動。`;
+  m = label.match(/^財宝(\d+)$/);
+  if (m) return `このバトルで財宝を${m[1]}枚以上使っていれば発動。`;
   m = label.match(/^カウントダウン(\d+)$/);
   if (m) return '自分のターン開始時に1減り、0になると破壊される。';
   return null;
@@ -69,6 +73,8 @@ export function glossary(d: CardDef): { name: string; desc: string }[] {
   if (d.text.includes('いいね')) add('いいね', ABILITIES['いいね']);
   if (d.text.includes('EXP')) add('EXP', ABILITIES['レベル']);
   if (d.text.includes('パーツ')) add('パーツ', ABILITIES['パーツ']);
+  if (d.text.includes('財宝')) add('財宝', ABILITIES['財宝']);
+  if (d.text.includes('コーラス')) add('コーラス', ABILITIES['コーラス']);
   if (d.text.includes('DOPA')) add('DOPAゲージ', 'カードを出したり敵を倒したりすると溜まる。満タンでFEVER発動！');
   return out;
 }

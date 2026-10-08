@@ -631,6 +631,36 @@ export class Animator {
         await wait(T(380));
         return;
       }
+      case 'treasure': {
+        this.render(ev);
+        const L = g.leader[ev.side];
+        popText(L.x + 90, L.y - 20, `財宝×${ev.total}`, { cls: 'pop-treasure', size: 24, dy: -40, ms: 700 });
+        particles.burst(L.x + 70, L.y, { n: 12, type: 'glyph', glyph: '🪙', speed: 6, size: 20, gravity: 0.25 });
+        audio.play('coin', { pitch: 1 + Math.min(ev.total, 12) * 0.04 });
+        await wait(T(120));
+        return;
+      }
+      case 'rich': {
+        const p = b.pos.has(ev.uid) ? this.posOf(ev.uid) : { x: g.cx, y: g.H / 2 };
+        popText(p.x, p.y - 60, `財宝${ev.need}！`, { cls: 'pop-rich', size: 34, ms: 1000 });
+        particles.burst(p.x, p.y, { n: 24, type: 'glyph', glyph: '💰', speed: 9, size: 22, gravity: 0.3 });
+        particles.burst(p.x, p.y, { n: 20, colors: ['#ffc23d', '#fff3b0', '#fff'], speed: 10, type: 'star', size: 6 });
+        audio.play('cash');
+        await wait(T(360));
+        return;
+      }
+      case 'harmony': {
+        const p = b.pos.has(ev.uid) ? this.posOf(ev.uid) : { x: g.cx, y: g.H / 2 };
+        popText(p.x, p.y - 60, 'ハモり♪', { cls: 'pop-harmony', size: 34, ms: 1000 });
+        particles.ring(p.x, p.y, '#4de1ff', 110, 0.5, 8);
+        particles.ring(p.x, p.y, '#ff4fd8', 150, 0.6, 6);
+        particles.burst(p.x, p.y, { n: 14, type: 'glyph', glyph: '🎵', speed: 6, size: 24, gravity: -0.08 });
+        audio.tone(660, 0.18, { type: 'sine', vol: 0.08 });
+        audio.tone(825, 0.18, { type: 'sine', vol: 0.07 });
+        audio.tone(990, 0.25, { type: 'sine', vol: 0.06, at: 0.08 });
+        await wait(T(340));
+        return;
+      }
       case 'exp': {
         this.render(ev);
         const p = this.posOf(ev.uid);

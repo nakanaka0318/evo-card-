@@ -625,6 +625,13 @@ export class Battle {
         h('span.ctr-label', 'パーツ'),
         h('span.ctr-stars', Array.from({ length: 4 }, (_, i) => h(`span.star${i < pv.parts ? '.on' : ''}`, '⚙'))),
       ];
+    } else if (kind === 'treasure') {
+      sig = `t${pv.treasures}`;
+      content = [h('span.ctr-icon', '💰'), h('span.ctr-label', '財宝'), h('span.ctr-num', String(pv.treasures))];
+    } else if (kind === 'harmony') {
+      const on = pv.deck % 2 === 0;
+      sig = `h${on ? 1 : 0}/${pv.harmonies}`;
+      content = [h('span.ctr-icon', on ? '🎶' : '🎤'), h(`span.ctr-label${on ? '.ctr-on' : ''}`, on ? 'ハモり中' : 'ハモり待ち'), h('span.ctr-num', String(pv.harmonies))];
     }
     if (el.dataset.sig !== sig) {
       el.dataset.sig = sig;

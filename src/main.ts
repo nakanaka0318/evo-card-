@@ -49,16 +49,17 @@ function boot(): void {
       d.flags.cards2 = true;
     });
   }
-  // the 6th class (ガジェッター): starter share of its cards + a starter deck
-  if (save.data.flags.starter && !save.data.flags.gadget) {
+  // classes added after launch: starter share of their cards + a starter deck, once each
+  for (const cls of ['gadget', 'treasure', 'harmony'] as const) {
+    if (!save.data.flags.starter || save.data.flags[cls]) continue;
     save.update((d) => {
       for (const c of collectible()) {
-        if (c.cls !== 'gadget') continue;
+        if (c.cls !== cls) continue;
         const want = c.rarity === 'bronze' ? 3 : c.rarity === 'silver' ? 2 : 0;
         if ((d.collection[c.id] ?? 0) < want) d.collection[c.id] = want;
       }
-      if (!d.decks.some((x) => x.cls === 'gadget')) d.decks.push(starterDeck('gadget', d));
-      d.flags.gadget = true;
+      if (!d.decks.some((x) => x.cls === cls)) d.decks.push(starterDeck(cls, d));
+      d.flags[cls] = true;
     });
   }
   applySettings();

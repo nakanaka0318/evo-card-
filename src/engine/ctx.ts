@@ -13,6 +13,7 @@ export interface TriggerExtra {
 
 /** the four ガジェッター パーツ tokens */
 export const PART_IDS = ['t_pbolt', 't_pspring', 't_pbattery', 't_pchip'];
+export const TREASURE_IDS = ['t_tcoin', 't_tgem', 't_tcup', 't_tcrown'];
 
 type GachaTable = Partial<Record<GachaTier, (c: Ctx) => void>>;
 
@@ -294,6 +295,47 @@ export class Ctx {
     if (this.P.parts.length < x) return false;
     E.emit(this.s, { t: 'complete', side: this.me, uid: this.self.uid, need: x });
     return true;
+  }
+
+  /** トレジャラー: random 財宝 cards into the hand */
+  addTreasure(n: number): Card[] {
+    const out: Card[] = [];
+    for (let i = 0; i < n; i++) out.push(...this.addHand(TREASURE_IDS[E.rndInt(this.s, TREASURE_IDS.length)]));
+    return out;
+  }
+  /** トレジャラー: one of every 財宝 into the hand */
+  allTreasures(): Card[] {
+    return TREASURE_IDS.flatMap((id) => this.addHand(id));
+  }
+  isTreasure(c: Card | undefined): boolean {
+    return !!c && !!def(c.id).tags?.includes('treasure');
+  }
+  /** トレジャラー: 【財宝X】 X 財宝 used this battle */
+  rich(x: number): boolean {
+    if (this.P.treasures < x) return false;
+    E.emit(this.s, { t: 'rich', side: this.me, uid: this.self.uid, need: x });
+    return true;
+  }
+  /** ハモラー: is the deck in ハモり (even number of cards)? no side effects */
+  get inHarmony(): boolean {
+    return this.P.deck.length % 2 === 0;
+  }
+  /** ハモラー: 【ハモり】 check — fires (and is counted) when the deck has an even number of cards */
+  harmony(): boolean {
+    if (!this.inHarmony) return false;
+    this.P.harmonies++;
+    E.emit(this.s, { t: 'harmony', side: this.me, uid: this.self.uid, total: this.P.harmonies });
+    return true;
+  }
+  /** shuffle n copies of a card into the own deck */
+  toDeck(id: string, n = 1): void {
+    for (let i = 0; i < n; i++) this.P.deck.splice(E.rndInt(this.s, this.P.deck.length + 1), 0, E.makeCard(this.s, id, this.me));
+    if (n > 0) this.msg(`山札に「${def(id).name}」×${n}`);
+  }
+  /** banish the top n cards of the own deck */
+  burnTop(n = 1): void {
+    const gone = this.P.deck.splice(0, n);
+    if (gone.length) this.msg(`山札の上から${gone.length}枚を消滅`);
   }
 
   /** ゲーマー: grant EXP */

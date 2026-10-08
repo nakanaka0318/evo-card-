@@ -186,4 +186,82 @@ export const TOKENS = [
       c.draw(1);
     },
   }),
+  // ---------------- トレジャラー 財宝
+  spell({
+    id: 't_tcoin',
+    name: '金貨',
+    cls: 'treasure',
+    cost: 0,
+    rarity: 'bronze',
+    art: '🪙',
+    text: '相手のリーダーに1ダメージ',
+    flavor: 'チャリン。いい音。',
+    token: true,
+    tags: ['treasure'],
+    spell: (c) => {
+      c.face(1);
+    },
+  }),
+  spell({
+    id: 't_tgem',
+    name: '宝石',
+    cls: 'treasure',
+    cost: 1,
+    rarity: 'bronze',
+    art: '💎',
+    text: '相手のフォロワー1体に2ダメージ',
+    flavor: '投げてもいい。高いけど。',
+    token: true,
+    tags: ['treasure'],
+    target: { kind: 'enemyFollower' },
+    spell: (c) => {
+      c.dmg(c.target, 2);
+    },
+  }),
+  spell({
+    id: 't_tcup',
+    name: '黄金の杯',
+    cls: 'treasure',
+    cost: 1,
+    rarity: 'bronze',
+    art: '🏆',
+    text: 'カードを1枚引く。自分のリーダーを2回復',
+    flavor: '中身はただのジュース。',
+    token: true,
+    tags: ['treasure'],
+    spell: (c) => {
+      c.draw(1);
+      c.heal(2);
+    },
+  }),
+  spell({
+    id: 't_tcrown',
+    name: '王冠',
+    cls: 'treasure',
+    cost: 1,
+    rarity: 'bronze',
+    art: '👑',
+    text: '自分のフォロワーすべてを+1/+0',
+    flavor: 'かぶると、ちょっと強くなった気がする。',
+    token: true,
+    tags: ['treasure'],
+    spell: (c) => {
+      c.buffAll(c.allies(), 1, 0);
+    },
+  }),
+  // ---------------- ハモラー
+  spell({
+    id: 't_chorus',
+    name: 'コーラス',
+    cls: 'harmony',
+    cost: 0,
+    rarity: 'bronze',
+    art: '🎶',
+    text: 'カードを1枚引く',
+    flavor: 'ラ〜♪（3度上）',
+    token: true,
+    spell: (c) => {
+      c.draw(1);
+    },
+  }),
 ];

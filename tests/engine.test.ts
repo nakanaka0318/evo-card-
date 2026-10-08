@@ -414,3 +414,66 @@ describe('gadget: parts / fuse / complete', () => {
     expect(s.players[0].board.find((c) => c.uid === b.uid)!.atk).toBe(3);
   });
 });
+
+describe('treasure: 財宝 count and payoffs', () => {
+  it('using 財宝 counts, triggers on-use followers and gates 【財宝X】', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    const hand = put(s, 0, 'r_deckhand');
+    for (const id of ['t_tcoin', 't_tcup']) {
+      const c = give(s, 0, id);
+      apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === c.uid)!);
+    }
+    expect(s.players[0].treasures).toBe(2);
+    expect(hand.atk).toBe(4);
+    expect(E.view(s).p[0].treasures).toBe(2);
+    const p = give(s, 0, 'r_parrot');
+    apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === p.uid)!);
+    expect(E.has(p, 'storm')).toBe(true);
+  });
+
+  it('captain makes its 財宝 free and the dragon gets cheaper', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    const cap = give(s, 0, 'r_captain');
+    const before = s.players[0].hand.length;
+    apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === cap.uid)!);
+    const got = s.players[0].hand.slice(before - 1);
+    expect(got.length).toBe(2);
+    for (const t of got) expect(E.costOf(s, t)).toBe(0);
+    const dragon = give(s, 0, 'r_dragon');
+    s.players[0].treasures = 6;
+    expect(E.costOf(s, dragon)).toBe(5);
+  });
+});
+
+describe('harmony: even deck', () => {
+  it('【ハモり】 fires only with an even deck and is counted', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    s.players[0].deck = s.players[0].deck.slice(0, 10);
+    const a = give(s, 0, 'h_rookie');
+    apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === a.uid)!);
+    expect(a.atk).toBe(3);
+    expect(s.players[0].harmonies).toBe(1);
+    s.players[0].deck = s.players[0].deck.slice(0, 9);
+    const b = give(s, 0, 'h_rookie');
+    apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === b.uid)!);
+    expect(b.atk).toBe(2);
+    expect(s.players[0].harmonies).toBe(1);
+  });
+
+  it('tuner fixes an odd deck to even with a コーラス', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    s.players[0].deck = s.players[0].deck.slice(0, 9);
+    const t = give(s, 0, 'h_tuner');
+    apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === t.uid)!);
+    expect(s.players[0].deck.length).toBe(10);
+    expect(s.players[0].deck.some((c) => c.id === 't_chorus')).toBe(true);
+  });
+});

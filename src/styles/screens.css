@@ -608,8 +608,35 @@
 
 .class-picks {
   display: grid;
-  grid-template-columns: repeat(6, 178px);
-  gap: 14px;
+  grid-template-columns: repeat(4, 236px);
+  gap: 12px;
+}
+
+.landscape .class-pick {
+  padding: 10px 10px 12px;
+  gap: 4px;
+}
+
+.landscape .cp-art {
+  font-size: 54px;
+}
+
+.landscape .cp-emoji {
+  font-size: 24px;
+}
+
+.landscape .cp-pitch {
+  font-size: 13px;
+  min-height: 36px;
+}
+
+.portrait .class-pick {
+  padding: 12px 10px;
+  gap: 5px;
+}
+
+.portrait .cp-art {
+  font-size: 64px;
 }
 
 .portrait .class-picks {
@@ -898,6 +925,11 @@
   font: 34px/1 var(--f-display);
   color: #fff;
   text-shadow: var(--outline-s);
+  white-space: nowrap;
+}
+
+.portrait .hr-label {
+  font-size: 30px;
 }
 
 .hr-rank {
