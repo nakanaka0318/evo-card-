@@ -12,7 +12,7 @@ export interface ClassMeta {
   leaderArt: string;
   mechanic: string;
   mechanicDesc: string;
-  counter: 'luck' | 'likes' | 'sweet' | 'combo' | 'level' | 'none';
+  counter: 'luck' | 'likes' | 'sweet' | 'combo' | 'level' | 'parts' | 'none';
   /** short pitch shown on class select */
   pitch: string;
   /** leader lines used in battle */
@@ -150,9 +150,32 @@ export const CLASSES: Record<ClassId, ClassMeta> = {
       fever: '無双モード、突入！',
     },
   },
+  gadget: {
+    id: 'gadget',
+    name: 'ガジェッター',
+    tag: '合体変形',
+    emoji: '🔧',
+    color: '#ff8a1f',
+    color2: '#2ee6d6',
+    leaderName: 'ガジェッター ネジコ',
+    leaderArt: '🦫',
+    mechanic: 'パーツ・合体',
+    mechanicDesc:
+      'カードの効果で「パーツ」（4種類）を手に入れる。パーツはそのまま出してもいいし、【合体X】で手札から最大X枚取り込んでもいい。出した／取り込んだパーツの種類がそろうほど【コンプリートX】が発動！',
+    counter: 'parts',
+    pitch: 'パーツを集めて、合体して、最強ロボ。',
+    lines: {
+      start: 'ネジ1本から、世界を変えるよ！',
+      evolve: '変形、かんりょー！',
+      win: '設計図どおり、完ぺき！',
+      lose: '……どこのネジがゆるんでた？',
+      hurt: 'あっ、部品が飛んだ！',
+      fever: 'フルパワー合体、いっくよー！',
+    },
+  },
 };
 
-export const PLAYABLE_CLASSES: ClassId[] = ['gacha', 'stream', 'sweets', 'swipe', 'gamer'];
+export const PLAYABLE_CLASSES: ClassId[] = ['gacha', 'stream', 'sweets', 'swipe', 'gamer', 'gadget'];
 
 export interface KeywordMeta {
   name: string;
@@ -192,6 +215,7 @@ export const ABILITIES: Record<string, string> = {
   バズ3: 'いいねが3以上あれば、3消費して発動。',
   バズ4: 'いいねが4以上あれば、4消費して発動。',
   バズ5: 'いいねが5以上あれば、5消費して発動。',
+  パーツ: 'ガジェッターのトークン（ボルト・バネ・バッテリー・チップの4種類）。出しても合体に使ってもいい。',
   バズ6: 'いいねが6以上あれば、6消費して発動。',
   バズ10: 'いいねが10以上あれば、10消費して発動。',
   シュガーハイ10: '糖度が10以上なら発動（糖度は消費しない）。',

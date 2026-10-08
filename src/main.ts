@@ -49,6 +49,18 @@ function boot(): void {
       d.flags.cards2 = true;
     });
   }
+  // the 6th class (ガジェッター): starter share of its cards + a starter deck
+  if (save.data.flags.starter && !save.data.flags.gadget) {
+    save.update((d) => {
+      for (const c of collectible()) {
+        if (c.cls !== 'gadget') continue;
+        const want = c.rarity === 'bronze' ? 3 : c.rarity === 'silver' ? 2 : 0;
+        if ((d.collection[c.id] ?? 0) < want) d.collection[c.id] = want;
+      }
+      if (!d.decks.some((x) => x.cls === 'gadget')) d.decks.push(starterDeck('gadget', d));
+      d.flags.gadget = true;
+    });
+  }
   applySettings();
   registerScreen('title', async () => titleScreen);
   registerScreen('onboard', async () => onboardScreen);

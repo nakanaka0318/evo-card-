@@ -600,6 +600,37 @@ export class Animator {
         await wait(T(300));
         return;
       }
+      case 'parts': {
+        this.render(ev);
+        const L = g.leader[ev.side];
+        popText(L.x + 90, L.y - 20, `パーツ${ev.total}種`, { cls: 'pop-parts', size: 24, dy: -40, ms: 700 });
+        particles.burst(L.x + 70, L.y, { n: 10, type: 'glyph', glyph: '⚙️', speed: 5, size: 20, gravity: 0.15 });
+        audio.play('tick', { pitch: 0.8 + ev.total * 0.1 });
+        await wait(T(120));
+        return;
+      }
+      case 'fuse': {
+        this.render(ev);
+        if (!b.pos.has(ev.uid)) return;
+        const p = this.posOf(ev.uid);
+        popText(p.x, p.y - 64, ev.ids.length >= 3 ? `${ev.ids.length}体合体！！` : '合体！', { cls: 'pop-fuse', size: 34 + ev.ids.length * 2, ms: 1000 });
+        particles.ring(p.x, p.y, '#ff8a1f', 120, 0.45, 12);
+        particles.burst(p.x, p.y, { n: 14 + ev.ids.length * 6, type: 'glyph', glyph: '🔩', speed: 8, size: 22, gravity: 0.25 });
+        particles.burst(p.x, p.y, { n: 20, colors: ['#ff8a1f', '#2ee6d6', '#fff'], speed: 9 });
+        this.bump(b.els.get(ev.uid), 'evo-flash');
+        audio.play('evolve', { pitch: 1.2 });
+        await wait(T(420));
+        return;
+      }
+      case 'complete': {
+        const p = b.pos.has(ev.uid) ? this.posOf(ev.uid) : { x: g.cx, y: g.H / 2 };
+        popText(p.x, p.y - 60, `コンプリート${ev.need}！`, { cls: 'pop-complete', size: 34, ms: 1000 });
+        particles.ring(p.x, p.y, '#2ee6d6', 150, 0.55, 14);
+        particles.burst(p.x, p.y, { n: 26, type: 'glyph', glyph: '⚙️', speed: 10, size: 22, gravity: 0.1 });
+        audio.play('gachaSR');
+        await wait(T(380));
+        return;
+      }
       case 'exp': {
         this.render(ev);
         const p = this.posOf(ev.uid);

@@ -9,8 +9,8 @@ const flat = { quality: 0, rand: Math.random };
 const stats: Record<string, { w: number; g: number; base: number }> = {};
 const cls: Record<string, { w: number; g: number }> = {};
 for (let i = 0; i < N; i++) {
-  const a = PLAYABLE_CLASSES[(i + OFF) % 5];
-  const b = PLAYABLE_CLASSES[Math.floor((i + OFF) / 5) % 5];
+  const a = PLAYABLE_CLASSES[(i + OFF) % PLAYABLE_CLASSES.length];
+  const b = PLAYABLE_CLASSES[Math.floor((i + OFF) / PLAYABLE_CLASSES.length) % PLAYABLE_CLASSES.length];
   const s = E.createGame({ decks: [buildDeck(a, flat), buildDeck(b, flat)], classes: [a, b], leaders: [a, b], seed: (i + OFF) * 7907 + 3, record: false });
   for (const side of [0, 1] as const) apply(s, { t: 'mulligan', side, swap: chooseMulligan(s, side, { difficulty: 'normal' }) });
   const played: [Set<string>, Set<string>] = [new Set(), new Set()];

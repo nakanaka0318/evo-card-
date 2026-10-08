@@ -1,5 +1,6 @@
 import { register } from '../defs';
 import { GACHA } from './gacha';
+import { GADGET } from './gadget';
 import { GAMER } from './gamer';
 import { NEUTRAL } from './neutral';
 import { STREAM } from './stream';
@@ -12,7 +13,7 @@ let done = false;
 export function registerAllCards(): void {
   if (done) return;
   done = true;
-  register([...NEUTRAL, ...GACHA, ...STREAM, ...SWEETS, ...SWIPE, ...GAMER, ...TOKENS]);
+  register([...NEUTRAL, ...GACHA, ...STREAM, ...SWEETS, ...SWIPE, ...GAMER, ...GADGET, ...TOKENS]);
 }
 
 registerAllCards();

@@ -369,3 +369,48 @@ describe('cards & mechanics', () => {
     }
   });
 });
+
+describe('gadget: parts / fuse / complete', () => {
+  it('playing a part counts distinct parts once', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    for (const id of ['t_pbolt', 't_pbolt', 't_pspring']) {
+      const c = give(s, 0, id);
+      apply(s, { t: 'play', uid: c.uid });
+    }
+    expect(s.players[0].parts).toEqual(['t_pbolt', 't_pspring']);
+    expect(E.view(s).p[0].parts).toBe(2);
+  });
+
+  it('fusion absorbs hand parts, buffs per part and counts them for complete', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    give(s, 0, 't_pbolt');
+    give(s, 0, 't_pbattery');
+    give(s, 0, 't_pchip');
+    const arm = give(s, 0, 'd_arm');
+    const handBefore = s.players[0].hand.length;
+    const act = legalActions(s).find((a) => a.t === 'play' && a.uid === arm.uid)!;
+    apply(s, act);
+    const onBoard = s.players[0].board.find((c) => c.uid === arm.uid)!;
+    expect(onBoard.atk).toBe(6);
+    expect(onBoard.maxHp).toBe(7);
+    expect(s.players[0].hand.length).toBe(handBefore - 3);
+    expect(s.players[0].parts.length).toBe(2);
+  });
+
+  it('complete gates on the number of different parts', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    const a = give(s, 0, 'd_rc');
+    apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === a.uid)!);
+    expect(s.players[0].board.find((c) => c.uid === a.uid)!.atk).toBe(2);
+    s.players[0].parts = ['t_pbolt', 't_pspring'];
+    const b = give(s, 0, 'd_rc');
+    apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === b.uid)!);
+    expect(s.players[0].board.find((c) => c.uid === b.uid)!.atk).toBe(3);
+  });
+});

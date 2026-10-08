@@ -149,7 +149,7 @@ function openEditor(body: HTMLElement, deckId: string): void {
   };
   const drawPool = () => {
     const cards = collectible()
-      .filter((c) => c.cls === work.cls || c.cls === 'neutral')
+      .filter((c) => c.cls === work.cls || (c.cls === 'neutral' && !save.data.flags.hideNeutral))
       .filter((c) => cost < 0 || (cost === 7 ? c.cost >= 7 : c.cost === cost))
       .sort((a, b) => a.cost - b.cost || (a.cls === 'neutral' ? 1 : 0) - (b.cls === 'neutral' ? 1 : 0) || RARITY[a.rarity].order - RARITY[b.rarity].order);
     pool.replaceChildren(
@@ -197,6 +197,22 @@ function openEditor(body: HTMLElement, deckId: string): void {
   const drawFilters = () =>
     filters.replaceChildren(
       ...costs.map((c) => h(`button.f-chip${cost === c ? '.on' : ''}`, { type: 'button', onclick: () => { cost = c; audio.play('tap'); drawFilters(); drawPool(); } }, c < 0 ? '全' : c === 7 ? '7+' : String(c))),
+      h(
+        `button.f-chip.f-neutral${save.data.flags.hideNeutral ? '.on' : ''}`,
+        {
+          type: 'button',
+          title: 'ニュートラルカードを隠す',
+          onclick: () => {
+            audio.play('tap');
+            save.update((d) => {
+              d.flags.hideNeutral = !d.flags.hideNeutral;
+            });
+            drawFilters();
+            drawPool();
+          },
+        },
+        save.data.flags.hideNeutral ? '🚫 ニュートラル' : '⚪ ニュートラル',
+      ),
     );
   drawFilters();
   const saveDeck = () => {

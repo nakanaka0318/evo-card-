@@ -618,6 +618,13 @@ export class Battle {
       const ups = this.s.players[side].stats.levelUps;
       sig = `v${ups}`;
       content = [h('span.ctr-icon', '🎮'), h('span.ctr-label', 'LvUP'), h('span.ctr-num', String(ups))];
+    } else if (kind === 'parts') {
+      sig = `p${pv.parts}`;
+      content = [
+        h('span.ctr-icon', '🔧'),
+        h('span.ctr-label', 'パーツ'),
+        h('span.ctr-stars', Array.from({ length: 4 }, (_, i) => h(`span.star${i < pv.parts ? '.on' : ''}`, '⚙'))),
+      ];
     }
     if (el.dataset.sig !== sig) {
       el.dataset.sig = sig;

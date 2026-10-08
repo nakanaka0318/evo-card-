@@ -11,6 +11,9 @@ export interface TriggerExtra {
   amount?: number;
 }
 
+/** the four ガジェッター パーツ tokens */
+export const PART_IDS = ['t_pbolt', 't_pspring', 't_pbattery', 't_pchip'];
+
 type GachaTable = Partial<Record<GachaTier, (c: Ctx) => void>>;
 
 /**
@@ -254,6 +257,45 @@ export class Ctx {
     E.emit(this.s, { t: 'dice', side: this.me, uid: this.self.uid, value });
     return value;
   }
+  /** ガジェッター: add random パーツ to the hand (or shuffle them into the deck) */
+  addParts(n: number, where: 'hand' | 'deck' = 'hand'): Card[] {
+    const out: Card[] = [];
+    for (let i = 0; i < n; i++) {
+      const id = PART_IDS[E.rndInt(this.s, PART_IDS.length)];
+      if (where === 'hand') out.push(...this.addHand(id));
+      else {
+        const c = E.makeCard(this.s, id, this.me);
+        this.P.deck.splice(E.rndInt(this.s, this.P.deck.length + 1), 0, c);
+        out.push(c);
+      }
+    }
+    if (where === 'deck' && n > 0) this.msg(`山札にパーツ×${n}`);
+    return out;
+  }
+  /** ガジェッター: one of every パーツ into the hand */
+  allParts(): Card[] {
+    return PART_IDS.flatMap((id) => this.addHand(id));
+  }
+  /** ガジェッター: 【合体X】 absorb up to X パーツ from the hand; returns their ids */
+  fuse(max: number): string[] {
+    const taken = this.P.hand.filter((c) => def(c.id).tags?.includes('part')).slice(0, max);
+    if (!taken.length) return [];
+    for (const c of taken) {
+      this.P.hand.splice(this.P.hand.indexOf(c), 1);
+      this.P.grave.push(c);
+    }
+    const ids = taken.map((c) => c.id);
+    E.emit(this.s, { t: 'fuse', side: this.me, uid: this.self.uid, ids });
+    for (const id of ids) E.addPart(this.s, this.me, id);
+    return ids;
+  }
+  /** ガジェッター: 【コンプリートX】 X distinct パーツ started this battle */
+  complete(x: number): boolean {
+    if (this.P.parts.length < x) return false;
+    E.emit(this.s, { t: 'complete', side: this.me, uid: this.self.uid, need: x });
+    return true;
+  }
+
   /** ゲーマー: grant EXP */
   exp(c: Card | undefined, n: number): void {
     if (c) E.gainExp(this.s, c, n);

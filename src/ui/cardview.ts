@@ -25,6 +25,7 @@ function abilityKind(a: string): string {
   if (a.startsWith('シュガーハイ')) return 'sugar';
   if (a.startsWith('コンボ')) return 'combo';
   if (a.startsWith('課金')) return 'enhance';
+  if (a.startsWith('合体') || a.startsWith('コンプリート')) return 'gadget';
   if (a.startsWith('カウントダウン')) return 'cd';
   if (a === 'ガチャ' || a === '確変') return 'gacha';
   if (a === 'レベル') return 'level';
@@ -41,6 +42,10 @@ export function abilityDesc(label: string): string | null {
   if (m) return `このターン、他のカードを${m[1]}枚以上プレイしていれば発動。`;
   m = label.match(/^課金(\d+)$/);
   if (m) return `PPが${m[1]}以上あれば、${m[1]}PP払って強化版でプレイ。`;
+  m = label.match(/^合体(\d+)$/);
+  if (m) return `手札のパーツを最大${m[1]}枚取り込む（手札から消える）。取り込んだ枚数で効果が変わる。`;
+  m = label.match(/^コンプリート(\d+)$/);
+  if (m) return `このバトルで出した／取り込んだパーツが${m[1]}種類以上なら発動。`;
   m = label.match(/^カウントダウン(\d+)$/);
   if (m) return '自分のターン開始時に1減り、0になると破壊される。';
   return null;
@@ -63,6 +68,7 @@ export function glossary(d: CardDef): { name: string; desc: string }[] {
   if (d.text.includes('運気')) add('運気', ABILITIES['運気']);
   if (d.text.includes('いいね')) add('いいね', ABILITIES['いいね']);
   if (d.text.includes('EXP')) add('EXP', ABILITIES['レベル']);
+  if (d.text.includes('パーツ')) add('パーツ', ABILITIES['パーツ']);
   if (d.text.includes('DOPA')) add('DOPAゲージ', 'カードを出したり敵を倒したりすると溜まる。満タンでFEVER発動！');
   return out;
 }

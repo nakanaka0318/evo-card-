@@ -314,6 +314,77 @@ const SCENES: Record<string, Scene> = {
       particles.burst(c.W / 2, c.H * 0.45, { n: 60, colors: ['#3dff95', '#ff2e5a', '#2ee8ff'], speed: 12, size: 7 });
     });
   },
+
+  // メカ姫ギア: blueprint table, four parts fly in from the corners and snap together
+  d_gear: (c) => {
+    const parts = ['🔩', '🪀', '🔋', '💠'];
+    c.add(
+      h('div.lg-blueprint'),
+      h('div.lg-gearbig.a', '⚙️'),
+      h('div.lg-gearbig.b', '⚙️'),
+      ...parts.map((p, i) => h(`div.lg-part.p${i}`, { style: { '--d': `${0.15 + i * 0.22}s` } }, p)),
+      h('div.lg-assemble', 'ASSEMBLE!'),
+      h('div.lg-mechahime', '👩‍🔧'),
+    );
+    parts.forEach((_, i) =>
+      c.at(560 + i * 220, () => {
+        audio.tone(180 + i * 40, 0.08, { type: 'square', vol: 0.1 });
+        audio.tone(1400 + i * 120, 0.05, { type: 'triangle', vol: 0.06, at: 0.03 });
+        shake(5 + i * 2, 120);
+      }),
+    );
+    c.at(1300, () => {
+      audio.play('evolve', { pitch: 1.3 });
+      flash('#ffb36b', 0.6, 260);
+      shake(14, 280);
+      particles.burst(c.W / 2, c.H * 0.42, { n: 40, type: 'glyph', glyph: '⚙️', speed: 12, size: 24, gravity: 0.2 });
+      particles.burst(c.W / 2, c.H * 0.42, { n: 50, colors: ['#ff8a1f', '#2ee6d6', '#fff'], speed: 14, size: 7 });
+    });
+  },
+
+  // 超合金マザーシップ: a hull blots out the sky, four lamps light, tractor beam
+  d_mother: (c) => {
+    const lamps = Array.from({ length: 4 }, (_, i) => h('span.lg-lamp', { style: { animationDelay: `calc(${0.7 + i * 0.18}s * var(--k))` } }));
+    c.add(
+      h('div.lg-stars'),
+      h('div.lg-beam'),
+      h('div.lg-hull', h('div.lg-hull-dome', '🛰️'), h('div.lg-lamps', lamps)),
+      h('div.lg-complete', 'COMPLETE 4/4'),
+    );
+    audio.tone(55, 1.4 / fxConfig.speed, { type: 'sawtooth', vol: 0.09, slide: 80, filter: 400 });
+    for (let i = 0; i < 4; i++) c.at(700 + i * 180, () => audio.tone(NOTE(64 + i * 5), 0.18, { type: 'square', vol: 0.06 }));
+    c.at(1450, () => {
+      audio.play('bigHit');
+      audio.play('super');
+      flash('#9ff7ff', 0.75, 320);
+      shake(20, 380);
+      particles.burst(c.W / 2, c.H * 0.6, { n: 80, colors: ['#2ee6d6', '#b48cff', '#fff'], speed: 15, type: 'star', size: 8 });
+    });
+  },
+
+  // 永久機関エターナル: a perpetual wheel spins faster and faster until the meter reads ∞
+  d_eternal: (c) => {
+    const meter = h('span', '0');
+    const balls = Array.from({ length: 8 }, (_, i) => h('span.lg-ball', { style: { transform: `rotate(${i * 45}deg) translateY(-120px)` } }));
+    c.add(h('div.lg-wheel2', balls), h('div.lg-inf', '∞'), h('div.lg-energy', 'ENERGY ', meter, h('small', '%')), h('div.lg-spiral', '🌀'));
+    let t = 0;
+    for (let i = 0; i < 18; i++) {
+      t += Math.max(30, 140 - i * 8);
+      const v = Math.round(Math.pow(i / 17, 2) * 9999);
+      c.at(t, () => {
+        meter.textContent = String(v);
+        audio.tone(300 + i * 60, 0.05, { type: 'triangle', vol: 0.05 });
+      });
+    }
+    c.at(t + 120, () => {
+      meter.textContent = '∞';
+      audio.play('gachaSSR');
+      flash('#d6b8ff', 0.6, 300);
+      shake(14, 300);
+      particles.ring(c.W / 2, c.H * 0.42, '#b48cff', 220, 0.6, 18);
+      particles.burst(c.W / 2, c.H * 0.42, { n: 60, colors: ['#b48cff', '#2ee6d6', '#fff'], speed: 13, type: 'star', size: 7 });
+    });
+  },
 };
 
 export function hasLegendIntro(id: string): boolean {

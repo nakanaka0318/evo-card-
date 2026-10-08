@@ -163,6 +163,7 @@ export function view(s: GameState): View {
       fever: p.fever,
       likes: p.likes,
       sweet: p.sweet,
+      parts: p.parts.length,
       luck: p.luck,
       kakuhen: p.kakuhen,
       combo: p.combo,
@@ -256,6 +257,7 @@ export function createGame(setup: GameSetup): GameState {
       sweet: 0,
       luck: 0,
       kakuhen: 0,
+      parts: [],
       dopa: 0,
       fever: false,
       stats: emptyStats(),
@@ -851,9 +853,18 @@ export function playCard(s: GameState, uid: number, target?: Tgt): boolean {
     trigger(s, c, 'fanfare', extra);
   }
   resolve(s);
+  if (d.tags?.includes('part')) addPart(s, p.side, c.id);
   boardTrigger(s, p.side, 'onPlay', { other: c }, c);
   resolve(s);
   return true;
+}
+
+/** ガジェッター: remember a パーツ type as started (played or 合体'd) */
+export function addPart(s: GameState, side: Side, id: string): void {
+  const p = s.players[side];
+  if (p.parts.includes(id)) return;
+  p.parts.push(id);
+  emit(s, { t: 'parts', side, id, total: p.parts.length });
 }
 
 export function attack(s: GameState, uid: number, target: Tgt): boolean {

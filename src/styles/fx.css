@@ -185,6 +185,27 @@
     0 0 24px #ff9f6e;
 }
 
+.pop-parts {
+  font-family: var(--f-body);
+  font-weight: 900;
+  color: #ffb36b;
+}
+
+.pop-fuse {
+  font-style: italic;
+  color: #ff8a1f;
+  text-shadow:
+    var(--outline),
+    0 0 26px #ff8a1f;
+}
+
+.pop-complete {
+  color: #2ee6d6;
+  text-shadow:
+    var(--outline),
+    0 0 28px #2ee6d6;
+}
+
 .pop-exp {
   font-family: var(--f-body);
   font-weight: 900;

@@ -3,7 +3,7 @@
 // Card behaviour lives in CardDef hook functions, looked up by id.
 
 export type Side = 0 | 1;
-export type ClassId = 'neutral' | 'gacha' | 'stream' | 'sweets' | 'swipe' | 'gamer';
+export type ClassId = 'neutral' | 'gacha' | 'stream' | 'sweets' | 'swipe' | 'gamer' | 'gadget';
 export type CardType = 'follower' | 'spell' | 'amulet';
 export type Rarity = 'bronze' | 'silver' | 'gold' | 'legend';
 export type Keyword = 'ward' | 'storm' | 'rush' | 'bane' | 'drain' | 'ambush' | 'barrier' | 'aura' | 'twin';
@@ -83,6 +83,8 @@ export interface Player {
   sweet: number;
   luck: number;
   kakuhen: number;
+  /** ガジェッター: distinct パーツ ids played or 合体'd this battle */
+  parts: string[];
   dopa: number;
   fever: boolean;
   stats: PlayerStats;
@@ -216,6 +218,7 @@ export interface PlayerView {
   fever: boolean;
   likes: number;
   sweet: number;
+  parts: number;
   luck: number;
   kakuhen: number;
   combo: number;
@@ -268,6 +271,9 @@ export type GameEvent = { snap?: View } & (
   | { t: 'sugarHigh'; side: Side; uid: number; need: number }
   | { t: 'combo'; side: Side; count: number }
   | { t: 'comboHit'; side: Side; uid: number; need: number }
+  | { t: 'parts'; side: Side; id: string; total: number }
+  | { t: 'fuse'; side: Side; uid: number; ids: string[] }
+  | { t: 'complete'; side: Side; uid: number; need: number }
   | { t: 'enhance'; side: Side; uid: number }
   | { t: 'exp'; uid: number; exp: number; need: number }
   | { t: 'levelUp'; uid: number; level: number }

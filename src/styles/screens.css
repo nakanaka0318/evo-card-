@@ -608,7 +608,7 @@
 
 .class-picks {
   display: grid;
-  grid-template-columns: repeat(5, 200px);
+  grid-template-columns: repeat(6, 178px);
   gap: 14px;
 }
 
@@ -617,7 +617,7 @@
   width: 100%;
 }
 
-.portrait .class-picks .class-pick:last-child {
+.portrait .class-picks .class-pick:last-child:nth-child(odd) {
   grid-column: span 2;
 }
 
@@ -2089,6 +2089,15 @@
   flex-wrap: wrap;
   flex: none;
   margin-bottom: 8px;
+}
+
+.f-chip.f-neutral {
+  margin-left: auto;
+}
+
+.f-chip.f-neutral.on {
+  background: linear-gradient(180deg, #ff5aa8, #c4174b);
+  color: #fff;
 }
 
 .ed-pool,
