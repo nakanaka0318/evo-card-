@@ -3,6 +3,7 @@ import './styles/card.css';
 import './styles/battle.css';
 import './styles/fx.css';
 import './styles/screens.css';
+import './styles/legends.css';
 import './engine/cards';
 import { audio } from './audio/audio';
 import { music } from './audio/music';

@@ -5,6 +5,7 @@ import { save } from '../../meta/save';
 import { CARD_H, CARD_W, fitCardText, staticCard } from '../cardview';
 import { h, wait } from '../dom';
 import { banner, cutIn, flash, notifySpam, popText, shake, slam, T, toast, vignette } from '../fx/fx';
+import { hasLegendIntro, legendIntro } from '../fx/legends';
 import { particles } from '../fx/particles';
 import type { Battle } from './battle';
 import type { Pos } from './layout';
@@ -273,7 +274,8 @@ export class Animator {
         if (pd.rarity === 'legend') {
           const c = this.clsOf(ev.side);
           audio.play('gachaSSR');
-          await cutIn({ art: pd.art, art2: pd.art2, name: pd.name, title: ev.side === 0 ? 'LEGEND' : '相手のLEGEND', color: c.color, color2: c.counter === 'combo' || c.counter === 'luck' ? '#ff3fa4' : '#ffe14d', kind: 'legend', enemy: ev.side === 1, line: pd.flavor });
+          if (hasLegendIntro(ev.id)) await legendIntro(ev.id, { enemy: ev.side === 1 });
+          else await cutIn({ art: pd.art, art2: pd.art2, name: pd.name, title: ev.side === 0 ? 'LEGEND' : '相手のLEGEND', color: c.color, color2: c.counter === 'combo' || c.counter === 'luck' ? '#ff3fa4' : '#ffe14d', kind: 'legend', enemy: ev.side === 1, line: pd.flavor });
           if (ev.side === 0 && Math.random() < 0.6) this.enemyReact('legend');
         } else if (ev.side === 1) await this.revealEnemyPlay(ev.id, ev.enhanced);
         this.render(ev);

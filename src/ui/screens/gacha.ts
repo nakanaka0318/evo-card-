@@ -8,6 +8,7 @@ import { staticCard } from '../cardview';
 import { bottomNav, btn, modal, topBar } from '../common';
 import { h, todayKey, wait } from '../dom';
 import { cutIn, flash, shake, toast } from '../fx/fx';
+import { hasLegendIntro, legendIntro } from '../fx/legends';
 import { particles } from '../fx/particles';
 import { go, type ScreenFn } from '../router';
 import { stage } from '../stage';
@@ -225,7 +226,8 @@ function spread(host: HTMLElement, cards: PullResult[], idx: number, total: numb
         if (r.rarity === 'legend') {
           const d = def(r.id);
           audio.play('gachaSSR');
-          await cutIn({ art: d.art, art2: d.art2, name: d.name, title: r.prism ? 'PRISM LEGEND' : 'LEGEND', color: '#ff5fd2', color2: '#ffe14d', kind: 'legend', line: d.flavor });
+          if (hasLegendIntro(r.id)) await legendIntro(r.id);
+          else await cutIn({ art: d.art, art2: d.art2, name: d.name, title: r.prism ? 'PRISM LEGEND' : 'LEGEND', color: '#ff5fd2', color2: '#ffe14d', kind: 'legend', line: d.flavor });
         } else if (r.prism) {
           audio.play('gem');
           flash('#fff', 0.3, 200);

@@ -28,6 +28,7 @@ import { CARD_H, CARD_W, createCard, fitCardText, glossary, relatedBlock, static
 import { clear, h, wait } from '../dom';
 import { fxConfig, T, toast } from '../fx/fx';
 import { particles } from '../fx/particles';
+import { legendIntro } from '../fx/legends';
 import { PERF_INFO, type PerfLevel } from '../perf';
 import { setPerf } from '../screens/settings';
 import { stage } from '../stage';
@@ -1314,6 +1315,7 @@ export class Battle {
         void b.commit(a);
       },
       legal: () => legalActions(b.s),
+      legend: (id: string, enemy = false) => legendIntro(id, { enemy }),
     };
   }
 
