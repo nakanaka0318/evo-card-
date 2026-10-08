@@ -1022,3 +1022,36 @@
 .card-type:empty {
   display: none;
 }
+
+/* 🔰 a copy the player doesn't own (お試し) */
+.card-trial {
+  position: absolute;
+  left: 8px;
+  bottom: 52px;
+  z-index: 4;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid #000;
+  background: #fff;
+  font: 22px/1 var(--f-emoji);
+  box-shadow: 0 2px 0 #000;
+  pointer-events: none;
+}
+
+.zone-board .card-trial {
+  bottom: auto;
+  top: 8px;
+  left: auto;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+}
+
+.zone-detail .card-trial {
+  bottom: auto;
+  top: 60px;
+}

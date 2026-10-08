@@ -42,11 +42,18 @@ function drawDecks(body: HTMLElement): void {
     const err = validateDeck(dk.cls, dk.cards);
     const active = dk.id === d.activeDeck;
     const top = [...new Set(dk.cards)].sort((a, b) => RARITY[def(b).rarity].order - RARITY[def(a).rarity].order).slice(0, 3);
+    const trial = trialCount(dk.cards);
     return h(
       `div.deck-tile${active ? '.active' : ''}`,
       { style: { '--c1': cm.color, '--c2': cm.color2 } },
       h('div.dt-art', cm.leaderArt),
-      h('div.dt-info', h('div.dt-name', dk.name), h('div.dt-cls', `${cm.emoji} ${cm.name}　${dk.cards.length}/${RULES.deckSize}枚`), err ? h('div.dt-err', err) : h('div.dt-key', top.map((id) => h('span.dt-key-card', def(id).art)))),
+      h(
+        'div.dt-info',
+        h('div.dt-name', dk.name),
+        h('div.dt-cls', `${cm.emoji} ${cm.name}　${dk.cards.length}/${RULES.deckSize}枚`),
+        err ? h('div.dt-err', err) : h('div.dt-key', top.map((id) => h('span.dt-key-card', def(id).art))),
+        trial ? h('div.dt-trial', `🔰 お試しカード ${trial}枚`) : null,
+      ),
       active ? h('div.dt-active', '使用中') : null,
       h(
         'div.dt-btns',
@@ -113,6 +120,7 @@ function openEditor(body: HTMLElement, deckId: string): void {
   const filters = h('div.ed-filters');
   const owned = (id: string) => save.data.collection[id] ?? 0;
   const inDeck = (id: string) => work.cards.filter((x) => x === id).length;
+  const toldTrial = new Set<string>();
 
   const drawDeck = () => {
     const groups = new Map<string, number>();
@@ -120,12 +128,14 @@ function openEditor(body: HTMLElement, deckId: string): void {
     deckList.replaceChildren(
       ...[...groups].map(([id, n]) => {
         const dd = def(id);
+        const trial = Math.max(0, n - owned(id));
         return h(
-          `button.ed-row.r-${dd.rarity}`,
+          `button.ed-row.r-${dd.rarity}${trial ? '.has-trial' : ''}`,
           { type: 'button', onclick: () => { audio.play('back'); work.cards.splice(work.cards.indexOf(id), 1); redraw(); } },
           h('span.er-cost', String(dd.cost)),
           h('span.er-art', dd.art),
           h('span.er-name', dd.name),
+          trial ? h('span.er-trial', { title: '未所持（お試し）' }, trial === n ? '🔰' : `🔰${trial}`) : null,
           h('span.er-n', `×${n}`),
         );
       }),
@@ -148,16 +158,12 @@ function openEditor(body: HTMLElement, deckId: string): void {
         const used = inDeck(c.id);
         const el = staticCard(c.id, 'collection', (save.data.prism[c.id] ?? 0) > 0);
         const cell = h(
-          `div.pool-cell${have === 0 ? '.unowned' : ''}${used >= Math.min(3, have) ? '.maxed' : ''}`,
+          `div.pool-cell${have === 0 ? '.unowned' : ''}${used >= RULES.maxCopies ? '.maxed' : ''}${used > have ? '.trial' : ''}`,
           {
             onclick: () => {
-              if (have === 0) {
-                inspectCard(c.id, () => redraw());
-                return;
-              }
-              if (used >= Math.min(RULES.maxCopies, have)) {
+              if (used >= RULES.maxCopies) {
                 audio.play('error');
-                toast(have < 3 && used >= have ? `所持枚数は${have}枚` : '同じカードは3枚まで', '⚠️');
+                toast('同じカードは3枚まで', '⚠️');
                 return;
               }
               if (work.cards.length >= RULES.deckSize) {
@@ -167,11 +173,16 @@ function openEditor(body: HTMLElement, deckId: string): void {
               }
               audio.play('draw', { pitch: 1.2 });
               work.cards.push(c.id);
+              if (used + 1 > have && !toldTrial.has(c.id)) {
+                toldTrial.add(c.id);
+                toast(`「${c.name}」は未所持。お試しで入れた（パックで手に入れよう）`, '🔰');
+              }
               redraw();
             },
           },
           el,
           h('div.pool-own', `${used}/${have}`),
+          used > have ? h('div.pool-trial', '🔰') : null,
           h('button.pool-info', { type: 'button', 'aria-label': '詳細', onclick: (e: Event) => { e.stopPropagation(); inspectCard(c.id, () => redraw()); } }, 'i'),
         );
         return cell;
@@ -290,13 +301,8 @@ export function inspectCard(id: string, onChange?: () => void): void {
         if (!(await confirmModal(`「${d.name}」を1枚分解してドパ粉${r.dust}にする？`, '分解'))) return;
         save.update((s) => {
           s.dust += r.dust;
+          // decks keep the card; copies beyond what's owned just become 🔰 お試し
           s.collection[id] = Math.max(0, (s.collection[id] ?? 0) - 1);
-          s.decks = s.decks.map((dk) => {
-            const max = s.collection[id] ?? 0;
-            const cards = [...dk.cards];
-            while (cards.filter((x) => x === id).length > max) cards.splice(cards.indexOf(id), 1);
-            return { ...dk, cards };
-          });
         });
         audio.play('shatter');
         refresh();
@@ -322,4 +328,13 @@ export function inspectCard(id: string, onChange?: () => void): void {
     { cls: 'inspect-modal' },
   );
   fitCardText(stage.overlay);
+}
+
+/** copies in a deck beyond what the player owns (🔰 お試し) */
+function trialCount(cards: string[]): number {
+  const n = new Map<string, number>();
+  for (const id of cards) n.set(id, (n.get(id) ?? 0) + 1);
+  let t = 0;
+  for (const [id, k] of n) t += Math.max(0, k - (save.data.collection[id] ?? 0));
+  return t;
 }

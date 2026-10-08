@@ -189,6 +189,12 @@ export function updateCard(el: HTMLElement, v: CardView, zone: 'hand' | 'board')
     hp?.classList.toggle('damaged', v.hp < v.maxHp);
     hp?.classList.toggle('buffed', v.hp >= v.maxHp && v.maxHp > (d.hp ?? 0) + (v.evolved ? 2 : 0));
   }
+  if (v.trial !== el.classList.contains('trial')) {
+    el.classList.toggle('trial', v.trial);
+    const face = el.querySelector('.card-face');
+    if (v.trial && face && !face.querySelector('.card-trial')) face.append(h('div.card-trial', { title: '未所持カード（お試し）' }, '🔰'));
+    if (!v.trial) el.querySelector('.card-trial')?.remove();
+  }
   el.classList.toggle('evolved', v.evolved === 1);
   el.classList.toggle('super', v.evolved === 2);
   el.classList.toggle('sick', v.sick);
@@ -262,6 +268,7 @@ export function staticCard(id: string, zone: CardElOpts['zone'] = 'detail', pris
         sick: false,
         attacks: 0,
         enhanced: false,
+        trial: false,
       },
       'hand',
     );

@@ -2122,6 +2122,11 @@
   filter: grayscale(1) brightness(0.45);
 }
 
+/* unowned cards can go into decks as 🔰 お試し, so keep them readable in the pool */
+.pool-cell.unowned .card {
+  filter: grayscale(0.7) brightness(0.7);
+}
+
 .pool-cell.maxed .card {
   filter: brightness(0.55);
 }
@@ -3775,4 +3780,29 @@
 
 .portrait .rt-sub {
   font-size: 14px;
+}
+
+/* ---------------------------------------------------------------- 🔰 お試しカード */
+.pool-trial {
+  position: absolute;
+  left: -6px;
+  top: -8px;
+  z-index: 3;
+  font: 26px/1 var(--f-emoji);
+  filter: drop-shadow(0 2px 0 #000);
+}
+
+.er-trial {
+  font: 900 13px/1 var(--f-body);
+  color: #b6ffcf;
+  white-space: nowrap;
+}
+
+.ed-row.has-trial {
+  box-shadow: inset 4px 0 0 #3dff95;
+}
+
+.dt-trial {
+  font: 900 13px/1.3 var(--f-body);
+  color: #b6ffcf;
 }

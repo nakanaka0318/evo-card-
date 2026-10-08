@@ -140,6 +140,7 @@ export class Battle {
       leaders: [cfg.playerCls, cfg.enemyCls],
       hp: [cfg.playerHp ?? RULES.leaderHp, cfg.enemyHp ?? RULES.leaderHp],
     });
+    markTrialCards(this.s.players[PLAYER], save.data.collection);
     this.v = E.view(this.s);
     this.g = geometry(stage.w, stage.h, stage.portrait);
     this.anim = new Animator(this);
@@ -1366,4 +1367,17 @@ function closeOnTap(ov: HTMLElement, close: () => void, backdropOnly: boolean): 
     if (armed && (!backdropOnly || e.target === ov)) close();
     armed = false;
   });
+}
+
+/** copies beyond what the player owns are お試し (🔰) cards */
+function markTrialCards(p: { hand: Card[]; deck: Card[] }, owned: Record<string, number>): void {
+  const left = new Map<string, number>();
+  for (const c of [...p.hand, ...p.deck]) {
+    const have = left.has(c.id) ? left.get(c.id)! : owned[c.id] ?? 0;
+    if (have > 0) left.set(c.id, have - 1);
+    else {
+      left.set(c.id, 0);
+      c.data.trial = 1;
+    }
+  }
 }

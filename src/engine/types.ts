@@ -201,6 +201,8 @@ export interface CardView {
   sick: boolean;
   attacks: number;
   enhanced: boolean;
+  /** 🔰 a copy the player doesn't own (お試し) */
+  trial: boolean;
 }
 
 export interface PlayerView {

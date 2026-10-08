@@ -142,6 +142,7 @@ export function cardView(s: GameState, c: Card, zone: 'hand' | 'board'): CardVie
     sick: zone === 'board' && c.enteredOn === s.turn,
     attacks: c.attacks,
     enhanced: pc.enhanced,
+    trial: !!c.data.trial,
   };
 }
 

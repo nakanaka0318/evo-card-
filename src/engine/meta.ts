@@ -167,7 +167,7 @@ export const KEYWORDS: Record<Keyword, KeywordMeta> = {
   bane: { name: '必殺', icon: '☠️', desc: 'ダメージを与えたフォロワーを破壊する。' },
   drain: { name: 'ドレイン', icon: '💗', desc: '攻撃でダメージを与えたとき、その分だけ自分のリーダーを回復。' },
   ambush: { name: '潜伏', icon: '👻', desc: '攻撃するまで、相手に攻撃されず、能力で選ばれない。' },
-  barrier: { name: 'バリア', icon: '🔰', desc: '次に受けるダメージを1回だけ0にする。' },
+  barrier: { name: 'バリア', icon: '🧿', desc: '次に受けるダメージを1回だけ0にする。' },
   aura: { name: 'オーラ', icon: '✨', desc: '相手のスペルや能力で選ばれない。' },
   twin: { name: '連撃', icon: '⚔️', desc: '1ターンに2回攻撃できる。' },
 };
