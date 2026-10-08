@@ -187,7 +187,7 @@ describe('cards & mechanics', () => {
     const g = evs.find((e) => e.t === 'gacha');
     expect(g && g.t === 'gacha' && g.tier).toBe('SSR');
     expect(s.players[0].luck).toBe(0);
-    expect(c.atk).toBe(4);
+    expect(c.atk).toBe(3);
     expect(E.has(c, 'storm')).toBe(true);
   });
 

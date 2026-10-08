@@ -11,18 +11,15 @@ export const GACHA = [
     atk: 1,
     hp: 1,
     art: '🥚',
-    text: '【ファンファーレ】ガチャ\nN:「ハズレくん」を1体出す R:「アタリくん」を1体出す SR:「アタリくん」を1体出し、+1/+1 SSR:+3/+3と《疾走》',
+    text: '【ファンファーレ】ガチャ\nN:なし R:「ハズレくん」を1体出す SR:「アタリくん」を1体出す SSR:+2/+2と《疾走》',
     flavor: '中身は開けるまでわからない。',
     fanfare: (c) => {
       c.gacha({
-        N: (c) => c.summon('t_hazure'),
-        R: (c) => c.summon('t_atari'),
-        SR: (c) => {
-          c.summon('t_atari');
-          c.buff(c.self, 1, 1);
-        },
+        N: () => {},
+        R: (c) => c.summon('t_hazure'),
+        SR: (c) => c.summon('t_atari'),
         SSR: (c) => {
-          c.buff(c.self, 3, 3);
+          c.buff(c.self, 2, 2);
           c.give(c.self, 'storm');
         },
       });

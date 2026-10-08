@@ -27,10 +27,10 @@ export const SWIPE = [
     atk: 2,
     hp: 1,
     art: '🐿️',
-    text: '【ファンファーレ】【コンボ1】《疾走》を得る\n【ラストワード】「フリック」を1枚手札に加える',
+    text: '【ファンファーレ】【コンボ3】《疾走》を得る\n【ラストワード】「フリック」を1枚手札に加える',
     flavor: '集中力は15秒で切れる。',
     fanfare: (c) => {
-      if (c.comboAt(1)) c.give(c.self, 'storm');
+      if (c.comboAt(3)) c.give(c.self, 'storm');
     },
     lastWords: (c) => {
       c.addHand('t_flick');
@@ -137,7 +137,7 @@ export const SWIPE = [
     id: 'x_dancer',
     name: 'バズダンサー',
     cls: 'swipe',
-    cost: 3,
+    cost: 4,
     rarity: 'silver',
     atk: 0,
     hp: 2,
@@ -226,7 +226,7 @@ export const SWIPE = [
     id: 'x_shun',
     name: '秒速の覇者シュン',
     cls: 'swipe',
-    cost: 5,
+    cost: 7,
     rarity: 'legend',
     atk: 2,
     hp: 3,
@@ -321,7 +321,7 @@ export const SWIPE = [
     id: 'x_zero',
     name: '光速の神ゼロ',
     cls: 'swipe',
-    cost: 6,
+    cost: 7,
     rarity: 'legend',
     atk: 3,
     hp: 3,
