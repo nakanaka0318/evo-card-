@@ -40,6 +40,8 @@ export interface LifetimeStats {
   fevers: number;
   ssr: number;
   pulls: number;
+  /** packs opened */
+  packs: number;
   legendsPulled: number;
   prismsPulled: number;
   levelUps: number;
@@ -116,6 +118,7 @@ export function emptyStats(): LifetimeStats {
     fevers: 0,
     ssr: 0,
     pulls: 0,
+    packs: 0,
     legendsPulled: 0,
     prismsPulled: 0,
     levelUps: 0,

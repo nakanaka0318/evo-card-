@@ -211,8 +211,8 @@ export const ABILITIES: Record<string, string> = {
 };
 
 export const RARITY: Record<Rarity, { name: string; short: string; color: string; craft: number; dust: number; order: number }> = {
-  bronze: { name: 'ブロンズ', short: 'B', color: '#d08a4e', craft: 30, dust: 10, order: 0 },
-  silver: { name: 'シルバー', short: 'S', color: '#cfd8e8', craft: 100, dust: 30, order: 1 },
-  gold: { name: 'ゴールド', short: 'G', color: '#ffd23f', craft: 400, dust: 100, order: 2 },
-  legend: { name: 'レジェンド', short: 'L', color: '#ff5fd2', craft: 1500, dust: 400, order: 3 },
+  bronze: { name: 'ブロンズ', short: 'B', color: '#d08a4e', craft: 40, dust: 10, order: 0 },
+  silver: { name: 'シルバー', short: 'S', color: '#cfd8e8', craft: 120, dust: 30, order: 1 },
+  gold: { name: 'ゴールド', short: 'G', color: '#ffd23f', craft: 500, dust: 100, order: 2 },
+  legend: { name: 'レジェンド', short: 'L', color: '#ff5fd2', craft: 2000, dust: 400, order: 3 },
 };

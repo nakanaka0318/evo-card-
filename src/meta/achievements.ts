@@ -39,7 +39,7 @@ export const ACHIEVEMENTS: AchDef[] = [
   { id: 'overkill50', name: 'やりすぎ', desc: 'オーバーキルを通算50', icon: '🤯', reward: { gems: 100 }, check: (d) => [d.stats.overkill, 50] },
   { id: 'clutch', name: '心臓に悪い', desc: '体力3以下で勝利', icon: '💓', reward: { gems: 100 }, check: (d) => [d.stats.clutchWins, 1] },
   { id: 'speed', name: '秒殺', desc: '7ターン以内に勝利', icon: '⏱️', reward: { gems: 150 }, check: (d) => [d.stats.fastestWin && d.stats.fastestWin <= 7 ? 1 : 0, 1] },
-  { id: 'pull100', name: '回す手が止まらない', desc: 'ガチャを通算100回', icon: '🎲', reward: { gems: 200 }, check: (d) => [d.stats.pulls, 100] },
+  { id: 'pull100', name: '開ける手が止まらない', desc: 'カードパックを通算30パック開ける', icon: '🎲', reward: { gems: 200 }, check: (d) => [d.stats.packs, 30] },
   { id: 'legend1', name: 'はじめてのレジェンド', desc: 'レジェンドカードを引く', icon: '👑', reward: { gems: 100 }, check: (d) => [d.stats.legendsPulled, 1] },
   { id: 'prism1', name: 'キラキラ', desc: 'プリズムカードを引く', icon: '💠', reward: { gems: 100 }, check: (d) => [d.stats.prismsPulled, 1] },
   {

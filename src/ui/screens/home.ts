@@ -2,7 +2,7 @@ import { audio } from '../../audio/audio';
 import { music } from '../../audio/music';
 import { CLASSES } from '../../engine';
 import { grant, rankInfo, rewardText } from '../../meta/economy';
-import { pickupClass } from '../../meta/gacha';
+import { FIRST_PACKS, PACK_SIZE, pickupClass } from '../../meta/gacha';
 import { claimLogin, LOGIN_REWARDS, ROULETTE, spinRoulette } from '../../meta/login';
 import { refreshMissions } from '../../meta/missions';
 import { save } from '../../meta/save';
@@ -38,7 +38,7 @@ export const homeScreen: ScreenFn = (root) => {
   const b = badges();
   const pick = CLASSES[pickupClass()];
 
-  const ticker = h('div.ticker', h('div.ticker-track', [...TIPS, `本日のガチャピックアップ：${pick.emoji}${pick.name}`].map((t) => h('span.ticker-item', `✦ ${t}`))));
+  const ticker = h('div.ticker', h('div.ticker-track', [...TIPS, `本日のパックピックアップ：${pick.emoji}${pick.name}`].map((t) => h('span.ticker-item', `✦ ${t}`))));
   const hero = h(
     'button.home-hero',
     { type: 'button', style: { '--c1': cm.color, '--c2': cm.color2 }, onclick: () => { audio.play('tap'); void go('decks'); } },
@@ -139,9 +139,9 @@ function firstTenPrompt(): Promise<void> {
       [
         h('div.ft-burst', '🎁'),
         h('div.ft-text', '初回限定！'),
-        h('div.ft-big', '無料10連ガチャ'),
-        h('div.ft-sub', 'レジェンド1枚確定！ さっそく回そう！'),
-        btn('回す！！', () => {
+        h('div.ft-big', `無料${FIRST_PACKS}パック`),
+        h('div.ft-sub', `${FIRST_PACKS * PACK_SIZE}枚のカード＋レジェンド1枚確定！ さっそく開けよう！`),
+        btn('開ける！！', () => {
           m.close();
           void go('gacha', { free10: true });
         }, 'btn-hot btn-big'),

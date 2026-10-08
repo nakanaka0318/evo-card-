@@ -36,7 +36,7 @@ export const MISSIONS: MissionDef[] = [
   { id: 'fever1', text: 'FEVERを発動する', goal: 1, reward: { coins: 150, gems: 20 }, xp: 100, battle: (r) => r.stats.fevers },
   { id: 'combo4', text: '1ターンに4コンボする', goal: 1, reward: { coins: 200 }, xp: 120, battle: (r) => (r.stats.maxCombo >= 4 ? 1 : 0) },
   { id: 'hit6', text: '1回で6以上のダメージを与える', goal: 1, reward: { coins: 150 }, xp: 100, battle: (r) => (r.stats.maxHit >= 6 ? 1 : 0) },
-  { id: 'pull5', text: 'ガチャを5回引く', goal: 5, reward: { coins: 200 }, xp: 80, pulls: true },
+  { id: 'pull5', text: 'カードパックを2パック開ける', goal: 2, reward: { coins: 200 }, xp: 80, pulls: true },
   { id: 'overkill5', text: 'オーバーキルを合計5', goal: 5, reward: { coins: 150 }, xp: 100, battle: (r) => r.stats.overkill },
   { id: 'gradeS', text: 'スコアSランク以上で勝つ', goal: 1, reward: { coins: 250, gems: 30 }, xp: 150 },
   ...PLAYABLE_CLASSES.map(classWin),

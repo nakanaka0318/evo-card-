@@ -43,7 +43,7 @@ export function topBar(opts: { back?: () => void; title?: string } = {}): { el: 
       'div.tb-cur',
       h('div.cur.cur-coin', { title: 'コイン' }, h('span.cur-icon', '🪙'), coins),
       h('div.cur.cur-gem', { title: 'ジェム' }, h('span.cur-icon', '💎'), gems),
-      h('div.cur.cur-ticket', { title: 'ガチャチケット' }, h('span.cur-icon', '🎫'), tickets),
+      h('div.cur.cur-ticket', { title: 'パックチケット（1枚で1パック）' }, h('span.cur-icon', '🎫'), tickets),
       h('div.cur.cur-dust', { title: 'ドパ粉（カード生成に使う）' }, h('span.cur-icon', '✨'), dust),
     ),
   );
@@ -110,7 +110,7 @@ export function bottomNav(active: string): HTMLElement {
     'nav.bottomnav',
     tab('home', '🏠', 'ホーム', false),
     tab('story', '🗺️', 'ストーリー', false),
-    tab('gacha', '🎰', 'ガチャ', b.gacha),
+    tab('gacha', '🎁', 'パック', b.gacha),
     tab('decks', '🃏', 'デッキ', false),
     tab('missions', '📋', 'ミッション', b.missions + b.achievements),
   );
