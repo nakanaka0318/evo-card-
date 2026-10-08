@@ -11,13 +11,16 @@ export const GACHA = [
     atk: 1,
     hp: 1,
     art: '🥚',
-    text: '【ファンファーレ】ガチャ\nN:+0/+1 R:+1/+0 SR:+1/+1 SSR:+3/+3と《疾走》',
+    text: '【ファンファーレ】ガチャ\nN:「ハズレくん」を1体出す R:「アタリくん」を1体出す SR:「アタリくん」を1体出し、+1/+1 SSR:+3/+3と《疾走》',
     flavor: '中身は開けるまでわからない。',
     fanfare: (c) => {
       c.gacha({
-        N: (c) => c.buff(c.self, 0, 1),
-        R: (c) => c.buff(c.self, 1, 0),
-        SR: (c) => c.buff(c.self, 1, 1),
+        N: (c) => c.summon('t_hazure'),
+        R: (c) => c.summon('t_atari'),
+        SR: (c) => {
+          c.summon('t_atari');
+          c.buff(c.self, 1, 1);
+        },
         SSR: (c) => {
           c.buff(c.self, 3, 3);
           c.give(c.self, 'storm');
@@ -35,9 +38,12 @@ export const GACHA = [
     hp: 3,
     kw: ['ward'],
     art: '😺',
-    text: '《守護》【ファンファーレ】運気+1',
+    text: '《守護》【ファンファーレ】運気+1。「ハズレくん」を1体出す',
     flavor: '右手でSSRを、左手で天井をまねく。',
-    fanfare: (c) => c.luck(1),
+    fanfare: (c) => {
+      c.luck(1);
+      c.summon('t_hazure');
+    },
   }),
   spell({
     id: 'g_dice',
@@ -81,13 +87,13 @@ export const GACHA = [
     rarity: 'bronze',
     countdown: 2,
     art: '🎰',
-    text: '【カウントダウン2】\n【自分のターン終了時】ガチャ\nN:自分のリーダーを2回復 R:ランダムな相手のフォロワーに2ダメージ SR:カードを1枚引く SSR:相手のリーダーに3ダメージ',
+    text: '【カウントダウン2】\n【自分のターン終了時】ガチャ\nN:「ハズレくん」を1体出す R:「アタリくん」を1体出す SR:カードを1枚引く SSR:相手のリーダーに3ダメージ',
     flavor: 'レバーを引く手が止まらない。',
     aiValue: 3,
     turnEnd: (c) => {
       c.gacha({
-        N: (c) => c.heal(2),
-        R: (c) => c.dmg(c.pick(c.enemies()), 2),
+        N: (c) => c.summon('t_hazure'),
+        R: (c) => c.summon('t_atari'),
         SR: (c) => c.draw(1),
         SSR: (c) => c.face(3),
       });
@@ -103,10 +109,11 @@ export const GACHA = [
     hp: 4,
     kw: ['ward'],
     art: '🦍',
-    text: '《守護》\n【ファンファーレ】ガチャ\nN:ハズレ R:+1/+1 SR:+2/+2 SSR:+3/+3と《必殺》',
+    text: '《守護》\n【ファンファーレ】ガチャ\nN:「ハズレくん」を2体出す R:+1/+1 SR:+2/+2 SSR:+3/+3と《必殺》',
     flavor: 'クレーンゲームで取れた。重い。',
     fanfare: (c) => {
       c.gacha({
+        N: (c) => c.summon('t_hazure', 2),
         R: (c) => c.buff(c.self, 1, 1),
         SR: (c) => c.buff(c.self, 2, 2),
         SSR: (c) => {
@@ -126,9 +133,12 @@ export const GACHA = [
     atk: 2,
     hp: 2,
     art: '🤡',
-    text: '【ファンファーレ】確変（次のガチャがSR以上確定）',
+    text: '【ファンファーレ】確変（次のガチャがSR以上確定）\n【ラストワード】「アタリくん」を1体出す',
     flavor: '赤いボタンを押したら、世界が虹色になった。',
     fanfare: (c) => c.kakuhen(1),
+    lastWords: (c) => {
+      c.summon('t_atari');
+    },
   }),
   follower({
     id: 'g_coin',
@@ -198,8 +208,11 @@ export const GACHA = [
     hp: 4,
     kw: ['rush'],
     art: '🃏',
-    text: '《突進》\n【進化時】ガチャ\nN:自分のフォロワーすべてを+1/+0 R:+1/+1 SR:+2/+1 SSR:+2/+2',
+    text: '《突進》\n【ファンファーレ】「ハズレくん」を2体出す\n【進化時】ガチャ\nN:自分のフォロワーすべてを+1/+0 R:+1/+1 SR:+2/+1 SSR:+2/+2',
     flavor: '「ベットは済んだかい？」',
+    fanfare: (c) => {
+      c.summon('t_hazure', 2);
+    },
     evolve: (c) => {
       c.gacha({
         N: (c) => c.buffAll(c.allies(), 1, 0),
@@ -217,13 +230,13 @@ export const GACHA = [
     cost: 7,
     rarity: 'gold',
     art: '🔟',
-    text: 'ガチャを10回行う\nN・R:ランダムな相手のフォロワーかリーダーに1ダメージ SR:2ダメージ SSR:「SSRスター」を1体出す',
+    text: 'ガチャを10回行う\nN:ランダムな相手のフォロワーかリーダーに1ダメージ R:「アタリくん」を1体出す SR:2ダメージ SSR:「SSRスター」を1体出す',
     flavor: '石を砕く音が、最高に気持ちいい。',
     spell: (c) => {
       for (let i = 0; i < 10; i++) {
         c.gacha({
           N: (c) => c.ping(1, 1),
-          R: (c) => c.ping(1, 1),
+          R: (c) => c.summon('t_atari'),
           SR: (c) => c.ping(1, 2),
           SSR: (c) => c.summon('t_star'),
         });
@@ -264,9 +277,10 @@ export const GACHA = [
     atk: 5,
     hp: 5,
     art: '🐲',
-    text: '【ファンファーレ】ガチャ\nN:《突進》 R:+1/+1と《突進》 SR:《疾走》 SSR:+2/+2と《疾走》',
+    text: '【ファンファーレ】「アタリくん」を1体出す。その後、ガチャ\nN:《突進》 R:+1/+1と《突進》 SR:《疾走》 SSR:+2/+2と《疾走》',
     flavor: 'コインの山から生まれた竜。',
     fanfare: (c) => {
+      c.summon('t_atari');
       c.gacha({
         N: (c) => c.give(c.self, 'rush'),
         R: (c) => {
@@ -338,13 +352,16 @@ export const GACHA = [
     atk: 2,
     hp: 2,
     art: '🎱',
-    text: '【ファンファーレ】ガチャ\nN:運気+1 R:+1/+0 SR:+1/+1 SSR:+2/+2と《突進》',
+    text: '【ファンファーレ】ガチャ\nN:「ハズレくん」を1体出す R:「アタリくん」を1体出す SR:+1/+1と「アタリくん」を1体出す SSR:+2/+2と《突進》',
     flavor: '転がる先に、当たりがある。',
     fanfare: (c) => {
       c.gacha({
-        N: (c) => c.luck(1),
-        R: (c) => c.buff(c.self, 1, 0),
-        SR: (c) => c.buff(c.self, 1, 1),
+        N: (c) => c.summon('t_hazure'),
+        R: (c) => c.summon('t_atari'),
+        SR: (c) => {
+          c.buff(c.self, 1, 1);
+          c.summon('t_atari');
+        },
         SSR: (c) => {
           c.buff(c.self, 2, 2);
           c.give(c.self, 'rush');
@@ -361,11 +378,11 @@ export const GACHA = [
     atk: 2,
     hp: 3,
     art: '⛩️',
-    text: '【ファンファーレ】ガチャ\nN:自分のリーダーを2回復 R:カードを1枚引く SR:ランダムな相手のフォロワーに3ダメージ SSR:確変と運気+2',
+    text: '【ファンファーレ】ガチャ\nN:「ハズレくん」を1体出す R:カードを1枚引く SR:ランダムな相手のフォロワーに3ダメージ SSR:確変と運気+2',
     flavor: '大吉が出るまで、引けばいい。',
     fanfare: (c) => {
       c.gacha({
-        N: (c) => c.heal(2),
+        N: (c) => c.summon('t_hazure'),
         R: (c) => c.draw(1),
         SR: (c) => c.dmg(c.pick(c.enemies()), 3),
         SSR: (c) => {

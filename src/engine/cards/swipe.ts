@@ -12,8 +12,11 @@ export const SWIPE = [
     hp: 1,
     kw: ['rush'],
     art: '👆',
-    text: '《突進》',
+    text: '《突進》\n【ファンファーレ】「フリック」を1枚手札に加える',
     flavor: '親指の速さなら誰にも負けない。',
+    fanfare: (c) => {
+      c.addHand('t_flick');
+    },
   }),
   follower({
     id: 'x_squirrel',
@@ -24,10 +27,13 @@ export const SWIPE = [
     atk: 2,
     hp: 1,
     art: '🐿️',
-    text: '【ファンファーレ】【コンボ1】《疾走》を得る',
+    text: '【ファンファーレ】【コンボ1】《疾走》を得る\n【ラストワード】「フリック」を1枚手札に加える',
     flavor: '集中力は15秒で切れる。',
     fanfare: (c) => {
       if (c.comboAt(1)) c.give(c.self, 'storm');
+    },
+    lastWords: (c) => {
+      c.addHand('t_flick');
     },
   }),
   spell({
@@ -83,11 +89,11 @@ export const SWIPE = [
     cost: 2,
     rarity: 'bronze',
     art: '🪩',
-    text: '「バックダンサー」を2体出す\n【コンボ3】さらに1体出す。その後、自分の「バックダンサー」すべてを+1/+0',
+    text: '「バックダンサー」を2体出す\n【コンボ2】さらに1体出す。その後、自分の「バックダンサー」すべてを+1/+0',
     flavor: '突然始まって、突然終わる。',
     spell: (c) => {
       c.summon('t_dancer', 2);
-      if (c.comboAt(3)) {
+      if (c.comboAt(2)) {
         c.summon('t_dancer', 1);
         c.buffAll(c.allies().filter((a) => a.id === 't_dancer'), 1, 0);
       }
@@ -116,12 +122,12 @@ export const SWIPE = [
     cost: 1,
     rarity: 'silver',
     art: '🗡️',
-    text: '相手のフォロワー1体に1ダメージ\n【コンボ2】PPを1回復し、カードを1枚引く',
+    text: '相手のフォロワー1体に1ダメージ\n【コンボ1】PPを1回復し、カードを1枚引く',
     flavor: '次の動画へ、物理的に。',
     target: { kind: 'enemyFollower' },
     spell: (c) => {
       c.dmg(c.target, 1);
-      if (c.comboAt(2)) {
+      if (c.comboAt(1)) {
         c.pp(1);
         c.draw(1);
       }
@@ -137,9 +143,12 @@ export const SWIPE = [
     hp: 2,
     kw: ['storm'],
     art: '🕺',
-    text: '《疾走》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+1',
+    text: '《疾走》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+1。「フリック」を1枚手札に加える',
     flavor: '流行りの振り付けは全部踊れる。',
-    fanfare: (c) => c.buff(c.self, c.combo, c.combo),
+    fanfare: (c) => {
+      c.buff(c.self, c.combo, c.combo);
+      c.addHand('t_flick');
+    },
   }),
   follower({
     id: 'x_cat',
@@ -151,10 +160,10 @@ export const SWIPE = [
     hp: 1,
     kw: ['storm'],
     art: '🐈',
-    text: '《疾走》\n【ファンファーレ】【コンボ2】+2/+1',
+    text: '《疾走》\n【ファンファーレ】【コンボ1】+2/+1',
     flavor: 'ネコ動画は、無限に見られる。',
     fanfare: (c) => {
-      if (c.comboAt(2)) c.buff(c.self, 2, 1);
+      if (c.comboAt(1)) c.buff(c.self, 2, 1);
     },
   }),
   spell({
@@ -224,11 +233,12 @@ export const SWIPE = [
     kw: ['storm'],
     art: '🐆',
     art2: '⚡',
-    text: '《疾走》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+0\n【コンボ3】《連撃》を得る',
+    text: '《疾走》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+0。「フリック」を2枚手札に加える\n【コンボ2】《連撃》を得る',
     flavor: '「遅い。全部、遅すぎる」',
     fanfare: (c) => {
       c.buff(c.self, c.combo, 0);
-      if (c.comboAt(3)) c.give(c.self, 'twin');
+      c.addHand('t_flick', 2);
+      if (c.comboAt(2)) c.give(c.self, 'twin');
     },
   }),
   amulet({
@@ -254,12 +264,12 @@ export const SWIPE = [
     cost: 1,
     rarity: 'bronze',
     art: '🔘',
-    text: '相手のフォロワー1体に1ダメージ\n【コンボ2】さらに相手のリーダーに1ダメージ',
+    text: '相手のフォロワー1体に1ダメージ\n【コンボ1】さらに相手のリーダーに1ダメージ',
     flavor: 'ボタンが壊れるのが先か、相手が先か。',
     target: { kind: 'enemyFollower' },
     spell: (c) => {
       c.dmg(c.target, 1);
-      if (c.comboAt(2)) c.face(1);
+      if (c.comboAt(1)) c.face(1);
     },
   }),
   follower({
@@ -285,11 +295,12 @@ export const SWIPE = [
     cost: 2,
     rarity: 'silver',
     art: '🎬',
-    text: '「バックダンサー」を1体出す。カードを1枚引く',
+    text: '「バックダンサー」を1体出す。カードを1枚引く。「フリック」を1枚手札に加える',
     flavor: '投稿ボタンを、押して押して押しまくる。',
     spell: (c) => {
       c.summon('t_dancer');
       c.draw(1);
+      c.addHand('t_flick');
     },
   }),
   follower({
@@ -317,11 +328,11 @@ export const SWIPE = [
     kw: ['storm', 'twin'],
     art: '🌠',
     art2: '⏱️',
-    text: '《疾走》《連撃》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+1\n【コンボ4】相手のフォロワーすべてに3ダメージ',
+    text: '《疾走》《連撃》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+1\n【コンボ3】相手のフォロワーすべてに3ダメージ',
     flavor: '「0.1秒あれば、世界は終わる」',
     fanfare: (c) => {
       c.buff(c.self, c.combo, c.combo);
-      if (c.comboAt(4)) c.dmgAll(c.enemies(), 3);
+      if (c.comboAt(3)) c.dmgAll(c.enemies(), 3);
     },
   }),
 ];
