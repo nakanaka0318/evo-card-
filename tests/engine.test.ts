@@ -240,24 +240,20 @@ describe('cards & mechanics', () => {
     expect(donut.atk).toBe(2);
   });
 
-  it('skip hands back a free skip, and the chain stops at a full hand', () => {
+  it('skip hands back a free skip that only draws', () => {
     const s = game();
     s.players[0].pp = 2;
     s.players[0].hand = [];
     const first = give(s, 0, 'x_skip');
     expect(E.costOf(s, first)).toBe(2);
     apply(s, { t: 'play', uid: first.uid });
-    const free = s.players[0].hand.find((c) => c.id === 'x_skip');
+    const free = s.players[0].hand.find((c) => c.id === 't_skip');
     expect(free && E.costOf(s, free)).toBe(0);
-    let plays = 0;
-    for (;;) {
-      const k = s.players[0].hand.find((c) => c.id === 'x_skip' && E.costOf(s, c) === 0);
-      if (!k || plays > 20) break;
-      apply(s, { t: 'play', uid: k.uid });
-      plays++;
-    }
-    expect(plays).toBeLessThan(12);
-    expect(s.players[0].hand.length).toBeLessThanOrEqual(RULES.handMax);
+    const before = s.players[0].hand.length;
+    apply(s, { t: 'play', uid: free!.uid });
+    // played the free one (-1), drew one (+1), and no new skip came back
+    expect(s.players[0].hand.length).toBe(before);
+    expect(s.players[0].hand.some((c) => c.id === 't_skip' || c.id === 'x_skip')).toBe(false);
   });
 
   it('mid boss always hits a follower; 課金 also hits the leader', () => {

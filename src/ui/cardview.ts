@@ -71,7 +71,8 @@ export function glossary(d: CardDef): { name: string; desc: string }[] {
 export function relatedCards(d: CardDef): CardDef[] {
   const out: CardDef[] = [];
   for (const m of d.text.matchAll(/「([^」]+)」/g)) {
-    const r = allDefs().find((x) => x.name === m[1]);
+    // prefer another card with that name (e.g. the free token version of スキップ)
+    const r = allDefs().find((x) => x.name === m[1] && x.id !== d.id);
     if (r && r.id !== d.id && !out.includes(r)) out.push(r);
   }
   return out;

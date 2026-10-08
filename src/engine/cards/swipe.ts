@@ -41,7 +41,7 @@ export const SWIPE = [
     flavor: 'イントロは飛ばす。次のイントロも飛ばす。',
     spell: (c) => {
       c.draw(1);
-      for (const k of c.addHand('x_skip')) k.costMod = -2;
+      c.addHand('t_skip');
     },
   }),
   follower({

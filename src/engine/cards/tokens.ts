@@ -57,6 +57,20 @@ export const TOKENS = [
       c.heal(2);
     },
   }),
+  spell({
+    id: 't_skip',
+    name: 'スキップ',
+    cls: 'swipe',
+    cost: 0,
+    rarity: 'bronze',
+    art: '⏭️',
+    text: 'カードを1枚引く',
+    flavor: 'おかわりのスキップ。これで最後。',
+    token: true,
+    spell: (c) => {
+      c.draw(1);
+    },
+  }),
   follower({
     id: 't_dancer',
     name: 'バックダンサー',
