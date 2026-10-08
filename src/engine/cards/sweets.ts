@@ -258,4 +258,87 @@ export const SWEETS = [
       if (c.sugarHigh(20)) for (const e of c.enemies()) c.destroy(e);
     },
   }),
+
+  // ---------------- 追加カード
+  follower({
+    id: 'w_berry',
+    name: 'ブルーベリーゼリー',
+    cls: 'sweets',
+    cost: 1,
+    rarity: 'bronze',
+    atk: 1,
+    hp: 3,
+    art: '🫐',
+    text: '【ファンファーレ】自分のリーダーを1回復',
+    flavor: 'ぷるぷる、きらきら。',
+    fanfare: (c) => {
+      c.heal(1);
+    },
+  }),
+  follower({
+    id: 'w_tea',
+    name: 'ミルクティー執事',
+    cls: 'sweets',
+    cost: 3,
+    rarity: 'bronze',
+    atk: 2,
+    hp: 3,
+    art: '🧋',
+    text: '【ファンファーレ】自分のリーダーを3回復\n【シュガーハイ10】さらにカードを1枚引く',
+    flavor: '「タピオカ、増量しておきました」',
+    fanfare: (c) => {
+      c.heal(3);
+      if (c.sugarHigh(10)) c.draw(1);
+    },
+  }),
+  amulet({
+    id: 'w_oven',
+    name: 'お菓子オーブン',
+    cls: 'sweets',
+    cost: 2,
+    rarity: 'silver',
+    countdown: 3,
+    art: '🍳',
+    text: '【カウントダウン3】\n【自分のターン終了時】「キャンディ」を1枚手札に加える',
+    flavor: '焼きたての甘い匂いがする。',
+    aiValue: 3,
+    turnEnd: (c) => {
+      c.addHand('t_candy');
+    },
+  }),
+  follower({
+    id: 'w_baker',
+    name: 'パティシエ見習い',
+    cls: 'sweets',
+    cost: 5,
+    rarity: 'gold',
+    atk: 4,
+    hp: 5,
+    art: '🧑‍🍳',
+    text: '【ファンファーレ】自分のリーダーを4回復。自分のフォロワーすべてを+1/+1\n【シュガーハイ15】かわりに+2/+2',
+    flavor: '失敗作も、ちゃんと甘い。',
+    fanfare: (c) => {
+      c.heal(4);
+      if (c.sugarHigh(15)) c.buffAll(c.allies(), 2, 2);
+      else c.buffAll(c.allies(), 1, 1);
+    },
+  }),
+  follower({
+    id: 'w_pero',
+    name: 'ペロペロ大王',
+    cls: 'sweets',
+    cost: 7,
+    rarity: 'legend',
+    atk: 5,
+    hp: 7,
+    kw: ['drain'],
+    art: '👅',
+    art2: '🍭',
+    text: '《ドレイン》\n【ファンファーレ】自分のリーダーを10回復\n【シュガーハイ25】さらに相手のフォロワーすべてに4ダメージ',
+    flavor: '「この国のお菓子は、ぜんぶ余のもの」',
+    fanfare: (c) => {
+      c.heal(10);
+      if (c.sugarHigh(25)) c.dmgAll(c.enemies(), 4);
+    },
+  }),
 ];

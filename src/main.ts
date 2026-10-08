@@ -7,7 +7,7 @@ import './styles/legends.css';
 import './engine/cards';
 import { audio } from './audio/audio';
 import { music } from './audio/music';
-import { PLAYABLE_CLASSES } from './engine';
+import { collectible, PLAYABLE_CLASSES } from './engine';
 import { grantStarter, starterDeck } from './meta/economy';
 import { save } from './meta/save';
 import { battleScreen } from './ui/screens/battleScreen';
@@ -24,6 +24,8 @@ import { titleScreen } from './ui/screens/title';
 import { currentScreen, go, registerScreen } from './ui/router';
 import { stage } from './ui/stage';
 
+const NEW_CARDS_2 = ['n_bubble', 'n_cushion', 'n_mirror', 'g_ball', 'g_miko', 'g_scratch', 's_kids', 's_mod', 's_short', 'w_berry', 'w_tea', 'w_oven', 'x_tap', 'x_skate', 'x_reels', 'm_villager', 'm_guard', 'm_save'];
+
 function boot(): void {
   const app = document.getElementById('app') ?? document.body;
   stage.mount(app);
@@ -34,6 +36,17 @@ function boot(): void {
       if (!d.decks.length) d.decks = PLAYABLE_CLASSES.map((c) => starterDeck(c, d));
       d.flags.starter = true;
       if (!d.decks.some((x) => x.id === d.activeDeck)) d.activeDeck = d.decks[0].id;
+    });
+  }
+  // the 2nd card wave: give existing players the same starter share (bronze ×3, silver ×2)
+  if (save.data.flags.starter && !save.data.flags.cards2) {
+    save.update((d) => {
+      for (const c of collectible()) {
+        if (!NEW_CARDS_2.includes(c.id)) continue;
+        const want = c.rarity === 'bronze' ? 3 : c.rarity === 'silver' ? 2 : 0;
+        if ((d.collection[c.id] ?? 0) < want) d.collection[c.id] = want;
+      }
+      d.flags.cards2 = true;
     });
   }
   applySettings();

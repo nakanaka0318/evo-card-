@@ -327,4 +327,124 @@ export const GACHA = [
       });
     },
   }),
+
+  // ---------------- 追加カード
+  follower({
+    id: 'g_ball',
+    name: 'ガチャ玉ころころ',
+    cls: 'gacha',
+    cost: 2,
+    rarity: 'bronze',
+    atk: 2,
+    hp: 2,
+    art: '🎱',
+    text: '【ファンファーレ】ガチャ\nN:運気+1 R:+1/+0 SR:+1/+1 SSR:+2/+2と《突進》',
+    flavor: '転がる先に、当たりがある。',
+    fanfare: (c) => {
+      c.gacha({
+        N: (c) => c.luck(1),
+        R: (c) => c.buff(c.self, 1, 0),
+        SR: (c) => c.buff(c.self, 1, 1),
+        SSR: (c) => {
+          c.buff(c.self, 2, 2);
+          c.give(c.self, 'rush');
+        },
+      });
+    },
+  }),
+  follower({
+    id: 'g_miko',
+    name: 'おみくじ巫女',
+    cls: 'gacha',
+    cost: 3,
+    rarity: 'bronze',
+    atk: 2,
+    hp: 3,
+    art: '⛩️',
+    text: '【ファンファーレ】ガチャ\nN:自分のリーダーを2回復 R:カードを1枚引く SR:ランダムな相手のフォロワーに3ダメージ SSR:確変と運気+2',
+    flavor: '大吉が出るまで、引けばいい。',
+    fanfare: (c) => {
+      c.gacha({
+        N: (c) => c.heal(2),
+        R: (c) => c.draw(1),
+        SR: (c) => c.dmg(c.pick(c.enemies()), 3),
+        SSR: (c) => {
+          c.kakuhen(1);
+          c.luck(2);
+        },
+      });
+    },
+  }),
+  spell({
+    id: 'g_scratch',
+    name: 'スクラッチくじ',
+    cls: 'gacha',
+    cost: 1,
+    rarity: 'silver',
+    art: '🧾',
+    text: 'ガチャ\nN:運気+2 R:カードを1枚引く SR:カードを2枚引く SSR:カードを2枚引き、PPを2回復',
+    flavor: '削る指が、止まらない。',
+    spell: (c) => {
+      c.gacha({
+        N: (c) => c.luck(2),
+        R: (c) => c.draw(1),
+        SR: (c) => c.draw(2),
+        SSR: (c) => {
+          c.draw(2);
+          c.pp(2);
+        },
+      });
+    },
+  }),
+  follower({
+    id: 'g_bandit',
+    name: 'スロット大盗賊',
+    cls: 'gacha',
+    cost: 5,
+    rarity: 'gold',
+    atk: 4,
+    hp: 4,
+    art: '🦹',
+    text: '【ファンファーレ】ガチャを2回行う\nN:+1/+0 R:+1/+1 SR:+1/+1と《突進》 SSR:+2/+2と《疾走》',
+    flavor: '盗むのは、当たりの瞬間だけ。',
+    fanfare: (c) => {
+      for (let i = 0; i < 2; i++) {
+        c.gacha({
+          N: (c) => c.buff(c.self, 1, 0),
+          R: (c) => c.buff(c.self, 1, 1),
+          SR: (c) => {
+            c.buff(c.self, 1, 1);
+            c.give(c.self, 'rush');
+          },
+          SSR: (c) => {
+            c.buff(c.self, 2, 2);
+            c.give(c.self, 'storm');
+          },
+        });
+      }
+    },
+  }),
+  follower({
+    id: 'g_seven',
+    name: '777の女神セブン',
+    cls: 'gacha',
+    cost: 5,
+    rarity: 'legend',
+    atk: 4,
+    hp: 4,
+    art: '🧚',
+    art2: '7️⃣',
+    text: '【ファンファーレ】確変。その後、ガチャ\nN・R:カードを1枚引く SR:「SSRスター」を1体出す SSR:「SSRスター」を2体出す\n【進化時】運気を6にする',
+    flavor: '「7が3つ並ぶ音、聞きたいでしょ？」',
+    fanfare: (c) => {
+      c.kakuhen(1);
+      c.gacha({
+        N: (c) => c.draw(1),
+        R: (c) => c.draw(1),
+        SR: (c) => c.summon('t_star'),
+        SSR: (c) => c.summon('t_star', 2),
+      });
+    },
+    evolve: (c) => c.luck(6),
+  }),
 ];

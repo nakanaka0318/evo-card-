@@ -298,4 +298,89 @@ export const NEUTRAL = [
       c.heal(4);
     },
   }),
+
+  // ---------------- 追加カード
+  follower({
+    id: 'n_bubble',
+    name: 'シャボン玉スナイパー',
+    cls: 'neutral',
+    cost: 1,
+    rarity: 'bronze',
+    atk: 1,
+    hp: 1,
+    art: '🫧',
+    text: '【ファンファーレ】相手のフォロワー1体に1ダメージ',
+    flavor: '割れる瞬間を、狙い撃つ。',
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'small',
+    fanfare: (c) => {
+      c.dmg(c.target, 1);
+    },
+  }),
+  follower({
+    id: 'n_cushion',
+    name: 'もちもちクッション',
+    cls: 'neutral',
+    cost: 3,
+    rarity: 'bronze',
+    atk: 1,
+    hp: 5,
+    kw: ['ward'],
+    art: '🧸',
+    text: '《守護》\n【ラストワード】自分のリーダーを2回復',
+    flavor: '一度座ると、もう立てない。',
+    lastWords: (c) => {
+      c.heal(2);
+    },
+  }),
+  spell({
+    id: 'n_mirror',
+    name: 'ミラーの魔法',
+    cls: 'neutral',
+    cost: 3,
+    rarity: 'silver',
+    art: '🪞',
+    text: '自分のフォロワー1体を選び、それと同じフォロワーを1体出す',
+    flavor: '鏡の中のキミも、なかなかやるじゃん。',
+    target: { kind: 'allyFollower' },
+    spell: (c) => {
+      const t = c.targetCard();
+      if (t) c.summon(t.id);
+    },
+  }),
+  follower({
+    id: 'n_tiger',
+    name: 'ネオンタイガー',
+    cls: 'neutral',
+    cost: 6,
+    rarity: 'gold',
+    atk: 5,
+    hp: 5,
+    kw: ['storm'],
+    art: '🐯',
+    text: '《疾走》\n【進化時】相手のフォロワーすべてに1ダメージ',
+    flavor: '夜の街を、光の速さで駆け抜ける。',
+    evolve: (c) => {
+      c.dmgAll(c.enemies(), 1);
+    },
+  }),
+  follower({
+    id: 'n_god',
+    name: 'ドパミンの神',
+    cls: 'neutral',
+    cost: 9,
+    rarity: 'legend',
+    atk: 7,
+    hp: 7,
+    kw: ['ward'],
+    art: '🌞',
+    art2: '✨',
+    text: '《守護》\n【ファンファーレ】相手のフォロワーすべてに3ダメージ。自分のリーダーを5回復。カードを2枚引く',
+    flavor: '「汝、もっと刺激を求めよ」',
+    fanfare: (c) => {
+      c.dmgAll(c.enemies(), 3);
+      c.heal(5);
+      c.draw(2);
+    },
+  }),
 ];

@@ -218,6 +218,102 @@ const SCENES: Record<string, Scene> = {
       particles.burst(c.W / 2, c.H * 0.45, { n: 60, colors: ['#ff2e2e', '#7a00ff', '#000'], speed: 12, size: 8 });
     });
   },
+
+  // ドパミンの神: a pillar of light, a halo, a feather shower and a choir
+  n_god: (c) => {
+    c.add(h('div.lg-clouds'), h('div.lg-pillar'), h('div.lg-halo'), h('div.lg-sun', '🌞'));
+    const k = 1 / fxConfig.speed;
+    for (const [f, at] of [[NOTE(60), 0.2], [NOTE(64), 0.2], [NOTE(67), 0.2], [NOTE(72), 0.9], [NOTE(76), 0.9], [NOTE(79), 0.9]] as [number, number][])
+      audio.tone(f, 1.4 * k, { type: 'sine', vol: 0.06, at: at * k, attack: 0.3 });
+    c.at(500, () => particles.rain('🪶', 22, 30));
+    c.at(950, () => {
+      flash('#fff6c8', 0.7, 400);
+      shake(10, 300);
+      particles.burst(c.W / 2, c.H * 0.38, { n: 80, colors: ['#fff6c8', '#ffe14d', '#fff'], speed: 13, type: 'star', size: 8 });
+    });
+  },
+
+  // 777の女神セブン: three reels stop one by one on 7
+  g_seven: (c) => {
+    const strip = ['🍒', '🔔', '🍋', '💎', '⭐', '🍉', '🍒', '🔔', '7️⃣'];
+    const reels = [0, 1, 2].map((i) => h(`div.lg-reel.r${i}`, h('div.lg-strip', [...strip, ...strip].slice(0, 9).map((g) => h('span', g)))));
+    c.add(h('div.lg-slotlights'), h('div.lg-slot', reels), h('div.lg-jackpot', 'JACKPOT!!'), h('div.lg-fairy', '🧚'));
+    for (let i = 0; i < 16; i++) c.at(i * 55, () => audio.play('gachaTick', { pitch: 1.2, vol: 0.5 }));
+    for (let i = 0; i < 3; i++)
+      c.at(700 + i * 300, () => {
+        audio.tone(NOTE(76 + i * 4), 0.25, { type: 'square', vol: 0.08 });
+        audio.noise(0.08, { type: 'lowpass', freq: 700, vol: 0.35 });
+        shake(6, 120);
+      });
+    c.at(1450, () => {
+      audio.play('gachaSSR');
+      audio.play('coins');
+      flash('#ffe14d', 0.55, 300);
+      particles.rain('🪙', 34, 30);
+    });
+  },
+
+  // 登録者1000万人ミリオン: the subscriber counter rolls to 10,000,000 and the plaque drops
+  s_million: (c) => {
+    const subs = h('span', '0');
+    c.add(h('div.lg-subs', h('small', 'チャンネル登録者数'), subs, h('b', '人')), h('div.lg-plaque', h('div.lg-play', '▶'), h('span', '10,000,000')), h('div.lg-globe', '🌐'));
+    for (let i = 1; i <= 26; i++)
+      c.at(i * 42, () => {
+        subs.textContent = Math.round(10_000_000 * Math.pow(i / 26, 2.5)).toLocaleString('ja-JP');
+        if (i % 4 === 0) audio.play('notify', { pitch: 1 + i * 0.02, vol: 0.4 });
+      });
+    c.at(1250, () => {
+      audio.play('rankUp');
+      shake(12, 300);
+      particles.confetti(80);
+    });
+  },
+
+  // ペロペロ大王: a candy-swirl world, sweets everywhere, one giant lick
+  w_pero: (c) => {
+    c.add(h('div.lg-candyswirl'), h('div.lg-lolli', '🍭'), h('div.lg-tongue', '👅'), h('div.lg-pero', 'ペロッ'));
+    seq([[NOTE(79), 0.1, 0.15], [NOTE(84), 0.25, 0.15], [NOTE(88), 0.4, 0.15], [NOTE(91), 0.55, 0.3], [NOTE(88), 0.8, 0.15], [NOTE(91), 0.95, 0.5]], 'triangle', 0.1);
+    c.at(200, () => particles.rain('🍬', 26, 30));
+    c.at(1100, () => {
+      audio.noise(0.35, { type: 'bandpass', freq: 1400, to: 500, q: 2, vol: 0.4 });
+      shake(10, 260);
+      particles.burst(c.W / 2, c.H * 0.4, { n: 40, type: 'glyph', glyph: '🍭', speed: 11, size: 26 });
+    });
+  },
+
+  // 光速の神ゼロ: a light-speed tunnel, then the clock stops at 0.1s
+  x_zero: (c) => {
+    const rings = Array.from({ length: 6 }, (_, i) => h('span.lg-ring', { style: { animationDelay: `calc(${i * 0.16}s * var(--k))` } }));
+    const t = h('span', '9.9');
+    c.add(...rings, h('div.lg-star', '🌠'), h('div.lg-zerotime', t, h('small', 's')));
+    particles.speedLines(T(1700) / 1000, 'rgba(160,220,255,0.95)');
+    audio.tone(200, 1.2 / fxConfig.speed, { type: 'sawtooth', vol: 0.06, slide: 2400, filter: 3000 });
+    for (let i = 0; i <= 24; i++) c.at(300 + i * 40, () => (t.textContent = Math.max(0.1, 9.9 - i * 0.41).toFixed(1)));
+    c.at(1300, () => {
+      audio.play('super');
+      flash('#bfe8ff', 0.7, 260);
+      shake(16, 300);
+    });
+  },
+
+  // チート使いバグ丸: blue screen crash, the cheat code types itself, CHEAT MODE ON
+  m_bug: (c) => {
+    const code = h('span.lg-code-in');
+    c.add(h('div.lg-bsod', h('b', ':('), h('p', 'SYSTEM ERROR'), h('small', 'バランスが崩壊しました')), h('div.lg-cheat', code), h('div.lg-cheaton', 'CHEAT MODE ON'), h('div.lg-robot', '🤖'));
+    audio.tone(110, 0.5, { type: 'square', vol: 0.1 });
+    const keys = '↑↑↓↓←→←→BA';
+    [...keys].forEach((ch, i) =>
+      c.at(500 + i * 75, () => {
+        code.textContent += ch;
+        audio.tone(900 + i * 60, 0.05, { type: 'square', vol: 0.06 });
+      }),
+    );
+    c.at(1300, () => {
+      audio.play('levelUp');
+      shake(14, 300);
+      particles.burst(c.W / 2, c.H * 0.45, { n: 60, colors: ['#3dff95', '#ff2e5a', '#2ee8ff'], speed: 12, size: 7 });
+    });
+  },
 };
 
 export function hasLegendIntro(id: string): boolean {

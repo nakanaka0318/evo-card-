@@ -245,4 +245,83 @@ export const SWIPE = [
     aiValue: 4,
     onPlay: (c) => c.ping(1, 1),
   }),
+
+  // ---------------- 追加カード
+  spell({
+    id: 'x_tap',
+    name: '連打ボタン',
+    cls: 'swipe',
+    cost: 1,
+    rarity: 'bronze',
+    art: '🔘',
+    text: '相手のフォロワー1体に1ダメージ\n【コンボ2】さらに相手のリーダーに1ダメージ',
+    flavor: 'ボタンが壊れるのが先か、相手が先か。',
+    target: { kind: 'enemyFollower' },
+    spell: (c) => {
+      c.dmg(c.target, 1);
+      if (c.comboAt(2)) c.face(1);
+    },
+  }),
+  follower({
+    id: 'x_skate',
+    name: 'スケボー少年',
+    cls: 'swipe',
+    cost: 2,
+    rarity: 'bronze',
+    atk: 2,
+    hp: 1,
+    kw: ['rush'],
+    art: '🛹',
+    text: '《突進》\n【ファンファーレ】【コンボ1】+1/+1',
+    flavor: '止まり方は、まだ知らない。',
+    fanfare: (c) => {
+      if (c.comboAt(1)) c.buff(c.self, 1, 1);
+    },
+  }),
+  spell({
+    id: 'x_reels',
+    name: 'リール連投',
+    cls: 'swipe',
+    cost: 2,
+    rarity: 'silver',
+    art: '🎬',
+    text: '「バックダンサー」を1体出す。カードを1枚引く',
+    flavor: '投稿ボタンを、押して押して押しまくる。',
+    spell: (c) => {
+      c.summon('t_dancer');
+      c.draw(1);
+    },
+  }),
+  follower({
+    id: 'x_rider',
+    name: '音速ライダー',
+    cls: 'swipe',
+    cost: 4,
+    rarity: 'gold',
+    atk: 3,
+    hp: 2,
+    kw: ['storm'],
+    art: '🏍️',
+    text: '《疾走》\n【ファンファーレ】このターンにプレイした他のカード1枚につき、ランダムな相手のフォロワーかリーダーに1ダメージ',
+    flavor: 'エンジン音が、遅れて聞こえる。',
+    fanfare: (c) => c.ping(c.combo, 1),
+  }),
+  follower({
+    id: 'x_zero',
+    name: '光速の神ゼロ',
+    cls: 'swipe',
+    cost: 6,
+    rarity: 'legend',
+    atk: 3,
+    hp: 3,
+    kw: ['storm', 'twin'],
+    art: '🌠',
+    art2: '⏱️',
+    text: '《疾走》《連撃》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+1\n【コンボ4】相手のフォロワーすべてに3ダメージ',
+    flavor: '「0.1秒あれば、世界は終わる」',
+    fanfare: (c) => {
+      c.buff(c.self, c.combo, c.combo);
+      if (c.comboAt(4)) c.dmgAll(c.enemies(), 3);
+    },
+  }),
 ];

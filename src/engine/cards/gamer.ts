@@ -277,4 +277,91 @@ export const GAMER = [
       if (c.enhanced) for (const e of c.enemies()) c.destroy(e);
     },
   }),
+
+  // ---------------- 追加カード
+  follower({
+    id: 'm_villager',
+    name: '村人A',
+    cls: 'gamer',
+    cost: 1,
+    rarity: 'bronze',
+    atk: 1,
+    hp: 1,
+    art: '🧑‍🌾',
+    text: '【ファンファーレ】ランダムな自分の他のフォロワー1体にEXP+1\n【レベル】EXP1ごとに+1/+1（最大Lv3）',
+    flavor: '「ここは はじまりの むらです」',
+    level: { exp: 1, max: 3, gain: [1, 1] },
+    fanfare: (c) => {
+      c.exp(c.pick(c.allies(false)), 1);
+    },
+  }),
+  follower({
+    id: 'm_guard',
+    name: '城の衛兵',
+    cls: 'gamer',
+    cost: 4,
+    rarity: 'bronze',
+    atk: 3,
+    hp: 5,
+    kw: ['ward'],
+    art: '💂',
+    text: '《守護》\n【レベル】EXP1ごとに+1/+2（最大Lv3）',
+    flavor: '城門の前から、一歩も動かない。',
+    level: { exp: 1, max: 3, gain: [1, 2] },
+  }),
+  amulet({
+    id: 'm_save',
+    name: 'セーブポイント',
+    cls: 'gamer',
+    cost: 2,
+    rarity: 'silver',
+    countdown: 2,
+    art: '💾',
+    text: '【カウントダウン2】\n【自分のターン終了時】自分のフォロワーすべてにEXP+1\n【ラストワード】自分のリーダーを3回復',
+    flavor: 'セーブしたから、もう怖くない。',
+    aiValue: 3,
+    turnEnd: (c) => {
+      for (const a of c.allies()) c.exp(a, 1);
+    },
+    lastWords: (c) => {
+      c.heal(3);
+    },
+  }),
+  follower({
+    id: 'm_dragoon',
+    name: '竜騎士',
+    cls: 'gamer',
+    cost: 6,
+    rarity: 'gold',
+    atk: 5,
+    hp: 5,
+    art: '🦖',
+    text: '【課金8】+3/+3と《疾走》を得る\n【レベル】EXP1ごとに+1/+1（最大Lv3）',
+    flavor: 'ジャンプ攻撃は、課金すると高く飛べる。',
+    enhance: 8,
+    level: { exp: 1, max: 3, gain: [1, 1] },
+    fanfare: (c) => {
+      if (c.enhanced) {
+        c.buff(c.self, 3, 3);
+        c.give(c.self, 'storm');
+      }
+    },
+  }),
+  follower({
+    id: 'm_bug',
+    name: 'チート使いバグ丸',
+    cls: 'gamer',
+    cost: 8,
+    rarity: 'legend',
+    atk: 6,
+    hp: 6,
+    art: '🤖',
+    art2: '🐛',
+    text: '【ファンファーレ】自分の他のフォロワーすべてにEXP+5。相手のフォロワーすべてに2ダメージ',
+    flavor: '「↑↑↓↓←→←→BA。はい、全員カンスト」',
+    fanfare: (c) => {
+      for (const a of c.allies(false)) c.exp(a, 5);
+      c.dmgAll(c.enemies(), 2);
+    },
+  }),
 ];

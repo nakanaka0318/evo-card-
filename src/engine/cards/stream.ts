@@ -267,4 +267,94 @@ export const STREAM = [
     flavor: 'あなたのおすすめは、すべて見られている。',
     fanfare: (c) => c.ping(Math.min(10, c.P.likes), 1),
   }),
+
+  // ---------------- 追加カード
+  follower({
+    id: 's_kids',
+    name: 'ゲーム実況キッズ',
+    cls: 'stream',
+    cost: 2,
+    rarity: 'bronze',
+    atk: 2,
+    hp: 2,
+    art: '🎧',
+    text: '【ファンファーレ】いいね+1\n【バズ3】さらに+1/+1と《突進》',
+    flavor: '「概要欄も見てね！」',
+    fanfare: (c) => {
+      c.likes(1);
+      c.buzz(3, (c) => {
+        c.buff(c.self, 1, 1);
+        c.give(c.self, 'rush');
+      });
+    },
+  }),
+  follower({
+    id: 's_mod',
+    name: 'モデレーター',
+    cls: 'stream',
+    cost: 3,
+    rarity: 'bronze',
+    atk: 2,
+    hp: 4,
+    kw: ['ward'],
+    art: '👮',
+    text: '《守護》\n【ラストワード】「サクラ」を1体出す',
+    flavor: '荒らしは、ここで止める。',
+    lastWords: (c) => {
+      c.summon('t_sakura');
+    },
+  }),
+  spell({
+    id: 's_short',
+    name: 'ショート動画',
+    cls: 'stream',
+    cost: 2,
+    rarity: 'silver',
+    art: '🎞️',
+    text: 'いいね+2。カードを1枚引く\n【バズ6】さらに相手のフォロワーすべてに2ダメージ',
+    flavor: '15秒で、世界がひっくり返る。',
+    spell: (c) => {
+      c.likes(2);
+      c.draw(1);
+      c.buzz(6, (c) => c.dmgAll(c.enemies(), 2));
+    },
+  }),
+  follower({
+    id: 's_idol',
+    name: 'アイドル配信者',
+    cls: 'stream',
+    cost: 5,
+    rarity: 'gold',
+    atk: 3,
+    hp: 4,
+    art: '👩‍🎤',
+    text: '【ファンファーレ】「サクラ」を2体出す。自分のフォロワーすべてを+1/+0\n【バズ8】さらに自分のフォロワーすべてに《突進》を与える',
+    flavor: 'ステージの上だけは、無敵。',
+    fanfare: (c) => {
+      c.summon('t_sakura', 2);
+      c.buffAll(c.allies(), 1, 0);
+      c.buzz(8, (c) => {
+        for (const a of c.allies()) c.give(a, 'rush');
+      });
+    },
+  }),
+  follower({
+    id: 's_million',
+    name: '登録者1000万人ミリオン',
+    cls: 'stream',
+    cost: 7,
+    rarity: 'legend',
+    atk: 5,
+    hp: 6,
+    art: '🌐',
+    art2: '💯',
+    text: '【ファンファーレ】いいねを2倍にする\n【バズ15】相手のフォロワーすべてを破壊する',
+    flavor: '「みんなのおかげで、ここまで来れた。……全部、計算通り」',
+    fanfare: (c) => {
+      c.likes(c.P.likes);
+      c.buzz(15, (c) => {
+        for (const e of c.enemies()) c.destroy(e);
+      });
+    },
+  }),
 ];
