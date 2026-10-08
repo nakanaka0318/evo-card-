@@ -67,7 +67,7 @@ export const STREAM = [
     id: 's_fan',
     name: '古参ファン',
     cls: 'stream',
-    cost: 3,
+    cost: 4,
     rarity: 'bronze',
     atk: 2,
     hp: 4,

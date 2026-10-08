@@ -49,7 +49,7 @@ Lv4になったとき《連撃》を得る`,flavor:`カンストした先に、�
 【進化時】自分のリーダーを4回復`,flavor:`光るたてがみは、見るだけでアガる。`,fanfare:e=>{e.buffAll(e.allies(!1),1,1)},evolve:e=>{e.heal(4)}})]})),ae,oe=t((()=>{f(),ae=[l({id:`s_newbie`,name:`新人配信者`,cls:`stream`,cost:1,rarity:`bronze`,atk:1,hp:1,kw:[`rush`],art:`🎤`,text:`《突進》
 【ファンファーレ】いいね+2`,flavor:`同接3人からのスタート。`,fanfare:e=>e.likes(2)}),l({id:`s_sakura`,name:`サクラ雇い`,cls:`stream`,cost:2,rarity:`bronze`,atk:1,hp:2,art:`🕴️`,text:`【ファンファーレ】「サクラ」を1体出す`,flavor:`盛り上がってる風を演出します。`,fanfare:e=>{e.summon(`t_sakura`)}}),u({id:`s_comment`,name:`コメント爆撃`,cls:`stream`,cost:2,rarity:`bronze`,art:`💬`,text:`相手のフォロワー1体に2ダメージ
 【バズ4】かわりに4ダメージを与え、相手のリーダーに2ダメージ`,flavor:`草草草草草草草草`,target:{kind:`enemyFollower`},spell:e=>{e.buzz(4,e=>{e.dmg(e.target,4),e.face(2)})||e.dmg(e.target,2)}}),l({id:`s_selfie`,name:`自撮りペンギン`,cls:`stream`,cost:2,rarity:`bronze`,atk:2,hp:2,art:`🐧`,text:`【ファンファーレ】いいね+2
-【進化時】いいね+2`,flavor:`盛れる角度を研究して3年。`,fanfare:e=>e.likes(2),evolve:e=>e.likes(2)}),l({id:`s_fan`,name:`古参ファン`,cls:`stream`,cost:3,rarity:`bronze`,atk:2,hp:4,kw:[`ward`],art:`🙋`,text:`《守護》
+【進化時】いいね+2`,flavor:`盛れる角度を研究して3年。`,fanfare:e=>e.likes(2),evolve:e=>e.likes(2)}),l({id:`s_fan`,name:`古参ファン`,cls:`stream`,cost:4,rarity:`bronze`,atk:2,hp:4,kw:[`ward`],art:`🙋`,text:`《守護》
 【進化時】「古参ファン」を2体出す
 【ラストワード】いいね+2`,flavor:`「初配信から見てました」`,evolve:e=>{e.summon(`s_fan`,2)},lastWords:e=>e.likes(2)}),u({id:`s_collab`,name:`コラボ配信`,cls:`stream`,cost:3,rarity:`bronze`,art:`🤝`,text:`自分のフォロワーすべてを+1/+1
 【バズ5】かわりに+2/+2し、《突進》を与える`,flavor:`1+1が3にも4にもなる。`,spell:e=>{e.buzz(5,e=>{for(let t of e.allies())e.buff(t,2,2),e.give(t,`rush`)})||e.buffAll(e.allies(),1,1)}}),l({id:`s_peacock`,name:`インフルエンサー孔雀`,cls:`stream`,cost:3,rarity:`silver`,atk:2,hp:3,art:`🦚`,text:`【ファンファーレ】自分の場のフォロワー1体につき、いいね+1
