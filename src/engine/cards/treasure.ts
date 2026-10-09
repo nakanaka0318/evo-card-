@@ -60,11 +60,11 @@ export const TREASURE = [
     atk: 2,
     hp: 2,
     art: '⚓',
-    text: '自分が財宝を使うたび、このフォロワーを+1/+1',
+    text: '自分が財宝を使うたび、自分のリーダーを2回復',
     flavor: 'お給料は、金貨1枚から。',
     aiValue: 2,
     onPlay: (c) => {
-      if (c.isTreasure(c.other)) c.buff(c.self, 1, 1);
+      if (c.isTreasure(c.other)) c.heal(2);
     },
   }),
   amulet({
@@ -123,11 +123,11 @@ export const TREASURE = [
     atk: 4,
     hp: 4,
     art: '🏴‍☠️',
-    text: '【ファンファーレ】【財宝4】+1/+1と《守護》',
+    text: '【ファンファーレ】【財宝4】ランダムな相手のフォロワーに3ダメージ。《守護》を得る',
     flavor: '分け前は、山分けじゃなくて山盛りで。',
     fanfare: (c) => {
       if (c.rich(4)) {
-        c.buff(c.self, 1, 1);
+        c.pingFollowers(1, 3);
         c.give(c.self, 'ward');
       }
     },
@@ -174,11 +174,11 @@ export const TREASURE = [
     rarity: 'silver',
     art: '🌧️',
     art2: '🪙',
-    text: '自分のフォロワーすべてを+1/+1\n【財宝5】かわりに+2/+2',
+    text: '相手のフォロワーすべてに1ダメージ。ランダムな財宝を1枚手札に加える\n【財宝5】かわりに2ダメージ',
     flavor: '傘は、いらない。',
     spell: (c) => {
-      const n = c.rich(5) ? 2 : 1;
-      c.buffAll(c.allies(), n, n);
+      c.dmgAll(c.enemies(), c.rich(5) ? 2 : 1);
+      c.addTreasure(1);
     },
   }),
   amulet({
@@ -222,11 +222,13 @@ export const TREASURE = [
     atk: 3,
     hp: 3,
     art: '🤺',
-    text: '【ファンファーレ】このバトルで使った財宝1枚につき+1/+1（最大+4）',
+    text: '【ファンファーレ】相手のフォロワー1体に、このバトルで使った財宝の枚数のダメージ（最大5）',
     flavor: '鎧のローンが、あと30年。',
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
     fanfare: (c) => {
-      const n = Math.min(4, c.P.treasures);
-      if (n) c.buff(c.self, n, n);
+      const n = Math.min(5, c.P.treasures);
+      if (n) c.dmg(c.target, n);
     },
   }),
   // ---------------- gold
@@ -257,10 +259,10 @@ export const TREASURE = [
     kw: ['rush'],
     art: '⛵',
     art2: '✨',
-    text: '《突進》\n【ファンファーレ】【財宝6】自分の他のフォロワーすべてを+2/+2',
+    text: '《突進》\n【ファンファーレ】【財宝6】相手のフォロワーすべてに3ダメージ',
     flavor: '帆まで金箔。重くて進まない。',
     fanfare: (c) => {
-      if (c.rich(6)) c.buffAll(c.allies(false), 2, 2);
+      if (c.rich(6)) c.dmgAll(c.enemies(), 3);
     },
   }),
   spell({
@@ -304,7 +306,7 @@ export const TREASURE = [
     hp: 4,
     art: '👸',
     art2: '🏴‍☠️',
-    text: '【ファンファーレ】ランダムな財宝を2枚手札に加える\n自分が財宝を使うたび、このフォロワーを+1/+1し、相手のリーダーに1ダメージ',
+    text: '【ファンファーレ】ランダムな財宝を2枚手札に加える\n自分が財宝を使うたび、相手のリーダーに1ダメージ。自分のリーダーを1回復',
     flavor: '「七つの海の宝は、ぜんぶ私の宝石箱」',
     aiValue: 4,
     fanfare: (c) => {
@@ -312,8 +314,8 @@ export const TREASURE = [
     },
     onPlay: (c) => {
       if (c.isTreasure(c.other)) {
-        c.buff(c.self, 1, 1);
         c.face(1);
+        c.heal(1);
       }
     },
   }),

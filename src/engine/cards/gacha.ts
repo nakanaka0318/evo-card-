@@ -62,7 +62,7 @@ export const GACHA = [
     cls: 'gacha',
     cost: 3,
     rarity: 'bronze',
-    atk: 2,
+    atk: 3,
     hp: 2,
     art: '🤑',
     text: '【ファンファーレ】ガチャ\nN:ランダムな相手のフォロワーに1ダメージ R:2ダメージ SR:3ダメージ SSR:相手のフォロワーすべてに2ダメージ',
@@ -84,14 +84,17 @@ export const GACHA = [
     rarity: 'bronze',
     countdown: 2,
     art: '🎰',
-    text: '【カウントダウン2】\n【自分のターン終了時】ガチャ\nN:「ハズレくん」を1体出す R:「アタリくん」を1体出す SR:カードを1枚引く SSR:相手のリーダーに3ダメージ',
+    text: '【カウントダウン2】\n【自分のターン終了時】ガチャ\nN:「ハズレくん」を1体出す R:「アタリくん」を1体出す SR:「アタリくん」を1体出し、カードを1枚引く SSR:相手のリーダーに3ダメージ',
     flavor: 'レバーを引く手が止まらない。',
     aiValue: 3,
     turnEnd: (c) => {
       c.gacha({
         N: (c) => c.summon('t_hazure'),
         R: (c) => c.summon('t_atari'),
-        SR: (c) => c.draw(1),
+        SR: (c) => {
+          c.summon('t_atari');
+          c.draw(1);
+        },
         SSR: (c) => c.face(3),
       });
     },
@@ -103,20 +106,17 @@ export const GACHA = [
     cost: 5,
     rarity: 'bronze',
     atk: 4,
-    hp: 4,
+    hp: 5,
     kw: ['ward'],
     art: '🦍',
-    text: '《守護》\n【ファンファーレ】ガチャ\nN:「ハズレくん」を2体出す R:+1/+1 SR:+2/+2 SSR:+3/+3と《必殺》',
+    text: '《守護》\n【ファンファーレ】ガチャ\nN:「アタリくん」を1体出す R:「アタリくん」を2体出す SR:ランダムな相手のフォロワーに4ダメージ SSR:相手のフォロワーすべてに3ダメージ',
     flavor: 'クレーンゲームで取れた。重い。',
     fanfare: (c) => {
       c.gacha({
-        N: (c) => c.summon('t_hazure', 2),
-        R: (c) => c.buff(c.self, 1, 1),
-        SR: (c) => c.buff(c.self, 2, 2),
-        SSR: (c) => {
-          c.buff(c.self, 3, 3);
-          c.give(c.self, 'bane');
-        },
+        N: (c) => c.summon('t_atari'),
+        R: (c) => c.summon('t_atari', 2),
+        SR: (c) => c.dmg(c.pick(c.enemies()), 4),
+        SSR: (c) => c.dmgAll(c.enemies(), 3),
       });
     },
   }),
@@ -162,7 +162,7 @@ export const GACHA = [
     id: 'g_garapon',
     name: '福引きガラガラ',
     cls: 'gacha',
-    cost: 2,
+    cost: 1,
     rarity: 'silver',
     art: '🎉',
     text: 'ガチャ\nN:カードを1枚引く R:カードを1枚引き、運気+1 SR:カードを2枚引く SSR:カードを2枚引き、それらのコスト-1',
@@ -205,17 +205,17 @@ export const GACHA = [
     hp: 4,
     kw: ['rush'],
     art: '🃏',
-    text: '《突進》\n【ファンファーレ】「ハズレくん」を2体出す\n【進化時】ガチャ\nN:自分のフォロワーすべてを+1/+0 R:+1/+1 SR:+2/+1 SSR:+2/+2',
+    text: '《突進》\n【ファンファーレ】「ハズレくん」を2体出す\n【進化時】ガチャ\nN:ランダムな相手のフォロワーに2ダメージ R:3ダメージ SR:「アタリくん」を2体出す SSR:相手のフォロワーすべてに2ダメージ',
     flavor: '「ベットは済んだかい？」',
     fanfare: (c) => {
       c.summon('t_hazure', 2);
     },
     evolve: (c) => {
       c.gacha({
-        N: (c) => c.buffAll(c.allies(), 1, 0),
-        R: (c) => c.buffAll(c.allies(), 1, 1),
-        SR: (c) => c.buffAll(c.allies(), 2, 1),
-        SSR: (c) => c.buffAll(c.allies(), 2, 2),
+        N: (c) => c.dmg(c.pick(c.enemies()), 2),
+        R: (c) => c.dmg(c.pick(c.enemies()), 3),
+        SR: (c) => c.summon('t_atari', 2),
+        SSR: (c) => c.dmgAll(c.enemies(), 2),
       });
     },
   }),
@@ -297,7 +297,7 @@ export const GACHA = [
     id: 'g_roule',
     name: 'ガチャ姫ルーレ',
     cls: 'gacha',
-    cost: 7,
+    cost: 6,
     rarity: 'legend',
     atk: 5,
     hp: 5,
@@ -321,7 +321,7 @@ export const GACHA = [
     id: 'g_factory',
     name: '無限カプセル工場',
     cls: 'gacha',
-    cost: 5,
+    cost: 4,
     rarity: 'legend',
     art: '🏭',
     art2: '🥚',
@@ -349,20 +349,17 @@ export const GACHA = [
     atk: 2,
     hp: 2,
     art: '🎱',
-    text: '【ファンファーレ】ガチャ\nN:「ハズレくん」を1体出す R:「アタリくん」を1体出す SR:+1/+1と「アタリくん」を1体出す SSR:+2/+2と《突進》',
+    text: '【ファンファーレ】ガチャ\nN:「ハズレくん」を1体出す R:「アタリくん」を1体出す SR:「アタリくん」を1体出し、カードを1枚引く SSR:「アタリくん」を2体出す',
     flavor: '転がる先に、当たりがある。',
     fanfare: (c) => {
       c.gacha({
         N: (c) => c.summon('t_hazure'),
         R: (c) => c.summon('t_atari'),
         SR: (c) => {
-          c.buff(c.self, 1, 1);
           c.summon('t_atari');
+          c.draw(1);
         },
-        SSR: (c) => {
-          c.buff(c.self, 2, 2);
-          c.give(c.self, 'rush');
-        },
+        SSR: (c) => c.summon('t_atari', 2),
       });
     },
   }),
@@ -372,19 +369,20 @@ export const GACHA = [
     cls: 'gacha',
     cost: 3,
     rarity: 'bronze',
-    atk: 2,
+    atk: 3,
     hp: 3,
     art: '⛩️',
-    text: '【ファンファーレ】ガチャ\nN:「ハズレくん」を1体出す R:カードを1枚引く SR:ランダムな相手のフォロワーに3ダメージ SSR:確変と運気+2',
+    text: '【ファンファーレ】ガチャ\nN:ランダムな相手のフォロワーに1ダメージ R:カードを1枚引く SR:ランダムな相手のフォロワーに3ダメージ SSR:確変と運気+2。カードを1枚引く',
     flavor: '大吉が出るまで、引けばいい。',
     fanfare: (c) => {
       c.gacha({
-        N: (c) => c.summon('t_hazure'),
+        N: (c) => c.dmg(c.pick(c.enemies()), 1),
         R: (c) => c.draw(1),
         SR: (c) => c.dmg(c.pick(c.enemies()), 3),
         SSR: (c) => {
           c.kakuhen(1);
           c.luck(2);
+          c.draw(1);
         },
       });
     },

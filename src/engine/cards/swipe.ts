@@ -75,7 +75,7 @@ export const SWIPE = [
     cls: 'swipe',
     cost: 3,
     rarity: 'bronze',
-    atk: 2,
+    atk: 3,
     hp: 3,
     kw: ['twin', 'rush'],
     art: '🦅',
@@ -89,13 +89,13 @@ export const SWIPE = [
     cost: 2,
     rarity: 'bronze',
     art: '🪩',
-    text: '「バックダンサー」を2体出す\n【コンボ2】さらに1体出す。その後、自分の「バックダンサー」すべてを+1/+0',
+    text: '「バックダンサー」を2体出す\n【コンボ2】さらに1体出し、カードを1枚引く',
     flavor: '突然始まって、突然終わる。',
     spell: (c) => {
       c.summon('t_dancer', 2);
       if (c.comboAt(2)) {
-        c.summon('t_dancer', 1);
-        c.buffAll(c.allies().filter((a) => a.id === 't_dancer'), 1, 0);
+        c.summon('t_dancer');
+        c.draw(1);
       }
     },
   }),
@@ -282,10 +282,10 @@ export const SWIPE = [
     hp: 1,
     kw: ['rush'],
     art: '🛹',
-    text: '《突進》\n【ファンファーレ】【コンボ1】+1/+1',
+    text: '《突進》\n【ファンファーレ】【コンボ1】ランダムな相手のフォロワーに2ダメージ',
     flavor: '止まり方は、まだ知らない。',
     fanfare: (c) => {
-      if (c.comboAt(1)) c.buff(c.self, 1, 1);
+      if (c.comboAt(1)) c.pingFollowers(1, 2);
     },
   }),
   spell({

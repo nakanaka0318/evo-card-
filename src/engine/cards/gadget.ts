@@ -11,7 +11,7 @@ export const GADGET = [
     cost: 1,
     rarity: 'bronze',
     atk: 1,
-    hp: 1,
+    hp: 2,
     art: '🧑‍🔧',
     text: '【ファンファーレ】ランダムなパーツを1枚手札に加える',
     flavor: 'ネジを締めるのは、まだ3回に1回。',
@@ -60,10 +60,10 @@ export const GADGET = [
     hp: 2,
     kw: ['rush'],
     art: '🏎️',
-    text: '《突進》\n【ファンファーレ】【コンプリート2】+1/+1',
+    text: '《突進》\n【ファンファーレ】【コンプリート2】ランダムな相手のフォロワーに2ダメージ',
     flavor: '電池が切れるまで、止まらない。',
     fanfare: (c) => {
-      if (c.complete(2)) c.buff(c.self, 1, 1);
+      if (c.complete(2)) c.pingFollowers(1, 2);
     },
   }),
   follower({
@@ -161,18 +161,17 @@ export const GADGET = [
   }),
   spell({
     id: 'd_upgrade',
-    name: 'アップグレード',
+    name: 'スパナ投げ',
     cls: 'gadget',
     cost: 2,
     rarity: 'silver',
-    art: '🛠️',
-    text: '自分のフォロワー1体を+1/+1\n【合体2】取り込んだパーツ1枚につき、さらに+2/+2',
+    art: '🔧',
+    text: '相手のフォロワー1体に2ダメージ\n【合体2】取り込んだパーツ1枚につき、さらに2ダメージ',
     flavor: 'バージョン2.0、配信開始。',
-    target: { kind: 'allyFollower' },
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
     spell: (c) => {
-      const t = c.targetCard();
-      const n = c.fuse(2).length;
-      c.buff(t, 1 + n * 2, 1 + n * 2);
+      c.dmg(c.target, 2 + c.fuse(2).length * 2);
     },
   }),
   follower({
@@ -305,11 +304,11 @@ export const GADGET = [
     hp: 4,
     art: '👩‍🔧',
     art2: '⚙️',
-    text: '【ファンファーレ】【合体4】取り込んだパーツと同じパーツを1体ずつ出す\n【コンプリート4】さらに自分のフォロワーすべてを+1/+1',
+    text: '【ファンファーレ】【合体4】取り込んだパーツと同じパーツを1体ずつ出す\n【コンプリート4】さらにカードを2枚引く',
     flavor: '「設計図？ 頭の中にぜんぶあるわ」',
     fanfare: (c) => {
       for (const id of c.fuse(4)) c.summon(id);
-      if (c.complete(4)) c.buffAll(c.allies(), 1, 1);
+      if (c.complete(4)) c.draw(2);
     },
   }),
   follower({

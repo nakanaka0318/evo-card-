@@ -257,11 +257,12 @@ export const TOKENS = [
     cost: 0,
     rarity: 'bronze',
     art: '🎶',
-    text: 'カードを1枚引く',
+    text: 'カードを1枚引く。自分のリーダーを1回復',
     flavor: 'ラ〜♪（3度上）',
     token: true,
     spell: (c) => {
       c.draw(1);
+      c.heal(1);
     },
   }),
 ];

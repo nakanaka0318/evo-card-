@@ -8,7 +8,7 @@ export const NEUTRAL = [
     cls: 'neutral',
     cost: 1,
     rarity: 'bronze',
-    atk: 1,
+    atk: 2,
     hp: 2,
     art: '🟢',
     text: '',
@@ -20,7 +20,7 @@ export const NEUTRAL = [
     cls: 'neutral',
     cost: 2,
     rarity: 'bronze',
-    atk: 1,
+    atk: 2,
     hp: 1,
     art: '🐶',
     text: '【ファンファーレ】カードを1枚引く',
@@ -39,8 +39,11 @@ export const NEUTRAL = [
     hp: 3,
     kw: ['ward'],
     art: '😼',
-    text: '《守護》',
+    text: '《守護》\n【ラストワード】カードを1枚引く',
     flavor: 'ここから先は通さないニャ。',
+    lastWords: (c) => {
+      c.draw(1);
+    },
   }),
   follower({
     id: 'n_rocket',
@@ -64,11 +67,11 @@ export const NEUTRAL = [
     atk: 3,
     hp: 3,
     art: '🔊',
-    text: '【ファンファーレ】相手のフォロワー1体に2ダメージ',
+    text: '【ファンファーレ】相手のフォロワー1体に3ダメージ',
     flavor: '音量MAX以外は認めない。',
     target: { kind: 'enemyFollower' },
     fanfare: (c) => {
-      c.dmg(c.target, 2);
+      c.dmg(c.target, 3);
     },
   }),
   follower({
@@ -80,10 +83,13 @@ export const NEUTRAL = [
     atk: 2,
     hp: 3,
     art: '👼',
-    text: '【ラストワード】自分のリーダーを3回復',
+    text: '【ファンファーレ】自分のリーダーを2回復\n【ラストワード】カードを1枚引く',
     flavor: '最後に甘いのを置いていく。',
+    fanfare: (c) => {
+      c.heal(2);
+    },
     lastWords: (c) => {
-      c.heal(3);
+      c.draw(1);
     },
   }),
   follower({
@@ -96,10 +102,13 @@ export const NEUTRAL = [
     hp: 5,
     kw: ['ward'],
     art: '🗿',
-    text: '《守護》\n【進化時】「ドパスライム」を2体出す',
+    text: '《守護》\n【ファンファーレ】「ドパスライム」を1体出す\n【進化時】「ドパスライム」を2体出す',
     flavor: '無表情だが内心ノリノリ。',
     evolve: (c) => {
       c.summon('n_slime', 2);
+    },
+    fanfare: (c) => {
+      c.summon('n_slime');
     },
   }),
   follower({
@@ -142,8 +151,11 @@ export const NEUTRAL = [
     hp: 3,
     kw: ['barrier'],
     art: '🎈',
-    text: '《バリア》',
+    text: '《バリア》\n【ファンファーレ】カードを1枚引く',
     flavor: '一回だけなら、割れても平気。',
+    fanfare: (c) => {
+      c.draw(1);
+    },
   }),
   follower({
     id: 'n_sushi',
@@ -167,12 +179,15 @@ export const NEUTRAL = [
     cls: 'neutral',
     cost: 2,
     rarity: 'silver',
-    atk: 2,
+    atk: 3,
     hp: 1,
     kw: ['ambush'],
     art: '🥷',
-    text: '《潜伏》',
+    text: '《潜伏》\n【攻撃時】カードを1枚引く',
     flavor: '既読をつけずに読むプロ。',
+    strike: (c) => {
+      c.draw(1);
+    },
   }),
   spell({
     id: 'n_charge',
@@ -181,11 +196,11 @@ export const NEUTRAL = [
     cost: 1,
     rarity: 'silver',
     art: '⚡',
-    text: '自分のフォロワー1体を+1/+1。カードを1枚引く',
+    text: '相手のフォロワー1体に1ダメージ。カードを1枚引く',
     flavor: 'ビリッときて、もう1枚。',
-    target: { kind: 'allyFollower' },
+    target: { kind: 'enemyFollower' },
     spell: (c) => {
-      c.buff(c.targetCard(), 1, 1);
+      c.dmg(c.target, 1);
       c.draw(1);
     },
   }),
@@ -196,11 +211,11 @@ export const NEUTRAL = [
     cost: 2,
     rarity: 'silver',
     art: '🔨',
-    text: '相手のフォロワー1体に3ダメージ',
+    text: '相手のフォロワー1体に4ダメージ',
     flavor: 'ピコッ（3ダメージ）',
     target: { kind: 'enemyFollower' },
     spell: (c) => {
-      c.dmg(c.target, 3);
+      c.dmg(c.target, 4);
     },
   }),
   // ---------------- gold
@@ -289,13 +304,14 @@ export const NEUTRAL = [
     atk: 4,
     hp: 4,
     art: '🦄',
-    text: '【ファンファーレ】自分の他のフォロワーすべてを+1/+1\n【進化時】自分のリーダーを4回復',
+    text: '【ファンファーレ】ランダムな相手のフォロワー1体に3ダメージ。自分のリーダーを3回復\n【進化時】カードを2枚引く',
     flavor: '光るたてがみは、見るだけでアガる。',
     fanfare: (c) => {
-      c.buffAll(c.allies(false), 1, 1);
+      c.dmg(c.pick(c.enemies()), 3);
+      c.heal(3);
     },
     evolve: (c) => {
-      c.heal(4);
+      c.draw(2);
     },
   }),
 

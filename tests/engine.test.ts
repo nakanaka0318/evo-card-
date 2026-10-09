@@ -95,7 +95,7 @@ describe('combat', () => {
     expect(s.players[1].board.includes(big)).toBe(false);
     const drain = put(s, 0, 'w_cake');
     apply(s, { t: 'attack', uid: drain.uid, target: leaderTgt(1) });
-    expect(s.players[0].hp).toBe(13);
+    expect(s.players[0].hp).toBe(14);
     const bal = put(s, 1, 'n_balloon');
     const hit = put(s, 0, 'n_golem');
     apply(s, { t: 'attack', uid: hit.uid, target: bal.uid });
@@ -115,7 +115,7 @@ describe('combat', () => {
     const f = put(s, 0, 'x_falcon');
     apply(s, { t: 'attack', uid: f.uid, target: leaderTgt(1) });
     apply(s, { t: 'attack', uid: f.uid, target: leaderTgt(1) });
-    expect(s.players[1].hp).toBe(16);
+    expect(s.players[1].hp).toBe(14);
     expect(E.canAttack(s, f)).toBe(false);
   });
 });
@@ -131,7 +131,7 @@ describe('evolution', () => {
     expect(E.canEvolve(s, f, false)).toBe(true);
     expect(E.canEvolve(s, f, true)).toBe(false);
     apply(s, { t: 'evolve', uid: f.uid, sup: false });
-    expect(f.atk).toBe(3);
+    expect(f.atk).toBe(4);
     expect(f.maxHp).toBe(4);
     expect(E.attackTargets(s, f)).toEqual([e.uid]);
     expect(s.players[0].ep).toBe(RULES.epFirst - 1);
@@ -145,13 +145,13 @@ describe('evolution', () => {
     skipTo(s, 0, RULES.superTurnFirst);
     const c = put(s, 0, 'n_slime');
     apply(s, { t: 'evolve', uid: c.uid, sup: true });
-    expect(c.atk).toBe(4);
+    expect(c.atk).toBe(5);
     expect(c.maxHp).toBe(5);
-    const e = put(s, 1, 'n_golem');
+    const e = put(s, 1, 'n_bear');
     const hp = s.players[1].hp;
     apply(s, { t: 'attack', uid: c.uid, target: e.uid });
     expect(c.dmg).toBe(0);
-    expect(E.hpOf(e)).toBe(1);
+    expect(E.hpOf(e)).toBe(2);
     expect(s.players[1].hp).toBe(hp);
   });
 
@@ -175,7 +175,7 @@ describe('cards & mechanics', () => {
     const e = put(s, 1, 'n_golem');
     expect(E.canPlay(s, h)).toBe(true);
     apply(s, { t: 'play', uid: h.uid, target: e.uid });
-    expect(E.hpOf(e)).toBe(2);
+    expect(E.hpOf(e)).toBe(1);
   });
 
   it('gacha ceiling guarantees SSR and resets luck', () => {
@@ -211,9 +211,9 @@ describe('cards & mechanics', () => {
     const e = put(s, 1, 'n_bear');
     const sp = give(s, 0, 's_comment');
     apply(s, { t: 'play', uid: sp.uid, target: e.uid });
-    // +1 like from playing, then buzz 4 spends 4: 4 damage + 2 to the leader
+    // +1 like from playing, then buzz 4 spends 4: 5 damage + 2 to the leader
     expect(s.players[0].likes).toBe(0);
-    expect(E.hpOf(e)).toBe(3);
+    expect(E.hpOf(e)).toBe(2);
     expect(s.players[1].hp).toBe(18);
   });
 
@@ -328,7 +328,7 @@ describe('cards & mechanics', () => {
     apply(s, { t: 'fever' });
     expect(s.players[0].fever).toBe(true);
     expect(s.players[0].dopa).toBe(0);
-    expect(E.atkOf(s, c)).toBe(2);
+    expect(E.atkOf(s, c)).toBe(3);
     expect(E.costOf(s, h)).toBe(4);
     expect(s.players[0].hand.length).toBe(handBefore + 1);
     apply(s, { t: 'end' });
@@ -405,13 +405,14 @@ describe('gadget: parts / fuse / complete', () => {
     const s = game();
     s.players[0].pp = 10;
     s.players[0].maxPp = 10;
+    const foe = put(s, 1, 'n_bear');
     const a = give(s, 0, 'd_rc');
     apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === a.uid)!);
-    expect(s.players[0].board.find((c) => c.uid === a.uid)!.atk).toBe(2);
+    expect(E.hpOf(foe)).toBe(7);
     s.players[0].parts = ['t_pbolt', 't_pspring'];
     const b = give(s, 0, 'd_rc');
     apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === b.uid)!);
-    expect(s.players[0].board.find((c) => c.uid === b.uid)!.atk).toBe(3);
+    expect(E.hpOf(foe)).toBe(5);
   });
 });
 
@@ -420,13 +421,15 @@ describe('treasure: 財宝 count and payoffs', () => {
     const s = game();
     s.players[0].pp = 10;
     s.players[0].maxPp = 10;
-    const hand = put(s, 0, 'r_deckhand');
+    put(s, 0, 'r_deckhand');
+    s.players[0].hp = 10;
     for (const id of ['t_tcoin', 't_tcup']) {
       const c = give(s, 0, id);
       apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === c.uid)!);
     }
     expect(s.players[0].treasures).toBe(2);
-    expect(hand.atk).toBe(4);
+    // 金貨 +0, 黄金の杯 +2, 甲板員 +2×2
+    expect(s.players[0].hp).toBe(16);
     expect(E.view(s).p[0].treasures).toBe(2);
     const p = give(s, 0, 'r_parrot');
     apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === p.uid)!);
@@ -457,12 +460,11 @@ describe('harmony: even deck', () => {
     s.players[0].deck = s.players[0].deck.slice(0, 10);
     const a = give(s, 0, 'h_rookie');
     apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === a.uid)!);
-    expect(a.atk).toBe(3);
+    expect(s.players[0].deck.length).toBe(9);
     expect(s.players[0].harmonies).toBe(1);
-    s.players[0].deck = s.players[0].deck.slice(0, 9);
     const b = give(s, 0, 'h_rookie');
     apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === b.uid)!);
-    expect(b.atk).toBe(2);
+    expect(s.players[0].deck.length).toBe(9);
     expect(s.players[0].harmonies).toBe(1);
   });
 
@@ -473,7 +475,9 @@ describe('harmony: even deck', () => {
     s.players[0].deck = s.players[0].deck.slice(0, 9);
     const t = give(s, 0, 'h_tuner');
     apply(s, legalActions(s).find((x) => x.t === 'play' && x.uid === t.uid)!);
-    expect(s.players[0].deck.length).toBe(10);
+    // 9 → +コーラス = 10 (ハモり) → draws 1 = 9
+    expect(s.players[0].harmonies).toBe(1);
+    expect(s.players[0].deck.length).toBe(9);
     expect(s.players[0].deck.some((c) => c.id === 't_chorus')).toBe(true);
   });
 });

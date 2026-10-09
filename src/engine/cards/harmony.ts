@@ -1,10 +1,7 @@
-import type { GameState, Card } from '../types';
 import { amulet, follower, spell } from './util';
 
 // ハモラー: 【ハモり】 fires while the own deck holds an even number of cards.
 // Drawing or shuffling 「コーラス」 into the deck flips odd/even.
-const even = (s: GameState, card: Card) => s.players[card.owner].deck.length % 2 === 0;
-
 export const HARMONY = [
   // ---------------- bronze
   follower({
@@ -14,12 +11,12 @@ export const HARMONY = [
     cost: 1,
     rarity: 'bronze',
     atk: 2,
-    hp: 1,
+    hp: 2,
     art: '🧑‍🎤',
-    text: '【ファンファーレ】【ハモり】+1/+1',
+    text: '【ファンファーレ】【ハモり】カードを1枚引く',
     flavor: 'お風呂ではプロ。',
     fanfare: (c) => {
-      if (c.harmony()) c.buff(c.self, 1, 1);
+      if (c.harmony()) c.draw(1);
     },
   }),
   spell({
@@ -42,7 +39,7 @@ export const HARMONY = [
     cls: 'harmony',
     cost: 2,
     rarity: 'bronze',
-    atk: 2,
+    atk: 3,
     hp: 3,
     art: '👯',
     text: '【ファンファーレ】山札に「コーラス」を1枚加える',
@@ -60,13 +57,10 @@ export const HARMONY = [
     atk: 2,
     hp: 3,
     art: '🥁',
-    text: '【ファンファーレ】【ハモり】+1/+0と《突進》',
+    text: '【ファンファーレ】ランダムな相手のフォロワーに1ダメージ\n【ハモり】かわりに3ダメージ',
     flavor: 'リズムキープは、心拍数で。',
     fanfare: (c) => {
-      if (c.harmony()) {
-        c.buff(c.self, 1, 0);
-        c.give(c.self, 'rush');
-      }
+      c.pingFollowers(1, c.harmony() ? 3 : 1);
     },
   }),
   spell({
@@ -104,14 +98,14 @@ export const HARMONY = [
     cls: 'harmony',
     cost: 3,
     rarity: 'bronze',
-    atk: 2,
+    atk: 3,
     hp: 4,
     kw: ['ward'],
     art: '🎸',
-    text: '《守護》\n【ファンファーレ】【ハモり】+1/+1',
+    text: '《守護》\n【ファンファーレ】【ハモり】自分のリーダーを3回復',
     flavor: '目立たないけど、いないと困る。',
     fanfare: (c) => {
-      if (c.harmony()) c.buff(c.self, 1, 1);
+      if (c.harmony()) c.heal(3);
     },
   }),
   follower({
@@ -120,7 +114,7 @@ export const HARMONY = [
     cls: 'harmony',
     cost: 4,
     rarity: 'bronze',
-    atk: 3,
+    atk: 4,
     hp: 4,
     art: '👫',
     art2: '🎵',
@@ -137,14 +131,14 @@ export const HARMONY = [
     cls: 'harmony',
     cost: 2,
     rarity: 'silver',
-    atk: 2,
+    atk: 3,
     hp: 3,
     art: '🎹',
-    text: '【ファンファーレ】山札が奇数枚なら、山札に「コーラス」を1枚加える（ハモり状態にする）。その後【ハモり】+1/+1',
+    text: '【ファンファーレ】山札が奇数枚なら、山札に「コーラス」を1枚加える（ハモり状態にする）。その後【ハモり】カードを1枚引く',
     flavor: 'ラの音は、440ヘルツ。',
     fanfare: (c) => {
       if (!c.inHarmony) c.toDeck('t_chorus', 1);
-      if (c.harmony()) c.buff(c.self, 1, 1);
+      if (c.harmony()) c.draw(1);
     },
   }),
   follower({
@@ -154,7 +148,7 @@ export const HARMONY = [
     cost: 3,
     rarity: 'silver',
     atk: 3,
-    hp: 3,
+    hp: 4,
     art: '💃',
     text: '【ファンファーレ】カードを1枚引く\n【ハモり】かわりに2枚引く',
     flavor: '観客は3人。全員、古参。',
@@ -170,11 +164,13 @@ export const HARMONY = [
     rarity: 'silver',
     countdown: 3,
     art: '🎛️',
-    text: '【カウントダウン3】\n【自分のターン開始時】自分のフォロワーすべてを+1/+0。【ハモり】かわりに+1/+1',
+    text: '【カウントダウン3】\n【自分のターン開始時】ランダムな相手のフォロワーに1ダメージ。【ハモり】かわりに相手のフォロワーすべてに1ダメージ',
     flavor: 'ボリュームは、いつも11。',
     aiValue: 3,
     turnStart: (c) => {
-      if (c.allies().length) c.buffAll(c.allies(), 1, c.harmony() ? 1 : 0);
+      if (!c.enemies().length) return;
+      if (c.harmony()) c.dmgAll(c.enemies(), 1);
+      else c.pingFollowers(1, 1);
     },
   }),
   spell({
@@ -198,16 +194,13 @@ export const HARMONY = [
     cost: 3,
     rarity: 'silver',
     atk: 3,
-    hp: 3,
+    hp: 4,
     art: '🎧',
-    text: '【ファンファーレ】自分の山札の上から1枚を消滅させる。その後【ハモり】+1/+1と《突進》',
+    text: '【ファンファーレ】自分の山札の上から1枚を消滅させる。その後【ハモり】ランダムな相手のフォロワーに3ダメージ',
     flavor: 'キュキュッ。（大事なカードだった）',
     fanfare: (c) => {
       c.burnTop(1);
-      if (c.harmony()) {
-        c.buff(c.self, 1, 1);
-        c.give(c.self, 'rush');
-      }
+      if (c.harmony()) c.pingFollowers(1, 3);
     },
   }),
   follower({
@@ -220,12 +213,12 @@ export const HARMONY = [
     hp: 4,
     art: '🎤',
     art2: '⭐',
-    text: '【ファンファーレ】【ハモり】相手のフォロワー1体に4ダメージ',
+    text: '【ファンファーレ】相手のフォロワー1体に2ダメージ\n【ハモり】かわりに5ダメージ',
     flavor: '1曲目から、ラスサビの声量。',
-    target: { kind: 'enemyFollower', cond: (s, card) => even(s, card) },
+    target: { kind: 'enemyFollower' },
     aiPrefer: 'big',
     fanfare: (c) => {
-      if (c.target !== null && c.target !== undefined && c.harmony()) c.dmg(c.target, 4);
+      c.dmg(c.target, c.harmony() ? 5 : 2);
     },
   }),
   // ---------------- gold
@@ -239,11 +232,10 @@ export const HARMONY = [
     hp: 5,
     art: '🤘',
     art2: '🎸',
-    text: '【ファンファーレ】山札に「コーラス」を1枚加える。その後【ハモり】「バックコーラス」を2体出す',
+    text: '【ファンファーレ】「バックコーラス」を1体出す\n【ハモり】さらに2体出す',
     flavor: '方向性の違いで、明日解散する。',
     fanfare: (c) => {
-      c.toDeck('t_chorus', 1);
-      if (c.harmony()) c.summon('h_backup', 2);
+      c.summon('h_backup', c.harmony() ? 3 : 1);
     },
   }),
   spell({
@@ -271,11 +263,14 @@ export const HARMONY = [
     hp: 5,
     art: '🪄',
     art2: '🎼',
-    text: '【自分のターン終了時】【ハモり】自分のフォロワーすべてを+1/+1',
+    text: '【ファンファーレ】「バックコーラス」を1体出す\n【自分のターン終了時】【ハモり】「バックコーラス」を1体出す',
     flavor: '振っているのは、指揮棒かペンライトか。',
     aiValue: 3,
     turnEnd: (c) => {
-      if (c.harmony()) c.buffAll(c.allies(), 1, 1);
+      if (c.harmony()) c.summon('h_backup');
+    },
+    fanfare: (c) => {
+      c.summon('h_backup');
     },
   }),
   follower({
@@ -289,10 +284,10 @@ export const HARMONY = [
     kw: ['ward'],
     art: '🧱',
     art2: '🔊',
-    text: '《守護》\n【ファンファーレ】【ハモり】相手のフォロワーすべてに3ダメージ',
+    text: '《守護》\n【ファンファーレ】相手のフォロワーすべてに1ダメージ\n【ハモり】かわりに3ダメージ',
     flavor: '最前列は、聴覚を失う覚悟で。',
     fanfare: (c) => {
-      if (c.harmony()) c.dmgAll(c.enemies(), 3);
+      c.dmgAll(c.enemies(), c.harmony() ? 3 : 1);
     },
   }),
   // ---------------- legend
@@ -323,11 +318,12 @@ export const HARMONY = [
     hp: 5,
     art: '🧚',
     art2: '🌊',
-    text: '【ファンファーレ】山札に「コーラス」を2枚加える\n【自分のターン開始時】相手のリーダーに2ダメージ。【ハモり】かわりに3ダメージし、自分のリーダーを3回復',
+    text: '【ファンファーレ】山札に「コーラス」を1枚加える。ランダムな相手のフォロワーに3ダメージ\n【自分のターン開始時】相手のリーダーに2ダメージ。【ハモり】かわりに3ダメージし、自分のリーダーを3回復',
     flavor: '歌声は、波の音にまぎれて届く。',
     aiValue: 4,
     fanfare: (c) => {
-      c.toDeck('t_chorus', 2);
+      c.toDeck('t_chorus', 1);
+      c.pingFollowers(1, 3);
     },
     turnStart: (c) => {
       if (c.harmony()) {

@@ -8,7 +8,7 @@ export const STREAM = [
     cls: 'stream',
     cost: 1,
     rarity: 'bronze',
-    atk: 1,
+    atk: 2,
     hp: 1,
     kw: ['rush'],
     art: '🎤',
@@ -22,7 +22,7 @@ export const STREAM = [
     cls: 'stream',
     cost: 2,
     rarity: 'bronze',
-    atk: 1,
+    atk: 2,
     hp: 2,
     art: '🕴️',
     text: '【ファンファーレ】「サクラ」を1体出す',
@@ -38,15 +38,15 @@ export const STREAM = [
     cost: 2,
     rarity: 'bronze',
     art: '💬',
-    text: '相手のフォロワー1体に2ダメージ\n【バズ4】かわりに4ダメージを与え、相手のリーダーに2ダメージ',
+    text: '相手のフォロワー1体に3ダメージ\n【バズ4】かわりに5ダメージを与え、相手のリーダーに2ダメージ',
     flavor: '草草草草草草草草',
     target: { kind: 'enemyFollower' },
     spell: (c) => {
       const hit = c.buzz(4, (c) => {
-        c.dmg(c.target, 4);
+        c.dmg(c.target, 5);
         c.face(2);
       });
-      if (!hit) c.dmg(c.target, 2);
+      if (!hit) c.dmg(c.target, 3);
     },
   }),
   follower({
@@ -58,9 +58,12 @@ export const STREAM = [
     atk: 2,
     hp: 2,
     art: '🐧',
-    text: '【ファンファーレ】いいね+2\n【進化時】いいね+2',
+    text: '【ファンファーレ】いいね+2。カードを1枚引く\n【進化時】いいね+2',
     flavor: '盛れる角度を研究して3年。',
-    fanfare: (c) => c.likes(2),
+    fanfare: (c) => {
+      c.likes(2);
+      c.draw(1);
+    },
     evolve: (c) => c.likes(2),
   }),
   follower({
@@ -69,8 +72,8 @@ export const STREAM = [
     cls: 'stream',
     cost: 4,
     rarity: 'bronze',
-    atk: 2,
-    hp: 4,
+    atk: 3,
+    hp: 5,
     kw: ['ward'],
     art: '🙋',
     text: '《守護》\n【進化時】「古参ファン」を2体出す\n【ラストワード】いいね+2',
@@ -87,16 +90,11 @@ export const STREAM = [
     cost: 3,
     rarity: 'bronze',
     art: '🤝',
-    text: '自分のフォロワーすべてを+1/+1\n【バズ5】かわりに+2/+2し、《突進》を与える',
+    text: '「サクラ」を2体出す\n【バズ5】さらに相手のフォロワーすべてに2ダメージ',
     flavor: '1+1が3にも4にもなる。',
     spell: (c) => {
-      const hit = c.buzz(5, (c) => {
-        for (const a of c.allies()) {
-          c.buff(a, 2, 2);
-          c.give(a, 'rush');
-        }
-      });
-      if (!hit) c.buffAll(c.allies(), 1, 1);
+      c.summon('t_sakura', 2);
+      c.buzz(5, (c) => c.dmgAll(c.enemies(), 2));
     },
   }),
   // ---------------- silver
@@ -106,7 +104,7 @@ export const STREAM = [
     cls: 'stream',
     cost: 3,
     rarity: 'silver',
-    atk: 2,
+    atk: 3,
     hp: 3,
     art: '🦚',
     text: '【ファンファーレ】自分の場のフォロワー1体につき、いいね+1\n【進化時】「サクラ」を2体出す。その後、ファンファーレ効果が発動する',
@@ -158,14 +156,11 @@ export const STREAM = [
     atk: 3,
     hp: 3,
     art: '📸',
-    text: '【ファンファーレ】カードを1枚引く\n【バズ4】さらに+2/+2と《守護》',
+    text: '【ファンファーレ】カードを1枚引く\n【バズ4】さらにランダムな相手のフォロワーに4ダメージ',
     flavor: '「はい、もう一回いきまーす」',
     fanfare: (c) => {
       c.draw(1);
-      c.buzz(4, (c) => {
-        c.buff(c.self, 2, 2);
-        c.give(c.self, 'ward');
-      });
+      c.buzz(4, (c) => c.pingFollowers(1, 4));
     },
   }),
   spell({
@@ -208,12 +203,12 @@ export const STREAM = [
     rarity: 'gold',
     countdown: 4,
     art: '📺',
-    text: '【カウントダウン4】\n【自分のターン終了時】いいね+2。ランダムな自分のフォロワー1体を+1/+1',
+    text: '【カウントダウン4】\n【自分のターン終了時】いいね+2。ランダムな相手のフォロワーに2ダメージ',
     flavor: '寝落ちした瞬間が一番伸びる。',
     aiValue: 4,
     turnEnd: (c) => {
       c.likes(2);
-      c.buff(c.pick(c.allies()), 1, 1);
+      c.pingFollowers(1, 2);
     },
   }),
   follower({
@@ -278,14 +273,11 @@ export const STREAM = [
     atk: 2,
     hp: 2,
     art: '🎧',
-    text: '【ファンファーレ】いいね+1\n【バズ3】さらに+1/+1と《突進》',
+    text: '【ファンファーレ】いいね+1\n【バズ3】さらにランダムな相手のフォロワーに3ダメージ',
     flavor: '「概要欄も見てね！」',
     fanfare: (c) => {
       c.likes(1);
-      c.buzz(3, (c) => {
-        c.buff(c.self, 1, 1);
-        c.give(c.self, 'rush');
-      });
+      c.buzz(3, (c) => c.pingFollowers(1, 3));
     },
   }),
   follower({
@@ -295,7 +287,7 @@ export const STREAM = [
     cost: 3,
     rarity: 'bronze',
     atk: 2,
-    hp: 4,
+    hp: 5,
     kw: ['ward'],
     art: '👮',
     text: '《守護》\n【ラストワード】「サクラ」を1体出す',
@@ -328,14 +320,12 @@ export const STREAM = [
     atk: 3,
     hp: 4,
     art: '👩‍🎤',
-    text: '【ファンファーレ】「サクラ」を2体出す。自分のフォロワーすべてを+1/+0\n【バズ8】さらに自分のフォロワーすべてに《突進》を与える',
+    text: '【ファンファーレ】「サクラ」を2体出す。カードを1枚引く\n【バズ8】さらに相手のフォロワーすべてに3ダメージ',
     flavor: 'ステージの上だけは、無敵。',
     fanfare: (c) => {
       c.summon('t_sakura', 2);
-      c.buffAll(c.allies(), 1, 0);
-      c.buzz(8, (c) => {
-        for (const a of c.allies()) c.give(a, 'rush');
-      });
+      c.draw(1);
+      c.buzz(8, (c) => c.dmgAll(c.enemies(), 3));
     },
   }),
   follower({

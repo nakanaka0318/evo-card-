@@ -9,7 +9,7 @@ export const SWEETS = [
     cost: 1,
     rarity: 'bronze',
     atk: 1,
-    hp: 1,
+    hp: 2,
     kw: ['ward'],
     art: '🐤',
     text: '《守護》\n【ファンファーレ】自分のリーダーを2回復',
@@ -24,12 +24,15 @@ export const SWEETS = [
     cls: 'sweets',
     cost: 2,
     rarity: 'bronze',
-    atk: 0,
+    atk: 1,
     hp: 5,
     kw: ['ward'],
     art: '🍮',
-    text: '《守護》',
+    text: '《守護》\n【ファンファーレ】自分のリーダーを2回復',
     flavor: 'ぷるんと受け止める。',
+    fanfare: (c) => {
+      c.heal(2);
+    },
   }),
   spell({
     id: 'w_candy',
@@ -38,11 +41,11 @@ export const SWEETS = [
     cost: 1,
     rarity: 'bronze',
     art: '🍬',
-    text: '相手のフォロワー1体に1ダメージ。自分のリーダーを3回復',
+    text: '相手のフォロワー1体に2ダメージ。自分のリーダーを3回復',
     flavor: '当たると痛い。舐めると甘い。',
     target: { kind: 'enemyFollower' },
     spell: (c) => {
-      c.dmg(c.target, 1);
+      c.dmg(c.target, 2);
       c.heal(3);
     },
   }),
@@ -66,8 +69,8 @@ export const SWEETS = [
     cls: 'sweets',
     cost: 4,
     rarity: 'bronze',
-    atk: 3,
-    hp: 4,
+    atk: 4,
+    hp: 5,
     kw: ['drain'],
     art: '🍰',
     text: '《ドレイン》',
@@ -79,7 +82,7 @@ export const SWEETS = [
     cls: 'sweets',
     cost: 5,
     rarity: 'bronze',
-    atk: 3,
+    atk: 4,
     hp: 6,
     kw: ['ward'],
     art: '🍨',
@@ -100,7 +103,7 @@ export const SWEETS = [
     cost: 2,
     rarity: 'silver',
     atk: 2,
-    hp: 2,
+    hp: 3,
     art: '🍪',
     text: '【ラストワード】「キャンディ」を1枚手札に加える',
     flavor: '砕けても、おやつは残す。',
@@ -117,13 +120,14 @@ export const SWEETS = [
     atk: 2,
     hp: 3,
     art: '🍦',
-    text: '【ファンファーレ】自分の他のフォロワー1体を+0/+2し、《守護》を与える',
+    text: '【ファンファーレ】相手のフォロワー1体を-3/-0（凍らせる）。自分のリーダーを2回復',
     flavor: 'ひんやり、しっかり守る。',
-    target: { kind: 'allyFollower' },
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
     fanfare: (c) => {
       const t = c.targetCard();
-      c.buff(t, 0, 2);
-      c.give(t, 'ward');
+      if (t) c.buff(t, -Math.min(3, c.atk(t)), 0);
+      c.heal(2);
     },
   }),
   follower({
@@ -146,13 +150,12 @@ export const SWEETS = [
     cost: 2,
     rarity: 'silver',
     art: '🍭',
-    text: '自分のフォロワーすべてを+1/+0\n【シュガーハイ10】かわりに+1/+1し、カードを1枚引く',
+    text: '相手のフォロワー1体に2ダメージ。自分のリーダーを2回復\n【シュガーハイ10】かわりに4ダメージ',
     flavor: '血糖値スパイク、キメていこう。',
+    target: { kind: 'enemyFollower' },
     spell: (c) => {
-      if (c.sugarHigh(10)) {
-        c.buffAll(c.allies(), 1, 1);
-        c.draw(1);
-      } else c.buffAll(c.allies(), 1, 0);
+      c.dmg(c.target, c.sugarHigh(10) ? 4 : 2);
+      c.heal(2);
     },
   }),
   spell({
@@ -197,12 +200,12 @@ export const SWEETS = [
     countdown: 3,
     art: '⛲',
     art2: '🍫',
-    text: '【カウントダウン3】\n【自分のターン終了時】自分のリーダーを2回復。自分のフォロワーすべてを+0/+1',
+    text: '【カウントダウン3】\n【自分のターン終了時】自分のリーダーを2回復。ランダムな相手のフォロワーに1ダメージ',
     flavor: '永遠に流れ続けるチョコ。',
     aiValue: 4,
     turnEnd: (c) => {
       c.heal(2);
-      c.buffAll(c.allies(), 0, 1);
+      c.pingFollowers(1, 1);
     },
   }),
   follower({
@@ -215,10 +218,10 @@ export const SWEETS = [
     hp: 7,
     kw: ['ward', 'drain', 'rush'],
     art: '🎂',
-    text: '《守護》《ドレイン》《突進》\n【ファンファーレ】【シュガーハイ15】+3/+3',
+    text: '《守護》《ドレイン》《突進》\n【ファンファーレ】【シュガーハイ15】相手のフォロワーすべてに3ダメージ',
     flavor: '入刀したら、反撃された。',
     fanfare: (c) => {
-      if (c.sugarHigh(15)) c.buff(c.self, 3, 3);
+      if (c.sugarHigh(15)) c.dmgAll(c.enemies(), 3);
     },
   }),
   // ---------------- legend
@@ -269,10 +272,10 @@ export const SWEETS = [
     atk: 1,
     hp: 3,
     art: '🫐',
-    text: '【ファンファーレ】自分のリーダーを1回復',
+    text: '【ファンファーレ】自分のリーダーを2回復',
     flavor: 'ぷるぷる、きらきら。',
     fanfare: (c) => {
-      c.heal(1);
+      c.heal(2);
     },
   }),
   follower({
@@ -315,12 +318,12 @@ export const SWEETS = [
     atk: 4,
     hp: 5,
     art: '🧑‍🍳',
-    text: '【ファンファーレ】自分のリーダーを4回復。自分のフォロワーすべてを+1/+1\n【シュガーハイ15】かわりに+2/+2',
+    text: '【ファンファーレ】自分のリーダーを4回復。「キャンディ」を2枚手札に加える\n【シュガーハイ15】さらに相手のフォロワーすべてに2ダメージ',
     flavor: '失敗作も、ちゃんと甘い。',
     fanfare: (c) => {
       c.heal(4);
-      if (c.sugarHigh(15)) c.buffAll(c.allies(), 2, 2);
-      else c.buffAll(c.allies(), 1, 1);
+      c.addHand('t_candy', 2);
+      if (c.sugarHigh(15)) c.dmgAll(c.enemies(), 2);
     },
   }),
   follower({
