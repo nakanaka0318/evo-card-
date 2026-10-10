@@ -887,3 +887,23 @@ describe('rankings: battle records', () => {
     expect(cardRanking(d, 'sim', 'novel', 0).length).toBe(21);
   });
 });
+
+describe('rankings: matchup table', () => {
+  it('records your leader vs the NPC leader and finds strong/weak matchups', async () => {
+    const { newSave } = await import('../src/meta/save');
+    const { recordBattle, matchupTable, strongWeak } = await import('../src/meta/records');
+    const d = newSave();
+    const r = (win: boolean, enemyCls: 'deco' | 'spicy') => recordBattle(d, { win, draw: false, playerCls: 'novel', enemyCls, playerPlayed: {}, enemyPlayed: {} });
+    r(true, 'deco');
+    r(true, 'deco');
+    r(false, 'spicy');
+    expect(d.records.matchups['novel>deco']).toEqual({ g: 2, w: 2 });
+    const t = matchupTable(d, 'battle');
+    expect(t.rows).toEqual(['novel']);
+    expect(t.cols).toEqual(['deco', 'spicy']);
+    const sw = strongWeak(t, 'novel');
+    expect(sw.strong[0][0]).toBe('deco');
+    expect(sw.weak[0][0]).toBe('spicy');
+    expect(matchupTable(d, 'sim').rows.length).toBe(18);
+  });
+});

@@ -13,7 +13,8 @@ if (process.argv[2] === 'merge') {
       t[k].g += v.g;
     }
   }
-  const total = Object.values(t).reduce((n, v) => n + v.g, 0) / 2;
+  const total = PLAYABLE_CLASSES.reduce((n, c) => n + (t[c]?.g ?? 0), 0) / 2;
+  const pairs = Object.keys(t).filter((k) => k.includes('>')).sort();
   const lines = [
     '// Leader strength from AI-vs-AI games with NPC decks (scripts/classpower.ts).',
     '// Shown on the rankings screen as the AI シミュレーション leader table.',
@@ -23,6 +24,11 @@ if (process.argv[2] === 'merge') {
     '',
     'export const SIM_CLASS: Partial<Record<ClassId, { g: number; w: number }>> = {',
     ...PLAYABLE_CLASSES.filter((c) => t[c]).map((c) => `  ${c}: { g: ${t[c].g}, w: ${t[c].w} },`),
+    '};',
+    '',
+    '/** `a>b` → games of leader a against leader b, and a\'s wins */',
+    'export const SIM_MATCHUP: Record<string, { g: number; w: number }> = {',
+    ...pairs.map((k) => `  '${k}': { g: ${t[k].g}, w: ${t[k].w} },`),
     '};',
     '',
   ];
@@ -48,9 +54,12 @@ if (process.argv[2] === 'merge') {
           n++;
         }
         for (const sd of [0, 1] as const) {
-          res[cls[sd]] ??= { w: 0, g: 0 };
-          res[cls[sd]].g++;
-          if (s.winner === sd) res[cls[sd]].w++;
+          // per leader, and per pairing as `a>b` from a's side (for the 相性表)
+          for (const k of [cls[sd], `${cls[sd]}>${cls[1 - sd]}`]) {
+            res[k] ??= { w: 0, g: 0 };
+            res[k].g++;
+            if (s.winner === sd) res[k].w++;
+          }
         }
       }
     }

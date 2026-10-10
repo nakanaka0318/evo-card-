@@ -1,14 +1,14 @@
 import { audio } from '../../audio/audio';
 import { music } from '../../audio/music';
 import { CLASSES, PLAYABLE_CLASSES, RARITY, SIM_GAMES, type ClassId, type Rarity } from '../../engine';
-import { cardRanking, leaderRanking, type CardRow, type LeaderRow } from '../../meta/records';
+import { cardRanking, leaderRanking, matchupTable, strongWeak, type CardRow, type LeaderRow, type MatchupTable } from '../../meta/records';
 import { save } from '../../meta/save';
 import { bottomNav, topBar } from '../common';
 import { h } from '../dom';
 import { go, type ScreenFn } from '../router';
 import { inspectCard } from './decks';
 
-type Tab = 'card' | 'npc' | 'player';
+type Tab = 'card' | 'npc' | 'player' | 'matchup';
 type Source = 'battle' | 'sim';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
@@ -23,7 +23,8 @@ export const rankingScreen: ScreenFn = (root, params) => {
   const tabs = h('div.tabs');
   const body = h('div.rk-body');
   root.append(tb.el, tabs, body, bottomNav('home'));
-  let tab: Tab = params.tab === 'npc' || params.tab === 'player' ? params.tab : 'card';
+  let tab: Tab = params.tab === 'npc' || params.tab === 'player' || params.tab === 'matchup' ? params.tab : 'card';
+  let focus: ClassId | null = null;
   const hasBattles = save.data.records.battles > 0;
   let source: Source = hasBattles ? 'battle' : 'sim';
   let cls: ClassId | 'all' = 'all';
@@ -35,7 +36,7 @@ export const rankingScreen: ScreenFn = (root, params) => {
     h(`button.f-chip${on ? '.on' : ''}${extra}`, { type: 'button', onclick: () => { audio.play('tap'); fn(); draw(); } }, label);
 
   const draw = () => {
-    tabs.replaceChildren(tabBtn('card', '🃏 カード'), tabBtn('npc', '🤖 NPCリーダー'), tabBtn('player', '🧑 プレイヤーリーダー'));
+    tabs.replaceChildren(tabBtn('card', '🃏 カード'), tabBtn('npc', '🤖 NPCリーダー'), tabBtn('player', '🧑 プレイヤーリーダー'), tabBtn('matchup', '⚔️ 相性表'));
     const rec = save.data.records;
     const head: HTMLElement[] = [];
     if (tab !== 'player') {
@@ -59,7 +60,7 @@ export const rankingScreen: ScreenFn = (root, params) => {
       );
     }
     head.push(h('div.rk-note', note(tab, source, rec.battles)));
-    body.replaceChildren(...head, ...(tab === 'card' ? drawCards() : drawLeaders()));
+    body.replaceChildren(...head, ...(tab === 'card' ? drawCards() : tab === 'matchup' ? drawMatchups() : drawLeaders()));
   };
 
   const drawCards = (): HTMLElement[] => {
@@ -80,11 +81,28 @@ export const rankingScreen: ScreenFn = (root, params) => {
     return [h('div.rk-podium', rows.slice(0, 3).map((r, i) => leaderPodium(r, i, src))), h('div.rk-list', rows.slice(3).map((r, i) => leaderRow(r, i + 3, src)))];
   };
 
+  const drawMatchups = (): HTMLElement[] => {
+    const t = matchupTable(save.data, source);
+    if (!t.rows.length) return [empty('まだ記録がありません。バトルすると、使ったリーダーと相手リーダーの相性がここに表で並びます。')];
+    if (focus && !t.rows.includes(focus)) focus = null;
+    const pick = (c: ClassId) => {
+      focus = focus === c ? null : c;
+      audio.play('tap');
+      draw();
+    };
+    return [matchupGrid(t, source, focus, pick), matchupInfo(t, source, focus)];
+  };
+
   draw();
   return () => tb.dispose();
 };
 
 function note(tab: Tab, source: Source, battles: number): string {
+  if (tab === 'matchup') {
+    return source === 'sim'
+      ? '行のリーダーが、列のリーダーと戦ったときの勝率（AI同士の総当たり）。緑は有利、赤は不利。行の名前をタップすると得意・苦手がわかります。'
+      : `あなたが使ったリーダー（行）が、NPCリーダー（列）と戦ったときの勝率（${battles}戦）。緑は有利、赤は不利。`;
+  }
   if (tab === 'player') return `あなたが使ったリーダーの勝率（${battles}戦）。試合数が少ないうちは50%寄りに補正して並べています。`;
   if (source === 'sim') {
     return tab === 'card'
@@ -192,5 +210,56 @@ function leaderRow(r: LeaderRow, i: number, src: 'npc' | 'player' | 'sim'): HTML
     leaderArt(r.cls),
     h('div.rk-main', h('div.rk-name', c.name), h('div.rk-sub', leaderSub(r, src)), bar(r.rate, c.color)),
     h('div.rk-stat', h('b', pct(r.rate)), h('small', `${r.g}戦`)),
+  );
+}
+
+/** green above 50%, red below; stronger colour the further from even */
+function rateColor(x: number): string {
+  const k = Math.min(1, Math.abs(x - 0.5) * 2.6);
+  return x >= 0.5 ? `rgba(52, 224, 176, ${0.12 + k * 0.78})` : `rgba(255, 77, 106, ${0.12 + k * 0.78})`;
+}
+
+function matchupGrid(t: MatchupTable, source: Source, focus: ClassId | null, pick: (c: ClassId) => void): HTMLElement {
+  const head = h(
+    'tr',
+    h('th.mu-corner', h('span', '自分＼相手')),
+    ...t.cols.map((b) => h(`th.mu-col${focus === b ? '.on' : ''}`, { title: CLASSES[b].name }, h('span.mu-emo', CLASSES[b].emoji), h('span.mu-short', CLASSES[b].name.replace('ー', '').slice(0, 3)))),
+  );
+  const rows = t.rows.map((a) =>
+    h(
+      `tr${focus === a ? '.on' : ''}`,
+      h('th.mu-row', h('button', { type: 'button', onclick: () => pick(a) }, h('span.mu-emo', CLASSES[a].emoji), h('span', CLASSES[a].name))),
+      ...t.cols.map((b) => {
+        if (a === b && source === 'sim') return h('td.mu-self', '—');
+        const c = t.cell(a, b);
+        if (!c) return h('td.mu-none', '');
+        const x = c.w / c.g;
+        return h(
+          `td.mu-cell${focus && focus !== a && focus !== b ? '.dim' : ''}`,
+          { style: { background: rateColor(x) }, title: `${CLASSES[a].name} → ${CLASSES[b].name}：${pct(x)}（${c.g}戦）` },
+          String(Math.round(x * 100)),
+          // your own records are small samples: show how many games each cell is
+          source === 'battle' ? h('small', `${c.g}戦`) : null,
+        );
+      }),
+    ),
+  );
+  return h('div.mu-wrap', h('table.mu-table', h('thead', head), h('tbody', rows)));
+}
+
+function matchupInfo(t: MatchupTable, source: Source, focus: ClassId | null): HTMLElement {
+  if (!focus) {
+    return h('div.mu-legend', h('span.mu-sw.lo'), '不利', h('span.mu-sw.mid'), '五分', h('span.mu-sw.hi'), '有利', h('small', '　数字は勝率（%）'));
+  }
+  const c = CLASSES[focus];
+  const sw = strongWeak(t, focus, source === 'sim' ? 5 : 1);
+  const chips = (list: [ClassId, number][], cls: string) =>
+    list.length ? list.map(([b, x]) => h(`span.mu-chip.${cls}`, `${CLASSES[b].emoji}${CLASSES[b].name} ${pct(x)}`)) : [h('span.mu-chip', 'なし')];
+  return h(
+    'div.mu-focus',
+    { style: { '--c1': c.color } },
+    h('div.mu-focus-head', h('span.mu-focus-art', c.leaderArt), h('b', `${c.emoji}${c.name} の相性`)),
+    h('div.mu-focus-row', h('span.mu-tag.hi', '得意'), ...chips(sw.strong, 'hi')),
+    h('div.mu-focus-row', h('span.mu-tag.lo', '苦手'), ...chips(sw.weak, 'lo')),
   );
 }

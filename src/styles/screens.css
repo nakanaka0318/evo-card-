@@ -4334,3 +4334,207 @@ button.rk-pod:hover {
   padding: 10px 10px;
   font-size: 14px;
 }
+
+/* ---- 相性表 */
+.mu-wrap {
+  overflow: auto;
+  max-height: min(62vh, 560px);
+  border-radius: 16px;
+  border: 3px solid #000;
+  background: #120d33;
+  box-shadow: 0 4px 0 #000;
+}
+
+.mu-table {
+  border-collapse: separate;
+  border-spacing: 2px;
+  font: 900 13px/1 var(--f-body);
+  color: #fff;
+}
+
+.mu-table th,
+.mu-table td {
+  min-width: 38px;
+  height: 32px;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.mu-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #1d1650;
+  padding: 4px 2px;
+}
+
+.mu-corner {
+  left: 0;
+  z-index: 3 !important;
+  font: 700 10px/1.2 var(--f-body);
+  color: var(--mute);
+}
+
+.mu-col {
+  vertical-align: bottom;
+}
+
+.mu-col.on {
+  box-shadow: inset 0 -3px 0 #ffe14d;
+}
+
+.mu-emo {
+  display: block;
+  font: 18px/1 var(--f-emoji);
+}
+
+.mu-short {
+  display: block;
+  margin-top: 3px;
+  font: 700 9px/1 var(--f-body);
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.mu-row {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #1d1650;
+  text-align: left !important;
+  padding: 0 4px;
+}
+
+.mu-row button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  font: 900 12px/1 var(--f-body);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.mu-row .mu-emo {
+  font-size: 16px;
+}
+
+tr.on .mu-row {
+  background: linear-gradient(90deg, #6a4a00, #3a2a00);
+  box-shadow: inset 3px 0 0 #ffe14d;
+}
+
+.mu-cell {
+  text-shadow: 0 1px 0 #000, 0 0 3px #000;
+  transition: opacity 0.2s;
+}
+
+.mu-cell.dim {
+  opacity: 0.22;
+}
+
+.mu-self {
+  color: #3b2f8a;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mu-none {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mu-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 900 13px/1 var(--f-body);
+  color: var(--mute);
+}
+
+.mu-sw {
+  width: 26px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.mu-sw.lo {
+  background: rgba(255, 77, 106, 0.85);
+}
+
+.mu-sw.mid {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.mu-sw.hi {
+  background: rgba(52, 224, 176, 0.85);
+}
+
+.mu-focus {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 3px solid #000;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c1) 30%, #1a1440), #120d33);
+  box-shadow: 0 4px 0 #000;
+}
+
+.mu-focus-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 18px/1 var(--f-display);
+  color: #fff;
+  text-shadow: var(--outline-s);
+}
+
+.mu-focus-art {
+  font: 34px/1 var(--f-emoji);
+}
+
+.mu-focus-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.mu-tag {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font: 900 13px/1 var(--f-body);
+  color: #1a1238;
+}
+
+.mu-tag.hi {
+  background: #34e0b0;
+}
+
+.mu-tag.lo {
+  background: #ff4d6a;
+  color: #fff;
+}
+
+.mu-chip {
+  padding: 5px 9px;
+  border-radius: 10px;
+  border: 2px solid #000;
+  background: #241c58;
+  font: 900 12px/1 var(--f-body);
+  color: #fff;
+}
+
+.mu-chip.hi {
+  box-shadow: inset 0 -3px 0 #34e0b0;
+}
+
+.mu-chip.lo {
+  box-shadow: inset 0 -3px 0 #ff4d6a;
+}
+
+.mu-cell small {
+  display: block;
+  margin-top: 1px;
+  font: 700 8px/1 var(--f-body);
+  opacity: 0.8;
+}

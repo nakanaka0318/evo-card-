@@ -9,4 +9,4 @@ export { CLASSES, KEYWORDS, ABILITIES, RARITY, PLAYABLE_CLASSES, type ClassMeta 
 export { RULES, DOPA } from './rules';
 export { buildDeck, sortDeck, validateDeck, cardPool } from './deckgen';
 export { CARD_POWER } from './cardpower';
-export { SIM_CLASS, SIM_GAMES } from './simstats';
+export { SIM_CLASS, SIM_GAMES, SIM_MATCHUP } from './simstats';

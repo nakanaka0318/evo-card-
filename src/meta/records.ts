@@ -1,4 +1,4 @@
-import { CARD_POWER, CLASSES, collectible, def, PLAYABLE_CLASSES, SIM_CLASS, type CardDef, type ClassId } from '../engine';
+import { CARD_POWER, CLASSES, collectible, def, PLAYABLE_CLASSES, SIM_CLASS, SIM_MATCHUP, type CardDef, type ClassId } from '../engine';
 import type { SaveData } from './save';
 
 /** win/loss tally */
@@ -16,10 +16,12 @@ export interface BattleRecords {
   npc: Partial<Record<ClassId, Tally>>;
   /** your leader class → games and wins */
   player: Partial<Record<ClassId, Tally>>;
+  /** `your leader>NPC leader` → games and your wins (for the 相性表) */
+  matchups: Record<string, Tally>;
 }
 
 export function emptyRecords(): BattleRecords {
-  return { battles: 0, cards: {}, npc: {}, player: {} };
+  return { battles: 0, cards: {}, npc: {}, player: {}, matchups: {} };
 }
 
 export interface RecordInput {
@@ -42,6 +44,10 @@ export function recordBattle(d: SaveData, r: RecordInput): void {
   const nc = (rec.npc[r.enemyCls] ??= { g: 0, w: 0 });
   nc.g++;
   if (npcWin) nc.w++;
+  rec.matchups ??= {};
+  const mu = (rec.matchups[`${r.playerCls}>${r.enemyCls}`] ??= { g: 0, w: 0 });
+  mu.g++;
+  if (r.win) mu.w++;
   const add = (ids: Record<string, number>, won: boolean, mine: boolean) => {
     for (const id of Object.keys(ids)) {
       const c = (rec.cards[id] ??= { g: 0, w: 0, mine: 0 });
@@ -104,6 +110,38 @@ export function leaderRanking(d: SaveData, source: 'npc' | 'player' | 'sim'): Le
     out.push({ cls, key: source === 'sim' ? t.w / t.g : score(t), g: t.g, w: t.w, rate: t.w / t.g });
   }
   return out.sort((a, b) => b.key - a.key || b.g - a.g);
+}
+
+export interface MatchupTable {
+  rows: ClassId[];
+  cols: ClassId[];
+  cell(a: ClassId, b: ClassId): Tally | undefined;
+}
+
+/** 相性表: win rate of each row leader against each column leader */
+export function matchupTable(d: SaveData, source: 'battle' | 'sim'): MatchupTable {
+  const tbl = source === 'sim' ? SIM_MATCHUP : (d.records.matchups ?? {});
+  const cell = (a: ClassId, b: ClassId) => {
+    const t = tbl[`${a}>${b}`];
+    return t && t.g ? t : undefined;
+  };
+  if (source === 'sim') return { rows: PLAYABLE_CLASSES, cols: PLAYABLE_CLASSES, cell };
+  // your battles: only the leaders you used (rows) and the NPC leaders you met (columns)
+  const keys = Object.keys(tbl).map((k) => k.split('>') as [ClassId, ClassId]);
+  const rows = PLAYABLE_CLASSES.filter((c) => keys.some(([a]) => a === c));
+  const cols = PLAYABLE_CLASSES.filter((c) => keys.some(([, b]) => b === c));
+  return { rows, cols, cell };
+}
+
+/** best and worst opponents for one leader (needs a few games per pairing) */
+export function strongWeak(t: MatchupTable, a: ClassId, minGames = 1): { strong: [ClassId, number][]; weak: [ClassId, number][] } {
+  const list = t.cols
+    .filter((b) => b !== a)
+    .map((b) => [b, t.cell(a, b)] as const)
+    .filter((x): x is readonly [ClassId, Tally] => !!x[1] && x[1].g >= minGames)
+    .map(([b, c]) => [b, c.w / c.g] as [ClassId, number])
+    .sort((x, y) => y[1] - x[1]);
+  return { strong: list.slice(0, 3).filter((x) => x[1] > 0.5), weak: list.slice(-3).reverse().filter((x) => x[1] < 0.5) };
 }
 
 export const className = (cls: ClassId) => CLASSES[cls].name;
