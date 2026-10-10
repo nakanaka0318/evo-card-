@@ -107,12 +107,16 @@ export const SWIPE = [
     cost: 1,
     rarity: 'silver',
     art: '🔁',
-    text: '自分のフォロワー1体を手札に戻す。カードを1枚引く',
+    text: '自分のフォロワー1体を破壊する。それと同名のカードを1枚手札に加える',
     flavor: '気づいたら朝だった。',
     target: { kind: 'allyFollower' },
     spell: (c) => {
-      c.bounce(c.targetCard());
-      c.draw(1);
+      const t = c.targetCard();
+      if (!t) return;
+      // a fresh copy: printed cost and stats, no carried-over discounts or buffs
+      const id = t.hold ?? t.id;
+      c.destroy(t);
+      c.addHand(id);
     },
   }),
   spell({
@@ -185,15 +189,19 @@ export const SWIPE = [
     id: 'x_feed',
     name: 'おすすめ欄の支配者',
     cls: 'swipe',
-    cost: 4,
+    cost: 3,
     rarity: 'gold',
-    atk: 3,
-    hp: 4,
+    atk: 2,
+    hp: 3,
     art: '🌀',
-    text: '【ファンファーレ】【コンボ2】相手のフォロワーすべてに2ダメージ',
+    text: '【ファンファーレ】カードを1枚引く\n自分がカードをプレイするたび、それがこのターン2枚目以降なら、ランダムな相手のフォロワーに2ダメージ',
     flavor: 'スクロールの果てに、何がある。',
+    aiValue: 3,
     fanfare: (c) => {
-      if (c.comboAt(2)) c.dmgAll(c.enemies(), 2);
+      c.draw(1);
+    },
+    onPlay: (c) => {
+      if (c.P.combo >= 2) c.pingFollowers(1, 2);
     },
   }),
   follower({
@@ -202,7 +210,7 @@ export const SWIPE = [
     cls: 'swipe',
     cost: 6,
     rarity: 'gold',
-    atk: 5,
+    atk: 4,
     hp: 3,
     kw: ['storm'],
     art: '🏃',
@@ -217,9 +225,9 @@ export const SWIPE = [
     cost: 2,
     rarity: 'gold',
     art: '👊',
-    text: 'ランダムな相手のフォロワーかリーダーに1ダメージを（2+このターンにプレイした他のカードの枚数）回',
+    text: 'ランダムな相手のフォロワーかリーダーに1ダメージを（このターンにプレイした他のカードの枚数）回',
     flavor: 'オラオラオラオラ！',
-    spell: (c) => c.ping(2 + c.combo, 1),
+    spell: (c) => c.ping(c.combo, 1),
   }),
   // ---------------- legend
   follower({
@@ -247,13 +255,16 @@ export const SWIPE = [
     cls: 'swipe',
     cost: 2,
     rarity: 'legend',
-    countdown: 3,
+    countdown: 2,
     art: '♾️',
     art2: '📱',
-    text: '【カウントダウン3】\n自分がカードをプレイするたび、ランダムな相手のフォロワーかリーダーに1ダメージ',
+    text: '【カウントダウン2】\n自分がカードをプレイするたび、ランダムな相手のフォロワーかリーダーに1ダメージ\n【ラストワード】カードを1枚引く',
     flavor: '終わりがないのが、終わり。',
     aiValue: 4,
     onPlay: (c) => c.ping(1, 1),
+    lastWords: (c) => {
+      c.draw(1);
+    },
   }),
 
   // ---------------- 追加カード
@@ -309,7 +320,7 @@ export const SWIPE = [
     cls: 'swipe',
     cost: 4,
     rarity: 'gold',
-    atk: 3,
+    atk: 2,
     hp: 2,
     kw: ['storm'],
     art: '🏍️',

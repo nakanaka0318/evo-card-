@@ -1,4 +1,5 @@
 import { amulet, follower, spell } from './util';
+import { atkOf, hpOf } from '../core';
 
 export const GAMER = [
   // ---------------- bronze
@@ -51,18 +52,20 @@ export const GAMER = [
     cost: 3,
     rarity: 'bronze',
     atk: 2,
-    hp: 4,
+    hp: 3,
     kw: ['ward'],
     art: '🛡️',
-    text: '《守護》\n【課金5】+3/+3\n【進化時】相手のフォロワー1体に3ダメージ',
+    text: '《守護》\n【レベル】EXP1ごとに+0/+2（最大Lv3）\n【レベルアップ時】自分のリーダーを2回復\n【課金5】【ファンファーレ】EXP+2。ランダムな相手のフォロワーに3ダメージ',
     flavor: 'ヘイトは全部、俺が買う。',
     enhance: 5,
+    level: { exp: 1, max: 3, gain: [0, 2] },
     fanfare: (c) => {
-      if (c.enhanced) c.buff(c.self, 3, 3);
+      if (!c.enhanced) return;
+      c.exp(c.self, 2);
+      c.pingFollowers(1, 3);
     },
-    evoTarget: { kind: 'enemyFollower' },
-    evolve: (c) => {
-      c.dmg(c.target, 3);
+    onLevelUp: (c) => {
+      c.heal(2);
     },
   }),
   follower({
@@ -71,18 +74,18 @@ export const GAMER = [
     cls: 'gamer',
     cost: 3,
     rarity: 'bronze',
-    atk: 3,
-    hp: 3,
+    atk: 2,
+    hp: 2,
     art: '🏹',
-    text: '【課金6】+2/+0と《疾走》を得る',
+    text: '【レベル】EXP1ごとに+1/+0（最大Lv3）\n【レベルアップ時】ランダムな相手のフォロワーに1ダメージ\n【ファンファーレ】ランダムな相手のフォロワーに、このフォロワーの攻撃力と同じダメージ\n【課金6】先にEXP+2',
     flavor: '後衛だけど、前に出たい。',
     enhance: 6,
+    level: { exp: 1, max: 3, gain: [1, 0] },
     fanfare: (c) => {
-      if (c.enhanced) {
-        c.buff(c.self, 2, 0);
-        c.give(c.self, 'storm');
-      }
+      if (c.enhanced) c.exp(c.self, 2);
+      c.pingFollowers(1, atkOf(c.s, c.self));
     },
+    onLevelUp: (c) => c.pingFollowers(1, 1),
   }),
   follower({
     id: 'm_boss',
@@ -195,15 +198,21 @@ export const GAMER = [
     cls: 'gamer',
     cost: 7,
     rarity: 'gold',
-    atk: 6,
-    hp: 7,
+    atk: 5,
+    hp: 8,
     kw: ['ward'],
     art: '🐙',
-    text: '《守護》\n【課金9】【ファンファーレ】相手のフォロワーすべてに4ダメージ',
+    text: '《守護》\n【自分のターン終了時】自分の他のフォロワーすべてにEXP+1\n【課金9】【ファンファーレ】相手のフォロワーすべてに3ダメージ。自分の他のフォロワーすべてにEXP+2',
     flavor: '参加者30人推奨。',
     enhance: 9,
+    aiValue: 3,
     fanfare: (c) => {
-      if (c.enhanced) c.dmgAll(c.enemies(), 4);
+      if (!c.enhanced) return;
+      c.dmgAll(c.enemies(), 3);
+      for (const a of c.allies(false)) c.exp(a, 2);
+    },
+    turnEnd: (c) => {
+      for (const a of c.allies(false)) c.exp(a, 1);
     },
   }),
   follower({
@@ -263,18 +272,22 @@ export const GAMER = [
     id: 'm_maou',
     name: '魔王ラスボス',
     cls: 'gamer',
-    cost: 9,
+    cost: 8,
     rarity: 'legend',
-    atk: 8,
-    hp: 8,
+    atk: 6,
+    hp: 6,
     kw: ['ward'],
     art: '👿',
     art2: '🏰',
-    text: '《守護》\n【課金10】【ファンファーレ】相手のフォロワーすべてを破壊する',
+    text: '《守護》\n【ファンファーレ】相手のフォロワーすべてに3ダメージ\n【課金10】かわりに相手のフォロワーすべてを破壊する\n【ラストワード】「魔王ラスボス 第二形態」を1体出す',
     flavor: '「よくぞ来た。だが課金が足りぬ」',
     enhance: 10,
     fanfare: (c) => {
       if (c.enhanced) for (const e of c.enemies()) c.destroy(e);
+      else c.dmgAll(c.enemies(), 3);
+    },
+    lastWords: (c) => {
+      c.summon('t_maou2');
     },
   }),
 
@@ -351,17 +364,21 @@ export const GAMER = [
     id: 'm_bug',
     name: 'チート使いバグ丸',
     cls: 'gamer',
-    cost: 8,
+    cost: 6,
     rarity: 'legend',
-    atk: 6,
-    hp: 6,
+    atk: 5,
+    hp: 5,
     art: '🤖',
     art2: '🐛',
-    text: '【ファンファーレ】自分の他のフォロワーすべてにEXP+5。相手のフォロワーすべてに2ダメージ',
+    text: '【ファンファーレ】自分の他のフォロワーすべてのレベルを最大にする\n【自分のターン終了時】ランダムな相手のフォロワー1体の体力を1にする',
     flavor: '「↑↑↓↓←→←→BA。はい、全員カンスト」',
+    aiValue: 4,
     fanfare: (c) => {
-      for (const a of c.allies(false)) c.exp(a, 5);
-      c.dmgAll(c.enemies(), 2);
+      for (const a of c.allies(false)) c.exp(a, 99);
+    },
+    turnEnd: (c) => {
+      const e = c.pick(c.enemies().filter((x) => hpOf(x) > 1));
+      if (e) c.dmg(e, hpOf(e) - 1);
     },
   }),
 ];

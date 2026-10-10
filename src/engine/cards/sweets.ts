@@ -8,14 +8,14 @@ export const SWEETS = [
     cls: 'sweets',
     cost: 1,
     rarity: 'bronze',
-    atk: 1,
-    hp: 2,
-    kw: ['ward'],
+    atk: 2,
+    hp: 1,
     art: '🐤',
-    text: '《守護》\n【ファンファーレ】自分のリーダーを2回復',
+    text: '【ラストワード】自分のリーダーを3回復し、カードを1枚引く',
     flavor: 'ピヨッ（あまい）',
-    fanfare: (c) => {
-      c.heal(2);
+    lastWords: (c) => {
+      c.heal(3);
+      c.draw(1);
     },
   }),
   follower({
@@ -25,14 +25,12 @@ export const SWEETS = [
     cost: 2,
     rarity: 'bronze',
     atk: 1,
-    hp: 5,
-    kw: ['ward'],
+    hp: 3,
     art: '🍮',
-    text: '《守護》\n【ファンファーレ】自分のリーダーを2回復',
+    text: '自分のリーダーが回復するたび、ランダムな相手のフォロワーに1ダメージ',
     flavor: 'ぷるんと受け止める。',
-    fanfare: (c) => {
-      c.heal(2);
-    },
+    aiValue: 2,
+    onHeal: (c) => c.pingFollowers(1, 1),
   }),
   spell({
     id: 'w_candy',
@@ -69,12 +67,18 @@ export const SWEETS = [
     cls: 'sweets',
     cost: 4,
     rarity: 'bronze',
-    atk: 4,
-    hp: 5,
-    kw: ['drain'],
+    atk: 3,
+    hp: 4,
     art: '🍰',
-    text: '《ドレイン》',
+    text: '【ファンファーレ】相手のフォロワー1体に3ダメージ\n【シュガーハイ15】かわりに破壊する',
     flavor: 'いちごは最後まで取っておく派。',
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
+    fanfare: (c) => {
+      if (c.target === null) return;
+      if (c.sugarHigh(15)) c.destroy(c.targetCard());
+      else c.dmg(c.target, 3);
+    },
   }),
   follower({
     id: 'w_parfait',

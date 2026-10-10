@@ -502,4 +502,37 @@ export const TOKENS = [
     token: true,
     tags: ['puppet'],
   }),
+  amulet({
+    id: 't_flamefire',
+    name: '炎上の火',
+    cls: 'stream',
+    cost: 0,
+    rarity: 'bronze',
+    art: '🔥',
+    art2: '📢',
+    text: '【自分のターン終了時】相手のフォロワーすべてと相手のリーダーに4ダメージ',
+    flavor: 'もう、だれにも消せない。',
+    token: true,
+    aiValue: 8,
+    turnEnd: (c) => {
+      c.dmgAll(c.enemies(), 4);
+      c.face(4);
+    },
+  }),
+  follower({
+    id: 't_maou2',
+    name: '魔王ラスボス 第二形態',
+    cls: 'gamer',
+    cost: 8,
+    rarity: 'legend',
+    atk: 5,
+    hp: 5,
+    kw: ['ward'],
+    art: '👹',
+    art2: '🔥',
+    text: '《守護》\n【自分のターン終了時】相手のリーダーに3ダメージ',
+    flavor: '「ふはは、まだ終わらぬ！」',
+    token: true,
+    turnEnd: (c) => c.face(3),
+  }),
 ];

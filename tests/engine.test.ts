@@ -89,13 +89,13 @@ describe('combat', () => {
   it('bane, drain and barrier', () => {
     const s = game();
     s.players[0].hp = 10;
-    const bane = put(s, 0, 's_anti');
+    const bane = put(s, 0, 'm_mimic');
     const big = put(s, 1, 'n_bear');
     apply(s, { t: 'attack', uid: bane.uid, target: big.uid });
     expect(s.players[1].board.includes(big)).toBe(false);
-    const drain = put(s, 0, 'w_cake');
+    const drain = put(s, 0, 'w_pero');
     apply(s, { t: 'attack', uid: drain.uid, target: leaderTgt(1) });
-    expect(s.players[0].hp).toBe(14);
+    expect(s.players[0].hp).toBe(15);
     const bal = put(s, 1, 'n_balloon');
     const hit = put(s, 0, 'n_golem');
     apply(s, { t: 'attack', uid: hit.uid, target: bal.uid });
@@ -232,7 +232,7 @@ describe('cards & mechanics', () => {
   it('sweetness accumulates from heals even at full HP', () => {
     const s = game();
     s.players[0].pp = 10;
-    apply(s, { t: 'play', uid: give(s, 0, 'w_hiyoko').uid });
+    apply(s, { t: 'play', uid: give(s, 0, 't_candy').uid });
     expect(s.players[0].sweet).toBe(2);
     const donut = put(s, 0, 'w_donut');
     apply(s, { t: 'play', uid: give(s, 0, 't_candy').uid });
@@ -905,5 +905,60 @@ describe('rankings: matchup table', () => {
     expect(sw.strong[0][0]).toBe('deco');
     expect(sw.weak[0][0]).toBe('spicy');
     expect(matchupTable(d, 'sim').rows.length).toBe(18);
+  });
+});
+
+describe('patch: card adjustments', () => {
+  it('無限ループ destroys a follower and returns a fresh copy', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].hand = [];
+    const t = put(s, 0, 'n_bear');
+    t.atk += 3;
+    const loop = give(s, 0, 'x_loop');
+    apply(s, { t: 'play', uid: loop.uid, target: t.uid });
+    expect(s.players[0].board.includes(t)).toBe(false);
+    const back = s.players[0].hand.find((c) => c.id === 'n_bear')!;
+    expect(back).toBeTruthy();
+    expect(back.atk).toBe(def('n_bear').atk);
+    expect(E.playCost(s, back).cost).toBe(def('n_bear').cost);
+  });
+
+  it('炎上 with 30 likes leaves 炎上の火, which burns every turn end', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].likes = 30;
+    const f = give(s, 0, 's_flame');
+    apply(s, { t: 'play', uid: f.uid });
+    expect(s.players[0].board.some((c) => c.id === 't_flamefire')).toBe(true);
+    const hp = s.players[1].hp;
+    apply(s, { t: 'end' });
+    expect(s.players[1].hp).toBe(hp - 4);
+  });
+
+  it('アンチ splits on evolve; 魔王 comes back in its second form', () => {
+    const s = game();
+    s.players[0].ep = 2;
+    s.players[0].turns = 10;
+    const a = put(s, 0, 's_anti');
+    apply(s, { t: 'evolve', uid: a.uid, sup: false });
+    expect(s.players[0].board.filter((c) => c.id === 's_anti').length).toBe(3);
+    const m = put(s, 1, 'm_maou');
+    m.doomed = true;
+    E.resolve(s);
+    expect(s.players[1].board.some((c) => c.id === 't_maou2')).toBe(true);
+  });
+});
+
+describe('カード歴史', () => {
+  it('the latest patch notes match the cards as they are now', async () => {
+    const { PATCHES } = await import('../src/meta/history');
+    for (const c of PATCHES[0].changes) {
+      const d = def(c.id);
+      expect(d.cost, c.id).toBe(c.after.cost);
+      expect(d.text, c.id).toBe(c.after.text);
+      expect(d.atk, c.id).toBe(c.after.atk);
+      expect(d.hp, c.id).toBe(c.after.hp);
+    }
   });
 });

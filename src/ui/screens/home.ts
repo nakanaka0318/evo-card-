@@ -6,6 +6,7 @@ import { FIRST_PACKS, PACK_SIZE, pickupClass } from '../../meta/gacha';
 import { claimLogin, LOGIN_REWARDS, ROULETTE, spinRoulette } from '../../meta/login';
 import { refreshMissions } from '../../meta/missions';
 import { save } from '../../meta/save';
+import { PATCHES } from '../../meta/history';
 import { badges, bottomNav, btn, modal, rewardModal, topBar } from '../common';
 import { h, todayKey, wait } from '../dom';
 import { flash, shake } from '../fx/fx';
@@ -77,6 +78,7 @@ export const homeScreen: ScreenFn = (root) => {
     sideBtn('📅', 'ログボ', false, () => openLogin(-1)),
     sideBtn('🏆', '実績', b.achievements > 0, () => void go('missions', { tab: 'ach' })),
     sideBtn('📊', 'ランキング', false, () => void go('ranking')),
+    sideBtn('📜', 'カード歴史', !save.data.flags[`seenPatch_${PATCHES[0].id}`], () => void go('history')),
     sideBtn('📖', '遊び方', !d.flags.rulesSeen, () => void go('rules')),
     sideBtn('⚙️', '設定', false, () => void go('settings')),
   );

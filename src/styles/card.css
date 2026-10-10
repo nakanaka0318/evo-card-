@@ -484,66 +484,86 @@
   line-height: 1.35;
 }
 
-.card-text .ab-buzz {
+.card-text .ab-buzz,
+.hs-text .ab-buzz {
   background: #e3307e;
 }
-.card-text .ab-sugar {
+.card-text .ab-sugar,
+.hs-text .ab-sugar {
   background: #e8763c;
 }
-.card-text .ab-combo {
+.card-text .ab-combo,
+.hs-text .ab-combo {
   background: #1d9fd1;
 }
-.card-text .ab-enhance {
+.card-text .ab-enhance,
+.hs-text .ab-enhance {
   background: #c48a00;
 }
-.card-text .ab-gacha {
+.card-text .ab-gacha,
+.hs-text .ab-gacha {
   background: linear-gradient(90deg, #ff3fa4, #ffb000);
 }
-.card-text .ab-level {
+.card-text .ab-level,
+.hs-text .ab-level {
   background: #1f9d5a;
 }
-.card-text .ab-treasure {
+.card-text .ab-treasure,
+.hs-text .ab-treasure {
   background: linear-gradient(90deg, #d99a00, #c4174b);
 }
-.card-text .ab-harmony {
+.card-text .ab-harmony,
+.hs-text .ab-harmony {
   background: linear-gradient(90deg, #1aa8d6, #d93ab8);
 }
-.card-text .ab-crash {
+.card-text .ab-crash,
+.hs-text .ab-crash {
   background: linear-gradient(90deg, #e0331a, #55556e);
 }
-.card-text .ab-ranger {
+.card-text .ab-ranger,
+.hs-text .ab-ranger {
   background: linear-gradient(90deg, #e8243f, #d9a400);
 }
-.card-text .ab-witch {
+.card-text .ab-witch,
+.hs-text .ab-witch {
   background: linear-gradient(90deg, #7a3fe0, #d94fb8);
 }
-.card-text .ab-minimal {
+.card-text .ab-minimal,
+.hs-text .ab-minimal {
   background: linear-gradient(90deg, #14a87a, #5a6ad9);
 }
-.card-text .ab-jewel {
+.card-text .ab-jewel,
+.hs-text .ab-jewel {
   background: linear-gradient(90deg, #e04fb8, #1aa8c4);
 }
-.card-text .ab-white {
+.card-text .ab-white,
+.hs-text .ab-white {
   background: linear-gradient(90deg, #f4ecd6, #c9b48a);
   color: #4a2a7a;
 }
-.card-text .ab-black {
+.card-text .ab-black,
+.hs-text .ab-black {
   background: linear-gradient(90deg, #2a1a40, #4a2a7a);
   color: #f4ecd6;
 }
-.card-text .ab-deco {
+.card-text .ab-deco,
+.hs-text .ab-deco {
   background: linear-gradient(90deg, #ff6fc4, #ffb43d);
 }
-.card-text .ab-spicy {
+.card-text .ab-spicy,
+.hs-text .ab-spicy {
   background: linear-gradient(90deg, #e8250f, #ff8a00);
 }
-.card-text .ab-shrine {
+.card-text .ab-shrine,
+.hs-text .ab-shrine {
   background: linear-gradient(90deg, #d93030, #a8762a);
 }
-.card-text .ab-puppet {
+.card-text .ab-puppet,
+.hs-text .ab-puppet {
   background: linear-gradient(90deg, #8a5ae0, #e04a72);
 }
-.card-text .ab-gadget {
+.card-text .ab-gadget,
+.hs-text .ab-gadget {
   background: linear-gradient(90deg, #ff8a1f, #14a89c);
 }
 .card-text .kw {

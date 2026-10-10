@@ -103,20 +103,26 @@ export const GACHA = [
     id: 'g_gorilla',
     name: '景品ゴリラ',
     cls: 'gacha',
-    cost: 5,
+    cost: 3,
     rarity: 'bronze',
-    atk: 4,
-    hp: 5,
-    kw: ['ward'],
+    atk: 2,
+    hp: 3,
     art: '🦍',
-    text: '《守護》\n【ファンファーレ】ガチャ\nN:「アタリくん」を1体出す R:「アタリくん」を2体出す SR:ランダムな相手のフォロワーに4ダメージ SSR:相手のフォロワーすべてに3ダメージ',
+    text: '【ファンファーレ】相手のフォロワー1体を選んでガチャ\nN:2ダメージ R:3ダメージ SR:破壊する SSR:破壊し、「アタリくん」を1体出す',
     flavor: 'クレーンゲームで取れた。重い。',
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
     fanfare: (c) => {
+      const t = c.targetCard();
+      if (!t) return;
       c.gacha({
-        N: (c) => c.summon('t_atari'),
-        R: (c) => c.summon('t_atari', 2),
-        SR: (c) => c.dmg(c.pick(c.enemies()), 4),
-        SSR: (c) => c.dmgAll(c.enemies(), 3),
+        N: (c) => c.dmg(t, 2),
+        R: (c) => c.dmg(t, 3),
+        SR: (c) => c.destroy(t),
+        SSR: (c) => {
+          c.destroy(t);
+          c.summon('t_atari');
+        },
       });
     },
   }),
@@ -244,10 +250,10 @@ export const GACHA = [
     id: 'g_ceiling',
     name: '天井ガーディアン',
     cls: 'gacha',
-    cost: 4,
+    cost: 3,
     rarity: 'gold',
     atk: 2,
-    hp: 5,
+    hp: 4,
     kw: ['ward'],
     art: '🏯',
     text: '《守護》【ファンファーレ】運気+2\n【ラストワード】ガチャ\nN:自分のリーダーを2回復 R:カードを1枚引く SR:「SSRスター」を1体出す SSR:「SSRスター」を1体出し、カードを1枚引く',
@@ -297,13 +303,14 @@ export const GACHA = [
     id: 'g_roule',
     name: 'ガチャ姫ルーレ',
     cls: 'gacha',
-    cost: 6,
+    cost: 7,
     rarity: 'legend',
     atk: 5,
     hp: 5,
+    kw: ['storm'],
     art: '👸',
     art2: '🎰',
-    text: '【ファンファーレ】ガチャを3回行う\nN:ランダムな相手のフォロワーに2ダメージ R:自分のリーダーを3回復 SR:「SSRスター」を1体出す SSR:相手のリーダーに4ダメージ\n【進化時】運気+3',
+    text: '《疾走》\n【ファンファーレ】ガチャを3回行う\nN:ランダムな相手のフォロワーに2ダメージ R:自分のリーダーを3回復 SR:「SSRスター」を1体出す SSR:相手のリーダーに4ダメージ\n【進化時】運気+3',
     flavor: '「当たるまで回せば、それは確定ガチャですわ」',
     fanfare: (c) => {
       for (let i = 0; i < 3; i++) {
@@ -325,10 +332,13 @@ export const GACHA = [
     rarity: 'legend',
     art: '🏭',
     art2: '🥚',
-    text: '【ファンファーレ】確変\n【自分のターン終了時】ガチャ\nN:「カプセルぼうや」を1体出す R:「カプセルぼうや」を2体出す SR:「SSRスター」を1体出す SSR:「SSRスター」を2体出す',
+    text: '【ファンファーレ】確変。相手のフォロワーすべてに2ダメージ\n【自分のターン終了時】ガチャ\nN:「カプセルぼうや」を1体出す R:「カプセルぼうや」を2体出す SR:「SSRスター」を1体出す SSR:「SSRスター」を2体出す',
     flavor: '24時間365日、カプセルが止まらない。',
     aiValue: 6,
-    fanfare: (c) => c.kakuhen(1),
+    fanfare: (c) => {
+      c.kakuhen(1);
+      c.dmgAll(c.enemies(), 2);
+    },
     turnEnd: (c) => {
       c.gacha({
         N: (c) => c.summon('g_capsule'),

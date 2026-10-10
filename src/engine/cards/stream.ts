@@ -72,8 +72,8 @@ export const STREAM = [
     cls: 'stream',
     cost: 4,
     rarity: 'bronze',
-    atk: 3,
-    hp: 5,
+    atk: 2,
+    hp: 3,
     kw: ['ward'],
     art: '🙋',
     text: '《守護》\n【進化時】「古参ファン」を2体出す\n【ラストワード】いいね+2',
@@ -119,14 +119,16 @@ export const STREAM = [
     id: 's_flame',
     name: '炎上',
     cls: 'stream',
-    cost: 3,
+    cost: 7,
     rarity: 'silver',
     art: '🔥',
-    text: '相手のフォロワーすべてに1ダメージ\n【バズ6】かわりに3ダメージ\nその後、いいね+2',
+    text: '相手のフォロワーすべてに1ダメージ\n【バズ30】トークンアミュレット「炎上の火」を自分の場に出す',
     flavor: '燃えれば燃えるほど、伸びる。',
     spell: (c) => {
-      if (!c.buzz(6, (c) => c.dmgAll(c.enemies(), 3))) c.dmgAll(c.enemies(), 1);
-      c.likes(2);
+      c.dmgAll(c.enemies(), 1);
+      c.buzz(30, (c) => {
+        c.summon('t_flamefire');
+      });
     },
   }),
   follower({
@@ -219,11 +221,13 @@ export const STREAM = [
     rarity: 'gold',
     atk: 2,
     hp: 2,
-    kw: ['bane'],
     art: '😈',
-    text: '《必殺》【ファンファーレ】いいね+2\n【ラストワード】相手のリーダーに2ダメージ',
+    text: '【ファンファーレ】いいね+2\n【進化時】「アンチ」を2体出す\n【ラストワード】相手のリーダーに2ダメージ',
     flavor: '一番熱心な視聴者は、だいたいコイツ。',
     fanfare: (c) => c.likes(2),
+    evolve: (c) => {
+      c.summon('s_anti', 2);
+    },
     lastWords: (c) => {
       c.face(2);
     },
@@ -268,16 +272,19 @@ export const STREAM = [
     id: 's_kids',
     name: 'ゲーム実況キッズ',
     cls: 'stream',
-    cost: 2,
+    cost: 3,
     rarity: 'bronze',
     atk: 2,
     hp: 2,
     art: '🎧',
-    text: '【ファンファーレ】いいね+1\n【バズ3】さらにランダムな相手のフォロワーに3ダメージ',
+    text: '【ファンファーレ】いいね+1\n【バズ3】さらにランダムな相手のフォロワーに3ダメージ\n【超進化時】《疾走》を得る',
     flavor: '「概要欄も見てね！」',
     fanfare: (c) => {
       c.likes(1);
       c.buzz(3, (c) => c.pingFollowers(1, 3));
+    },
+    superEvolve: (c) => {
+      c.give(c.self, 'storm');
     },
   }),
   follower({
@@ -332,19 +339,21 @@ export const STREAM = [
     id: 's_million',
     name: '登録者1000万人ミリオン',
     cls: 'stream',
-    cost: 7,
+    cost: 6,
     rarity: 'legend',
-    atk: 5,
-    hp: 6,
+    atk: 4,
+    hp: 5,
     art: '🌐',
     art2: '💯',
-    text: '【ファンファーレ】いいねを2倍にする\n【バズ15】相手のフォロワーすべてを破壊する',
+    text: '【ファンファーレ】「古参ファン」を2体出す\n【自分のターン終了時】いいね+3\n【進化時】【バズ10】相手のフォロワーすべてに3ダメージ',
     flavor: '「みんなのおかげで、ここまで来れた。……全部、計算通り」',
+    aiValue: 3,
     fanfare: (c) => {
-      c.likes(c.P.likes);
-      c.buzz(15, (c) => {
-        for (const e of c.enemies()) c.destroy(e);
-      });
+      c.summon('s_fan', 2);
+    },
+    turnEnd: (c) => c.likes(3),
+    evolve: (c) => {
+      c.buzz(10, (c) => c.dmgAll(c.enemies(), 3));
     },
   }),
 ];
