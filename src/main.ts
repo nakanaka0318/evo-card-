@@ -18,6 +18,7 @@ import { missionsScreen } from './ui/screens/missions';
 import { onboardScreen } from './ui/screens/onboard';
 import { resultsScreen } from './ui/screens/results';
 import { rulesScreen } from './ui/screens/rules';
+import { rankingScreen } from './ui/screens/ranking';
 import { applySettings, settingsScreen } from './ui/screens/settings';
 import { freeScreen, storyScreen } from './ui/screens/story';
 import { titleScreen } from './ui/screens/title';
@@ -75,6 +76,7 @@ function boot(): void {
   registerScreen('free', async () => freeScreen);
   registerScreen('settings', async () => settingsScreen);
   registerScreen('rules', async () => rulesScreen);
+  registerScreen('ranking', async () => rankingScreen);
   window.addEventListener(
     'pointerdown',
     () => {

@@ -862,3 +862,28 @@ describe('puppet: 人形 / 操演', () => {
     expect(s.players[0].puppets).toBe(1);
   });
 });
+
+describe('rankings: battle records', () => {
+  it('counts played cards per side and tallies leaders', async () => {
+    const { newSave } = await import('../src/meta/save');
+    const { recordBattle, cardRanking, leaderRanking } = await import('../src/meta/records');
+    const s = game();
+    s.players[0].pp = 10;
+    const a = give(s, 0, 'n_slime');
+    apply(s, { t: 'play', uid: a.uid });
+    expect(s.players[0].stats.played).toEqual({ n_slime: 1 });
+    const d = newSave();
+    recordBattle(d, { win: true, draw: false, playerCls: 'novel', enemyCls: 'deco', playerPlayed: { n_slime: 2, b_pen: 1 }, enemyPlayed: { e_nail: 1, n_slime: 1 } });
+    recordBattle(d, { win: false, draw: false, playerCls: 'novel', enemyCls: 'deco', playerPlayed: { b_pen: 1 }, enemyPlayed: { e_nail: 1 } });
+    expect(d.records.battles).toBe(2);
+    expect(d.records.player.novel).toEqual({ g: 2, w: 1 });
+    expect(d.records.npc.deco).toEqual({ g: 2, w: 1 });
+    // slime was played by both sides in the first battle: one win, one loss
+    expect(d.records.cards.n_slime).toEqual({ g: 2, w: 1, mine: 1 });
+    expect(d.records.cards.e_nail).toEqual({ g: 2, w: 1, mine: 0 });
+    const rows = cardRanking(d, 'battle', 'all', 2); // (the screen uses 3)
+    expect(rows.map((r) => r.d.id).sort()).toEqual(['b_pen', 'e_nail', 'n_slime']);
+    expect(leaderRanking(d, 'player')[0].cls).toBe('novel');
+    expect(cardRanking(d, 'sim', 'novel', 0).length).toBe(21);
+  });
+});

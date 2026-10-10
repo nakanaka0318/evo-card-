@@ -76,6 +76,7 @@ export const homeScreen: ScreenFn = (root) => {
     sideBtn('🎡', 'ルーレット', b.roulette, () => openRoulette()),
     sideBtn('📅', 'ログボ', false, () => openLogin(-1)),
     sideBtn('🏆', '実績', b.achievements > 0, () => void go('missions', { tab: 'ach' })),
+    sideBtn('📊', 'ランキング', false, () => void go('ranking')),
     sideBtn('📖', '遊び方', !d.flags.rulesSeen, () => void go('rules')),
     sideBtn('⚙️', '設定', false, () => void go('settings')),
   );

@@ -63,6 +63,8 @@ export interface PlayerStats {
   summoned: number;
   /** damage dealt to the enemy per card id (for the MVP display) */
   dmgBy: Record<string, number>;
+  /** cards played from hand this battle (id → times), for the rankings */
+  played: Record<string, number>;
 }
 
 export interface Player {

@@ -4,6 +4,7 @@ import { CLASSES } from '../../engine';
 import { achProgress, ACHIEVEMENTS, doneSet } from '../../meta/achievements';
 import { addXp, battleRewards, grant, rankIndex, rankInfo, RANKS, rewardText, scoreBattle, xpForLevel, type Reward } from '../../meta/economy';
 import { progressBattle, refreshMissions } from '../../meta/missions';
+import { recordBattle } from '../../meta/records';
 import { save } from '../../meta/save';
 import { STAGES, stageUnlocked, starsFor } from '../../meta/story';
 import type { BattleResult } from '../battle/battle';
@@ -50,6 +51,16 @@ export const resultsScreen: ScreenFn = (root, params) => {
       st.classWins[r.config.playerCls] = (st.classWins[r.config.playerCls] ?? 0) + 1;
       if (!st.fastestWin || r.turns < st.fastestWin) st.fastestWin = r.turns;
       if (r.hpLeft <= 3) st.clutchWins++;
+    }
+    if (r.config.mode !== 'tutorial' && !r.config.tutorial) {
+      recordBattle(s, {
+        win: r.win,
+        draw: r.draw,
+        playerCls: r.config.playerCls,
+        enemyCls: r.config.enemyCls,
+        playerPlayed: r.stats.played,
+        enemyPlayed: r.enemyStats.played,
+      });
     }
     s.winStreak = streakAfter;
     s.bestStreak = Math.max(s.bestStreak, s.winStreak);

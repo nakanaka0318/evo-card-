@@ -1,4 +1,5 @@
 import type { ClassId } from '../engine';
+import { emptyRecords, type BattleRecords } from './records';
 
 export interface DeckSave {
   id: string;
@@ -86,6 +87,8 @@ export interface SaveData {
   highScore: number;
   favoriteClass: ClassId;
   firstWinDay: string;
+  /** per-card / per-leader results for the rankings screen */
+  records: BattleRecords;
 }
 
 export function defaultSettings(): Settings {
@@ -166,6 +169,7 @@ export function newSave(): SaveData {
     highScore: 0,
     favoriteClass: 'gacha',
     firstWinDay: '',
+    records: emptyRecords(),
   };
 }
 
@@ -185,6 +189,7 @@ function hydrate(raw: unknown): SaveData | null {
     stats: { ...base.stats, ...(r.stats ?? {}) },
     missions: { ...base.missions, ...(r.missions ?? {}) },
     login: { ...base.login, ...(r.login ?? {}) },
+    records: { ...base.records, ...(r.records ?? {}) },
   } as SaveData;
 }
 

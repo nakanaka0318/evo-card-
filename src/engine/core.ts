@@ -234,6 +234,7 @@ function emptyStats(): PlayerStats {
     buzzes: 0,
     summoned: 0,
     dmgBy: {},
+    played: {},
   };
 }
 
@@ -949,6 +950,7 @@ export function playCard(s: GameState, uid: number, target?: Tgt, discardPick?: 
   p.hand.splice(p.hand.indexOf(c), 1);
   p.combo++;
   p.stats.cardsPlayed++;
+  if (!def(c.id).token) p.stats.played[c.id] = (p.stats.played[c.id] ?? 0) + 1;
   p.stats.maxCombo = Math.max(p.stats.maxCombo, p.combo);
   emit(s, { t: 'play', side: p.side, uid: c.uid, id: c.id, target: tgt, enhanced, combo: p.combo, mode });
   if (p.combo >= 2) emit(s, { t: 'combo', side: p.side, count: p.combo });
