@@ -37,15 +37,16 @@ export const HARMONY = [
     id: 'h_backup',
     name: 'バックコーラス',
     cls: 'harmony',
-    cost: 2,
+    cost: 3,
     rarity: 'bronze',
-    atk: 3,
-    hp: 3,
+    atk: 2,
+    hp: 2,
+    kw: ['rush', 'ward'],
     art: '👯',
-    text: '【ファンファーレ】山札に「コーラス」を1枚加える',
+    text: '《突進》《守護》\n【ラストワード】自分のリーダーを2回復',
     flavor: '主役より、声が出てる。',
-    fanfare: (c) => {
-      c.toDeck('t_chorus', 1);
+    lastWords: (c) => {
+      c.heal(2);
     },
   }),
   follower({
@@ -57,10 +58,13 @@ export const HARMONY = [
     atk: 2,
     hp: 3,
     art: '🥁',
-    text: '【ファンファーレ】ランダムな相手のフォロワーに1ダメージ\n【ハモり】かわりに3ダメージ',
+    text: '【ファンファーレ】ランダムな相手のフォロワーに1ダメージ\n【ハモり】かわりに3ダメージを与え、コストを0にした「ドラマー」を1枚山札に加える',
     flavor: 'リズムキープは、心拍数で。',
     fanfare: (c) => {
-      c.pingFollowers(1, c.harmony() ? 3 : 1);
+      if (c.harmony()) {
+        c.pingFollowers(1, 3);
+        for (const d of c.toDeck('h_drummer', 1)) d.costMod = -9;
+      } else c.pingFollowers(1, 1);
     },
   }),
   spell({
@@ -196,11 +200,12 @@ export const HARMONY = [
     atk: 3,
     hp: 4,
     art: '🎧',
-    text: '【ファンファーレ】自分の山札の上から1枚を消滅させる。その後【ハモり】ランダムな相手のフォロワーに3ダメージ',
+    text: '【ファンファーレ】自分の山札からランダムなフォロワーを1体場に出す\n【ハモり】相手のフォロワーすべてに2ダメージ',
     flavor: 'キュキュッ。（大事なカードだった）',
     fanfare: (c) => {
-      c.burnTop(1);
-      if (c.harmony()) c.pingFollowers(1, 3);
+      const harmony = c.harmony();
+      c.deckFollowerToBoard();
+      if (harmony) c.dmgAll(c.enemies(), 2);
     },
   }),
   follower({
@@ -314,14 +319,19 @@ export const HARMONY = [
     cls: 'harmony',
     cost: 4,
     rarity: 'legend',
-    atk: 3,
-    hp: 5,
+    atk: 0,
+    hp: 8,
+    kw: ['barrier'],
     art: '🧚',
     art2: '🌊',
-    text: '【ファンファーレ】山札に「コーラス」を1枚加える。ランダムな相手のフォロワーに3ダメージ\n【自分のターン開始時】相手のリーダーに2ダメージ。【ハモり】かわりに3ダメージし、自分のリーダーを3回復',
+    text: '《バリア》\n【ファンファーレ】山札に「コーラス」を1枚加える。ランダムな相手のフォロワーに3ダメージ\n【自分のターン開始時】相手のリーダーに2ダメージ。【ハモり】かわりに3ダメージし、自分のリーダーを3回復\n【進化時】ファンファーレと同じ効果',
     flavor: '歌声は、波の音にまぎれて届く。',
     aiValue: 4,
     fanfare: (c) => {
+      c.toDeck('t_chorus', 1);
+      c.pingFollowers(1, 3);
+    },
+    evolve: (c) => {
       c.toDeck('t_chorus', 1);
       c.pingFollowers(1, 3);
     },

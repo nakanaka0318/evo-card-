@@ -34,6 +34,8 @@ const TRIGGER_LABEL: Record<string, string | null> = {
   onCrest: '発動！',
   onLeaderHurt: '発動！',
   onFulfill: '発動！',
+  onTransform: '変身！',
+  onEnemyBreak: '発動！',
 };
 
 const TIER_COLOR: Record<GachaTier, string> = {

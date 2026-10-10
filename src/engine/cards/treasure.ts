@@ -57,14 +57,16 @@ export const TREASURE = [
     cls: 'treasure',
     cost: 2,
     rarity: 'bronze',
-    atk: 2,
+    atk: 1,
     hp: 2,
     art: '⚓',
-    text: '自分が財宝を使うたび、自分のリーダーを2回復',
+    text: '【ファンファーレ】ランダムな財宝を1枚手札に加える\n【ラストワード】ランダムな財宝を1枚手札に加える',
     flavor: 'お給料は、金貨1枚から。',
-    aiValue: 2,
-    onPlay: (c) => {
-      if (c.isTreasure(c.other)) c.heal(2);
+    fanfare: (c) => {
+      c.addTreasure(1);
+    },
+    lastWords: (c) => {
+      c.addTreasure(1);
     },
   }),
   amulet({
@@ -123,9 +125,15 @@ export const TREASURE = [
     atk: 4,
     hp: 4,
     art: '🏴‍☠️',
-    text: '【ファンファーレ】【財宝4】ランダムな相手のフォロワーに3ダメージ。《守護》を得る',
+    text: '【ファンファーレ】【財宝4】ランダムな相手のフォロワーに3ダメージ。《守護》を得る\n【進化時】ファンファーレと同じ効果',
     flavor: '分け前は、山分けじゃなくて山盛りで。',
     fanfare: (c) => {
+      if (c.rich(4)) {
+        c.pingFollowers(1, 3);
+        c.give(c.self, 'ward');
+      }
+    },
+    evolve: (c) => {
       if (c.rich(4)) {
         c.pingFollowers(1, 3);
         c.give(c.self, 'ward');
@@ -217,18 +225,17 @@ export const TREASURE = [
     id: 'r_knight',
     name: '黄金騎士',
     cls: 'treasure',
-    cost: 4,
+    cost: 3,
     rarity: 'silver',
-    atk: 3,
-    hp: 3,
+    atk: 2,
+    hp: 4,
+    kw: ['ward'],
     art: '🤺',
-    text: '【ファンファーレ】相手のフォロワー1体に、このバトルで使った財宝の枚数のダメージ（最大5）',
+    text: '《守護》\n自分が財宝を使うたび、ランダムな相手のフォロワーに2ダメージ',
     flavor: '鎧のローンが、あと30年。',
-    target: { kind: 'enemyFollower' },
-    aiPrefer: 'big',
-    fanfare: (c) => {
-      const n = Math.min(5, c.P.treasures);
-      if (n) c.dmg(c.target, n);
+    aiValue: 3,
+    onPlay: (c) => {
+      if (c.isTreasure(c.other)) c.pingFollowers(1, 2);
     },
   }),
   // ---------------- gold
@@ -306,11 +313,14 @@ export const TREASURE = [
     hp: 4,
     art: '👸',
     art2: '🏴‍☠️',
-    text: '【ファンファーレ】ランダムな財宝を2枚手札に加える\n自分が財宝を使うたび、相手のリーダーに1ダメージ。自分のリーダーを1回復',
+    text: '【ファンファーレ】ランダムな財宝を2枚手札に加える\n自分が財宝を使うたび、相手のリーダーに1ダメージ。自分のリーダーを1回復\n【進化時】ランダムな財宝を2枚手札に加え、それらのコストを0にする',
     flavor: '「七つの海の宝は、ぜんぶ私の宝石箱」',
     aiValue: 4,
     fanfare: (c) => {
       c.addTreasure(2);
+    },
+    evolve: (c) => {
+      for (const t of c.addTreasure(2)) t.costMod = -9;
     },
     onPlay: (c) => {
       if (c.isTreasure(c.other)) {
@@ -330,12 +340,16 @@ export const TREASURE = [
     kw: ['ward'],
     art: '🐉',
     art2: '💰',
-    text: '《守護》\nこのバトルで使った財宝2枚につき、このカードのコスト-1\n【ファンファーレ】相手のフォロワーすべてに、このバトルで使った財宝の枚数のダメージ（最大6）',
+    text: '《守護》\nこのバトルで使った財宝2枚につき、このカードのコスト-1\n【ファンファーレ】相手のフォロワーすべてに、このバトルで使った財宝の枚数のダメージ（最大6）\n【超進化時】相手のリーダーに、このバトルで使った財宝の枚数のダメージ（最大8）',
     flavor: '寝床は金貨。寝心地は最悪。',
     costFn: (s, card) => -Math.floor(s.players[card.owner].treasures / 2),
     fanfare: (c) => {
       const n = Math.min(6, c.P.treasures);
       if (n) c.dmgAll(c.enemies(), n);
+    },
+    superEvolve: (c) => {
+      const n = Math.min(8, c.P.treasures);
+      if (n) c.face(n);
     },
   }),
   amulet({
@@ -347,10 +361,13 @@ export const TREASURE = [
     countdown: 3,
     art: '🏯',
     art2: '🌄',
-    text: '【カウントダウン3】\n【ファンファーレ】ランダムな財宝を1枚手札に加える\n【自分のターン開始時】ランダムな財宝を2枚手札に加え、それらのコストを0にする',
+    text: '【カウントダウン3】\n【ファンファーレ】ランダムな財宝を1枚手札に加える\n【自分のターン開始時】ランダムな財宝を2枚手札に加え、それらのコストを0にする\n自分のフォロワーが進化するたび、ランダムな財宝を1枚手札に加える',
     flavor: '地図にない国。入国審査は金貨1枚。',
     aiValue: 6,
     fanfare: (c) => {
+      c.addTreasure(1);
+    },
+    onAllyEvolve: (c) => {
       c.addTreasure(1);
     },
     turnStart: (c) => {

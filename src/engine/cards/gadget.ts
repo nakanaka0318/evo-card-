@@ -72,14 +72,19 @@ export const GADGET = [
     cls: 'gadget',
     cost: 3,
     rarity: 'bronze',
-    atk: 2,
-    hp: 3,
+    atk: 3,
+    hp: 2,
     art: '🦾',
-    text: '【ファンファーレ】【合体2】取り込んだパーツ1枚につき+2/+2',
+    text: '【ファンファーレ】相手のフォロワー1体を選ぶ\n【合体2】取り込んだパーツが1枚ならそれを手札に戻し、2枚なら破壊する',
     flavor: 'つかんだものは、ぜんぶ部品。',
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
     fanfare: (c) => {
+      const t = c.targetCard();
       const n = c.fuse(2).length;
-      c.buff(c.self, n * 2, n * 2);
+      if (!t || !n) return;
+      if (n >= 2) c.destroy(t);
+      else c.bounce(t);
     },
   }),
   follower({
@@ -90,9 +95,9 @@ export const GADGET = [
     rarity: 'bronze',
     atk: 3,
     hp: 5,
-    kw: ['ward'],
+    kw: ['ward', 'rush', 'barrier'],
     art: '⚙️',
-    text: '《守護》\n【ラストワード】ランダムなパーツを2枚手札に加える',
+    text: '《守護》《突進》《バリア》\n【ラストワード】ランダムなパーツを2枚手札に加える',
     flavor: '壊れても、部品は次に回す。',
     lastWords: (c) => {
       c.addParts(2);
@@ -152,26 +157,24 @@ export const GADGET = [
     atk: 3,
     hp: 3,
     art: '🧲',
-    text: '【ファンファーレ】ランダムなパーツを3枚山札に加える。カードを1枚引く',
+    text: '【ファンファーレ】ランダムなパーツを3枚山札に加える。それらは+1/+0',
     flavor: '「鉄のものは、ぜんぶ吾輩のもとへ！」',
     fanfare: (c) => {
-      c.addParts(3, 'deck');
-      c.draw(1);
+      for (const p of c.addParts(3, 'deck')) p.atk += 1;
     },
   }),
   spell({
     id: 'd_upgrade',
     name: 'スパナ投げ',
     cls: 'gadget',
-    cost: 2,
+    cost: 1,
     rarity: 'silver',
     art: '🔧',
-    text: '相手のフォロワー1体に2ダメージ\n【合体2】取り込んだパーツ1枚につき、さらに2ダメージ',
+    text: 'ランダムな相手のフォロワーに1ダメージを2回。ランダムなパーツを1枚手札に加える',
     flavor: 'バージョン2.0、配信開始。',
-    target: { kind: 'enemyFollower' },
-    aiPrefer: 'big',
     spell: (c) => {
-      c.dmg(c.target, 2 + c.fuse(2).length * 2);
+      c.pingFollowers(2, 1);
+      c.addParts(1);
     },
   }),
   follower({
@@ -216,17 +219,21 @@ export const GADGET = [
     id: 'd_jet',
     name: 'ジェットパック隊員',
     cls: 'gadget',
-    cost: 4,
+    cost: 7,
     rarity: 'silver',
-    atk: 3,
-    hp: 3,
+    atk: 5,
+    hp: 5,
     kw: ['storm'],
     art: '🧑‍🚀',
-    text: '《疾走》\n【ファンファーレ】【合体2】取り込んだパーツ1枚につき+2/+1',
+    text: '《疾走》\n【ファンファーレ】【合体2】取り込んだパーツ1枚につき+2/+1\n【進化時】相手のフォロワー1体を破壊する',
     flavor: '燃料はバッテリー1個分。',
     fanfare: (c) => {
       const n = c.fuse(2).length;
       c.buff(c.self, n * 2, n);
+    },
+    evoTarget: { kind: 'enemyFollower' },
+    evolve: (c) => {
+      c.destroy(c.targetCard());
     },
   }),
   // ---------------- gold
@@ -283,14 +290,17 @@ export const GADGET = [
     cls: 'gadget',
     cost: 6,
     rarity: 'gold',
-    atk: 5,
-    hp: 6,
+    atk: 4,
+    hp: 4,
     art: '🛸',
-    text: '【ファンファーレ】【合体3】取り込んだパーツ1枚につき、ランダムな相手のフォロワー1体に3ダメージ',
+    text: '【ファンファーレ】相手のフォロワー1体を消滅させる（さらう）\n【合体2】取り込んだパーツ1枚につき、相手のリーダーに2ダメージ',
     flavor: '部品の出どころは、誰も知らない。',
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
     fanfare: (c) => {
-      const n = c.fuse(3).length;
-      for (let i = 0; i < n; i++) c.dmg(c.pick(c.enemies()), 3);
+      c.banish(c.targetCard());
+      const n = c.fuse(2).length;
+      if (n) c.face(n * 2);
     },
   }),
   // ---------------- legend
@@ -304,11 +314,16 @@ export const GADGET = [
     hp: 4,
     art: '👩‍🔧',
     art2: '⚙️',
-    text: '【ファンファーレ】【合体4】取り込んだパーツと同じパーツを1体ずつ出す\n【コンプリート4】さらにカードを2枚引く',
+    text: '【ファンファーレ】【合体4】取り込んだパーツと同じパーツを1体ずつ出す\n【超進化時】自分の他のフォロワーすべてを+1/+1し、《突進》を与える',
     flavor: '「設計図？ 頭の中にぜんぶあるわ」',
     fanfare: (c) => {
       for (const id of c.fuse(4)) c.summon(id);
-      if (c.complete(4)) c.draw(2);
+    },
+    superEvolve: (c) => {
+      for (const a of c.allies(false)) {
+        c.buff(a, 1, 1);
+        c.give(a, 'rush');
+      }
     },
   }),
   follower({

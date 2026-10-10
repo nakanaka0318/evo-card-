@@ -23,10 +23,9 @@ const kind = (x, y) => {
 const changed = [];
 const added = [];
 for (const [id, y] of Object.entries(b)) {
-  if (y.token) continue;
   const x = a[id];
   if (!x) {
-    added.push(id);
+    if (!y.token) added.push(id);
     continue;
   }
   if (same(x, y)) continue;

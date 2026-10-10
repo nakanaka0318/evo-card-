@@ -41,6 +41,8 @@ export interface Card {
   doomed?: boolean;
   /** ジュエラー: the follower sleeping inside a 「結晶」 */
   hold?: string;
+  /** a card id a card remembers (捨てられないカバン) */
+  memo?: string;
 }
 
 export interface PlayerStats {
@@ -224,6 +226,10 @@ export interface CardDef {
   onBreak?: Hook;
   /** レンジャー: another allied follower evolved */
   onAllyEvolve?: Hook;
+  /** レンジャー: evolved by a card effect (変身), on top of its 【進化時】 */
+  onTransform?: Hook;
+  /** any card on the opponent's side breaks (destroyed, not banished) */
+  onEnemyBreak?: Hook;
   /** スペラー: 【スペルブースト】 — +1 boost (card.data.sb) per spell cast while in hand */
   spellboost?: boolean;
   /** ステラー: how many hand cards the player picks to discard when this is played */
@@ -277,6 +283,8 @@ export interface CardView {
   mode?: PlayMode;
   /** 「結晶」: the follower inside */
   hold?: string;
+  /** a card id a card remembers (捨てられないカバン) */
+  memo?: string;
 }
 
 export interface PlayerView {

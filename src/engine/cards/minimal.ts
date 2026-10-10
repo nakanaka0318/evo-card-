@@ -31,8 +31,11 @@ export const MINIMAL = [
     atk: 1,
     hp: 1,
     art: '🗳️',
-    text: '【捨てられた時】ランダムな相手のフォロワーに2ダメージ',
+    text: '【ファンファーレ】「古き天剣」を1枚山札に加える\n【捨てられた時】ランダムな相手のフォロワーに2ダメージ',
     flavor: '「いつか使う」は、来ない。',
+    fanfare: (c) => {
+      c.toDeck('t_oldsword', 1);
+    },
     onDiscard: (c) => c.pingFollowers(1, 2),
   }),
   spell({
@@ -131,15 +134,17 @@ export const MINIMAL = [
     id: 'q_recycler',
     name: 'リサイクラー',
     cls: 'minimal',
-    cost: 3,
+    cost: 2,
     rarity: 'silver',
-    atk: 2,
-    hp: 4,
+    atk: 1,
+    hp: 3,
     art: '♻️',
-    text: '自分がカードを捨てるたび、ランダムな相手のフォロワーかリーダーに1ダメージ',
+    text: '【捨てられた時】カードを1枚引き、「リサイクラー」を1枚山札に加える',
     flavor: '捨てたものは、ちゃんと分別して投げる。',
-    aiValue: 2,
-    onAnyDiscard: (c) => c.ping(1, 1),
+    onDiscard: (c) => {
+      c.draw(1);
+      c.toDeck('q_recycler', 1);
+    },
   }),
   follower({
     id: 'q_bag',
@@ -147,16 +152,20 @@ export const MINIMAL = [
     cls: 'minimal',
     cost: 3,
     rarity: 'silver',
-    atk: 1,
+    atk: 2,
     hp: 5,
     kw: ['ward'],
     art: '👜',
-    text: '《守護》\n【ファンファーレ】手札を2枚選んで捨てる',
+    text: '《守護》\n【ファンファーレ】手札を1枚選んで捨てる\n【ラストワード】捨てたカードと同名のカードを1枚手札に加える',
     flavor: '中身を全部出したら、軽くなった。',
+    discardPick: 1,
     fanfare: (c) => {
-      c.discard(2);
+      const [t] = c.discard(1);
+      if (t) c.self.memo = t.id;
     },
-    discardPick: 2,
+    lastWords: (c) => {
+      if (c.self.memo) c.addHand(c.self.memo);
+    },
   }),
   spell({
     id: 'q_zen',
@@ -165,13 +174,14 @@ export const MINIMAL = [
     cost: 3,
     rarity: 'silver',
     art: '☯️',
-    text: '相手のフォロワー1体に4ダメージ\n【ハンドレス1】かわりに破壊する',
+    text: '手札を1枚選んで捨てる。相手のフォロワー1体を破壊する',
     flavor: '何も持たない者は、何も恐れない。',
     target: { kind: 'enemyFollower' },
     aiPrefer: 'big',
+    discardPick: 1,
     spell: (c) => {
-      if (c.handless(1)) c.destroy(c.targetCard());
-      else c.dmg(c.target, 4);
+      c.discard(1);
+      c.destroy(c.targetCard());
     },
   }),
   amulet({
@@ -193,17 +203,23 @@ export const MINIMAL = [
     id: 'q_vacuum',
     name: 'ロボット掃除機',
     cls: 'minimal',
-    cost: 4,
+    cost: 6,
     rarity: 'silver',
-    atk: 3,
-    hp: 4,
+    atk: 6,
+    hp: 9,
+    kw: ['barrier', 'ward'],
     art: '🧹',
     art2: '🤖',
-    text: '【ファンファーレ】手札をすべて捨てる。捨てた1枚につき、ランダムな相手のフォロワーに2ダメージ',
+    text: '《バリア》《守護》\n【ファンファーレ】手札を1枚選んで捨てる。ランダムな相手のフォロワーに6ダメージ\n【進化時】ファンファーレと同じ効果',
     flavor: '吸い込んだものは、二度と戻らない。',
+    discardPick: 1,
     fanfare: (c) => {
-      const n = c.discardAll().length;
-      c.pingFollowers(n, 2);
+      c.discard(1);
+      c.pingFollowers(1, 6);
+    },
+    evolve: (c) => {
+      c.discard(1);
+      c.pingFollowers(1, 6);
     },
   }),
   follower({
@@ -212,13 +228,21 @@ export const MINIMAL = [
     cls: 'minimal',
     cost: 6,
     rarity: 'silver',
-    atk: 5,
+    atk: 4,
     hp: 6,
-    kw: ['ward'],
+    kw: ['ward', 'storm'],
     art: '🧘‍♂️',
-    text: '《守護》\n自分の手札が2枚以下なら、このカードのコスト-3',
+    text: '《守護》《疾走》\n自分の手札が2枚以下なら、このカードのコスト-3\n【ファンファーレ】「古き天剣」を2枚山札に加える\n【超進化時】手札の枚数だけ「古き天剣」を山札に加える。その後、手札をすべて捨て、捨てた枚数と同じ枚数のカードを引く',
     flavor: '煩悩の数だけ、手札を捨ててきた。',
     costFn: (s, card) => (s.players[card.owner].hand.length <= 2 ? -3 : 0),
+    fanfare: (c) => {
+      c.toDeck('t_oldsword', 2);
+    },
+    superEvolve: (c) => {
+      c.toDeck('t_oldsword', c.P.hand.length);
+      const n = c.discardAll().length;
+      c.draw(n);
+    },
   }),
   // ---------------- gold
   follower({
@@ -245,10 +269,13 @@ export const MINIMAL = [
     cost: 1,
     rarity: 'gold',
     art: '🪣',
-    text: '【予約ドロー2】\n【ハンドレス0】かわりに【予約ドロー4】',
+    text: '【予約ドロー2】\n【ハンドレス0】かわりに【予約ドロー4】し、「古き天剣」を2枚山札に加える',
     flavor: '空っぽだから、なんでも入る。',
     spell: (c) => {
-      c.reserveDraw(c.handless(0) ? 4 : 2);
+      if (c.handless(0)) {
+        c.reserveDraw(4);
+        c.toDeck('t_oldsword', 2);
+      } else c.reserveDraw(2);
     },
   }),
   follower({

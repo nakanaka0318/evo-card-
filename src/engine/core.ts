@@ -649,6 +649,7 @@ export function resolve(s: GameState): void {
       trigger(s, c, 'lastWords');
       if (isFollower(c)) boardTrigger(s, c.owner, 'onAllyDestroyed', { other: c });
       boardTrigger(s, c.owner, 'onBreak', { other: c });
+      boardTrigger(s, other(c.owner), 'onEnemyBreak', { other: c });
     }
   }
 }
@@ -1111,6 +1112,7 @@ export function evolveFree(s: GameState, c: Card, sup = false): boolean {
   const ts = evoTargets(s, c);
   const tgt = ts && ts.length ? ts[rndInt(s, ts.length)] : null;
   applyEvolve(s, c, sup, tgt);
+  trigger(s, c, 'onTransform', { target: tgt });
   return true;
 }
 

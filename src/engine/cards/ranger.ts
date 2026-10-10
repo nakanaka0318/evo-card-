@@ -28,13 +28,18 @@ export const RANGER = [
     rarity: 'bronze',
     atk: 2,
     hp: 2,
+    kw: ['rush'],
     art: '🦸‍♀️',
     art2: '🩷',
-    text: '【進化時】自分のリーダーを3回復し、「研修隊員」を1体出す',
+    text: '《突進》\n【進化時】自分のリーダーを3回復し、「研修隊員」を1体出す\n【変身時】「研修隊員」をもう1体出し、自分のリーダーを2回復',
     flavor: '「みんなのハートは、わたしが守る！」',
     evolve: (c) => {
       c.heal(3);
       c.summon('t_cadet');
+    },
+    onTransform: (c) => {
+      c.summon('t_cadet');
+      c.heal(2);
     },
   }),
   follower({
@@ -45,12 +50,16 @@ export const RANGER = [
     rarity: 'bronze',
     atk: 2,
     hp: 2,
+    kw: ['rush'],
     art: '🦸‍♂️',
     art2: '💙',
-    text: '【進化時】カードを2枚引く',
+    text: '《突進》\n【進化時】カードを2枚引く\n【変身時】PPを2回復',
     flavor: '作戦担当。だいたい作戦どおりにいかない。',
     evolve: (c) => {
       c.draw(2);
+    },
+    onTransform: (c) => {
+      c.pp(2);
     },
   }),
   follower({
@@ -61,14 +70,17 @@ export const RANGER = [
     rarity: 'bronze',
     atk: 2,
     hp: 4,
-    kw: ['ward'],
+    kw: ['ward', 'rush'],
     art: '🦸',
     art2: '💛',
-    text: '《守護》\n【進化時】相手のフォロワー1体に3ダメージ',
+    text: '《守護》《突進》\n【進化時】相手のフォロワー1体に3ダメージ\n【変身時】ランダムな相手のフォロワーに3ダメージ',
     flavor: 'カレーと正義が大好き。',
     evoTarget: { kind: 'enemyFollower' },
     evolve: (c) => {
       c.dmg(c.target, 3);
+    },
+    onTransform: (c) => {
+      c.pingFollowers(1, 3);
     },
   }),
   spell({
@@ -108,12 +120,16 @@ export const RANGER = [
     rarity: 'bronze',
     atk: 3,
     hp: 3,
+    kw: ['rush'],
     art: '🦸',
     art2: '💚',
-    text: '【ファンファーレ】【連携5】自分の他のフォロワー1体を変身（進化）させる',
+    text: '《突進》\n【ファンファーレ】【連携5】自分の他のフォロワー1体を変身（進化）させる\n【変身時】自分の他のフォロワー1体を変身（進化）させる',
     flavor: '「さあ、一緒に変身だ！」',
     fanfare: (c) => {
       if (c.rallyAt(5)) c.evolve();
+    },
+    onTransform: (c) => {
+      c.evolve();
     },
   }),
   spell({
@@ -139,11 +155,16 @@ export const RANGER = [
     rarity: 'silver',
     atk: 3,
     hp: 2,
+    kw: ['rush'],
     art: '🥷',
     art2: '🖤',
-    text: '【進化時】相手のフォロワーすべてに1ダメージ',
+    text: '《突進》\n【進化時】相手のフォロワーすべてに1ダメージ\n【変身時】《潜伏》を得て、相手のリーダーに2ダメージ',
     flavor: 'クールなふりして、集合時間は誰より早い。',
     evolve: (c) => c.dmgAll(c.enemies(), 1),
+    onTransform: (c) => {
+      c.give(c.self, 'ambush');
+      c.face(2);
+    },
   }),
   follower({
     id: 'k_commander',
@@ -152,13 +173,16 @@ export const RANGER = [
     cost: 4,
     rarity: 'silver',
     atk: 3,
-    hp: 5,
+    hp: 4,
     art: '👨‍✈️',
-    text: '自分の他のフォロワーが進化するたび、カードを1枚引く',
+    text: '【ファンファーレ】進化ポイント+1\n【自分のターン終了時】【連携5】自分の他の進化していないフォロワー1体を変身（進化）させる',
     flavor: '「出動を許可する！」（言いたいだけ）',
     aiValue: 3,
-    onAllyEvolve: (c) => {
-      c.draw(1);
+    fanfare: (c) => {
+      c.addEp(1);
+    },
+    turnEnd: (c) => {
+      if (c.rallyAt(5)) c.evolve();
     },
   }),
   spell({
@@ -264,9 +288,10 @@ export const RANGER = [
     rarity: 'gold',
     atk: 4,
     hp: 4,
+    kw: ['rush'],
     art: '🦸',
     art2: '🥇',
-    text: '【ファンファーレ】自分の他のフォロワー1体を変身（進化）させる\n自分の他のフォロワーが進化するたび、相手のリーダーに1ダメージ',
+    text: '《突進》\n【ファンファーレ】自分の他のフォロワー1体を変身（進化）させる\n自分の他のフォロワーが進化するたび、相手のリーダーに1ダメージ\n【変身時】カードを2枚引く',
     flavor: '追加戦士は、だいたい金ピカ。',
     aiValue: 3,
     fanfare: (c) => {
@@ -274,6 +299,9 @@ export const RANGER = [
     },
     onAllyEvolve: (c) => {
       c.face(1);
+    },
+    onTransform: (c) => {
+      c.draw(2);
     },
   }),
   amulet({
@@ -305,9 +333,12 @@ export const RANGER = [
     hp: 4,
     art: '🦸',
     art2: '❤️‍🔥',
-    text: '【ファンファーレ】【連携6】自分の他のフォロワーすべてを変身（進化）させる',
+    text: '【ファンファーレ】PPを3回復\n【超進化時】【連携6】自分の他のフォロワーすべてを変身（進化）させる',
     flavor: '「いくぞみんな！ 変身だぁぁ！」',
     fanfare: (c) => {
+      c.pp(3);
+    },
+    superEvolve: (c) => {
       if (c.rallyAt(6)) for (const a of c.allies(false)) c.evolve(a);
     },
   }),

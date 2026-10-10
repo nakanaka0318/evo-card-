@@ -343,9 +343,23 @@ export class Ctx {
     return true;
   }
   /** shuffle n copies of a card into the own deck */
-  toDeck(id: string, n = 1): void {
-    for (let i = 0; i < n; i++) this.P.deck.splice(E.rndInt(this.s, this.P.deck.length + 1), 0, E.makeCard(this.s, id, this.me));
+  toDeck(id: string, n = 1): Card[] {
+    const out: Card[] = [];
+    for (let i = 0; i < n; i++) {
+      const c = E.makeCard(this.s, id, this.me);
+      this.P.deck.splice(E.rndInt(this.s, this.P.deck.length + 1), 0, c);
+      out.push(c);
+    }
     if (n > 0) this.msg(`山札に「${def(id).name}」×${n}`);
+    return out;
+  }
+  /** put a random follower from the own deck onto the board */
+  deckFollowerToBoard(): Card | undefined {
+    const pool = this.P.deck.filter((c) => def(c.id).type === 'follower');
+    if (!pool.length || this.boardFree() <= 0) return undefined;
+    const c = pool[E.rndInt(this.s, pool.length)];
+    this.P.deck.splice(this.P.deck.indexOf(c), 1);
+    return this.summon(c.id)[0];
   }
   /** banish the top n cards of the own deck */
   burnTop(n = 1): void {

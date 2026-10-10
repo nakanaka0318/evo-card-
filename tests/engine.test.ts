@@ -361,6 +361,8 @@ describe('cards & mechanics', () => {
       put(s, 1, 'n_golem');
       put(s, 1, 'n_bear');
       const c = give(s, 0, d.id);
+      // cards that cost more than 10 need their discounts (マナドラゴン)
+      if (d.cost > 10) c.data.sb = d.cost;
       const acts = legalActions(s).filter((a) => a.t === 'play' && a.uid === c.uid);
       expect(acts.length, d.id).toBeGreaterThan(0);
       for (const a of acts.slice(0, 1)) apply(s, a);
@@ -390,15 +392,16 @@ describe('gadget: parts / fuse / complete', () => {
     give(s, 0, 't_pbolt');
     give(s, 0, 't_pbattery');
     give(s, 0, 't_pchip');
-    const arm = give(s, 0, 'd_arm');
+    const arm = give(s, 0, 'd_robo');
     const handBefore = s.players[0].hand.length;
     const act = legalActions(s).find((a) => a.t === 'play' && a.uid === arm.uid)!;
     apply(s, act);
     const onBoard = s.players[0].board.find((c) => c.uid === arm.uid)!;
-    expect(onBoard.atk).toBe(6);
-    expect(onBoard.maxHp).toBe(7);
-    expect(s.players[0].hand.length).toBe(handBefore - 3);
-    expect(s.players[0].parts.length).toBe(2);
+    expect(onBoard.atk).toBe(10);
+    expect(onBoard.maxHp).toBe(10);
+    expect(E.has(onBoard, 'ward')).toBe(true);
+    expect(s.players[0].hand.length).toBe(handBefore - 4);
+    expect(s.players[0].parts.length).toBe(3);
   });
 
   it('complete gates on the number of different parts', () => {
@@ -421,15 +424,15 @@ describe('treasure: 財宝 count and payoffs', () => {
     const s = game();
     s.players[0].pp = 10;
     s.players[0].maxPp = 10;
-    put(s, 0, 'r_deckhand');
+    put(s, 0, 'r_queen');
     s.players[0].hp = 10;
     for (const id of ['t_tcoin', 't_tcup']) {
       const c = give(s, 0, id);
       apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === c.uid)!);
     }
     expect(s.players[0].treasures).toBe(2);
-    // 金貨 +0, 黄金の杯 +2, 甲板員 +2×2
-    expect(s.players[0].hp).toBe(16);
+    // 金貨 +0, 黄金の杯 +2, ベル +1×2
+    expect(s.players[0].hp).toBe(14);
     expect(E.view(s).p[0].treasures).toBe(2);
     const p = give(s, 0, 'r_parrot');
     apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === p.uid)!);
@@ -496,12 +499,12 @@ describe('crash: 破壊 / いけにえ', () => {
     const scr = give(s, 0, 'c_scrapper');
     const hand = s.players[0].hand.length;
     apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === scr.uid)!);
-    // ガラクタ was sacrificed (bear survives), its last words + お皿割り師 each hit for 1
+    // ガラクタ was sacrificed (bear survives): its last words hit for 2, お皿割り師 for 1
     expect(s.players[0].board.some((c) => c.id === 'n_bear')).toBe(true);
     expect(s.players[0].board.some((c) => c.id === 't_junk')).toBe(false);
     expect(s.players[0].broken).toBe(1);
     expect(s.players[0].hand.length).toBe(hand - 1 + 2);
-    expect(s.players[1].hp).toBe(hp - 2);
+    expect(s.players[1].hp).toBe(hp - 3);
   });
 
   it('終末時計 ticks down whenever another own card breaks', () => {
@@ -525,7 +528,7 @@ describe('ranger: 連携 / 変身', () => {
     const s = game();
     s.players[0].pp = 10;
     s.players[0].maxPp = 10;
-    put(s, 0, 'k_commander');
+    put(s, 0, 'k_gold');
     const r0 = s.players[0].rally;
     const call = give(s, 0, 'k_call');
     apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === call.uid)!);
@@ -533,13 +536,15 @@ describe('ranger: 連携 / 変身', () => {
     const cadet = s.players[0].board.find((c) => c.id === 't_cadet')!;
     const ep = s.players[0].ep;
     const hand = s.players[0].hand.length;
+    const ehp = s.players[1].hp;
     const belt = give(s, 0, 'k_belt');
     apply(s, { t: 'play', uid: belt.uid, target: cadet.uid });
     expect(cadet.evolved).toBe(1);
     expect(cadet.atk).toBe(3);
     expect(s.players[0].ep).toBe(ep);
-    // ベルト left the hand, 長官 drew a card for the evolution
-    expect(s.players[0].hand.length).toBe(hand + 1);
+    // ベルト left the hand, ドパゴールド hit the leader for the evolution
+    expect(s.players[0].hand.length).toBe(hand);
+    expect(s.players[1].hp).toBe(ehp - 1);
   });
 });
 
@@ -570,7 +575,7 @@ describe('minimal: ハンドレス / 捨てる', () => {
     s.players[0].pp = 10;
     s.players[0].maxPp = 10;
     s.players[0].hand = [];
-    put(s, 0, 'q_recycler');
+    put(s, 0, 'q_danshari');
     give(s, 0, 'n_bear');
     const ghost = give(s, 0, 'q_ghost');
     const hp = s.players[1].hp;
@@ -579,7 +584,7 @@ describe('minimal: ハンドレス / 捨てる', () => {
     expect(s.players[0].discarded).toBe(1);
     expect(s.players[0].board.some((c) => c.id === 'q_ghost')).toBe(true);
     expect(s.players[0].hand.includes(ghost)).toBe(false);
-    expect(s.players[1].hp).toBe(hp - 1);
+    expect(s.players[1].hp).toBe(hp - 2);
   });
 
   it('ムガ costs as much as the hand size', () => {
@@ -596,14 +601,14 @@ describe('minimal: ハンドレス / 捨てる', () => {
 describe('jewel: 結晶 / アクセラレート / エンハンス', () => {
   it('accelerate plays a follower as a spell when PP is short', () => {
     const s = game();
-    s.players[0].pp = 1;
-    const ruby = give(s, 0, 'j_ruby');
-    const bear = put(s, 1, 'n_bear');
-    expect(E.playCost(s, ruby)).toEqual({ cost: 1, enhanced: false, mode: 'accel' });
+    s.players[0].pp = 2;
+    const ruby = give(s, 0, 'j_sapphire');
+    const hand = s.players[0].hand.length;
+    expect(E.playCost(s, ruby)).toEqual({ cost: 2, enhanced: false, mode: 'accel' });
     apply(s, { t: 'play', uid: ruby.uid });
     expect(s.players[0].board.includes(ruby)).toBe(false);
     expect(s.players[0].grave.includes(ruby)).toBe(true);
-    expect(E.hpOf(bear)).toBe(5);
+    expect(s.players[0].hand.length).toBe(hand - 1 + 2);
     expect(s.players[0].accels).toBe(1);
     expect(s.players[0].stats.spells).toBe(1);
   });
@@ -616,10 +621,12 @@ describe('jewel: 結晶 / アクセラレート / エンハンス', () => {
     apply(s, { t: 'play', uid: pearl.uid });
     const cr = s.players[0].board.find((c) => c.id === 't_crystal')!;
     expect(cr.hold).toBe('j_pearl');
-    expect(cr.countdown).toBe(1);
+    expect(cr.countdown).toBe(3);
     put(s, 1, 'n_bear');
-    apply(s, { t: 'end' });
-    apply(s, { t: 'end' });
+    for (let i = 0; i < 3; i++) {
+      apply(s, { t: 'end' });
+      apply(s, { t: 'end' });
+    }
     const hatched = s.players[0].board.find((c) => c.id === 'j_pearl')!;
     expect(hatched).toBeTruthy();
     expect(s.players[0].board.some((c) => c.id === 't_crystal')).toBe(false);
@@ -657,10 +664,10 @@ describe('minimal: picked discards / 予約ドロー', () => {
     const toss = give(s, 0, 'n_bear');
     const bag = give(s, 0, 'q_bag');
     apply(s, { t: 'play', uid: bag.uid, discard: [toss.uid] });
-    // picked bear first, then the auto-pick fills the second slot
+    // the picked card is the one that goes
     expect(s.players[0].grave.includes(toss)).toBe(true);
-    expect(s.players[0].hand.includes(keep)).toBe(false);
-    expect(s.players[0].discarded).toBe(2);
+    expect(s.players[0].hand.includes(keep)).toBe(true);
+    expect(s.players[0].discarded).toBe(1);
   });
 
   it('a pick that is not in hand is ignored', () => {
@@ -960,5 +967,44 @@ describe('カード歴史', () => {
       expect(d.atk, c.id).toBe(c.after.atk);
       expect(d.hp, c.id).toBe(c.after.hp);
     }
+  });
+});
+
+describe('patch: card adjustments (part 2)', () => {
+  it('rangers get a bonus when transformed by an effect, not by an evolve point', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    s.players[0].hand = [];
+    const blue = put(s, 0, 'k_blue');
+    expect(E.has(blue, 'rush')).toBe(true);
+    s.players[0].pp = 3;
+    E.evolveFree(s, blue);
+    // 進化時 draws 2, 変身時 restores 2 PP
+    expect(s.players[0].hand.length).toBe(2);
+    expect(s.players[0].pp).toBe(5);
+  });
+
+  it('お皿割り師 reacts to enemy cards breaking too', () => {
+    const s = game();
+    put(s, 0, 'c_plates');
+    const e = put(s, 1, 'n_slime');
+    const hp = s.players[1].hp;
+    e.doomed = true;
+    E.resolve(s);
+    expect(s.players[1].hp).toBe(hp - 1);
+  });
+
+  it('古き天剣 burns the board when discarded', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].hand = [];
+    give(s, 0, 't_oldsword');
+    const foe = put(s, 1, 'n_bear');
+    const zen = give(s, 0, 'q_zen');
+    const other = put(s, 1, 'n_golem');
+    apply(s, { t: 'play', uid: zen.uid, target: other.uid });
+    expect(s.players[1].board.includes(other)).toBe(false);
+    expect(E.hpOf(foe)).toBe(4);
   });
 });

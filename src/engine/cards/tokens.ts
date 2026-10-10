@@ -49,10 +49,10 @@ export const TOKENS = [
     cost: 0,
     rarity: 'bronze',
     art: '👉',
-    text: 'ランダムな相手のフォロワーかリーダーに1ダメージ',
+    text: 'ランダムな相手のフォロワーに1ダメージ',
     flavor: '指先ひとつで、次へ。',
     token: true,
-    spell: (c) => c.ping(1, 1),
+    spell: (c) => c.pingFollowers(1, 1),
   }),
   follower({
     id: 't_sakura',
@@ -272,14 +272,14 @@ export const TOKENS = [
     cls: 'crash',
     cost: 0,
     rarity: 'bronze',
-    countdown: 2,
+    countdown: 3,
     art: '🗑️',
     art2: '🔩',
-    text: '【カウントダウン2】\n【ラストワード】ランダムな相手のフォロワーかリーダーに1ダメージ',
+    text: '【カウントダウン3】\n【ラストワード】ランダムな相手のフォロワーかリーダーに2ダメージ',
     flavor: '壊すために、ある。',
     token: true,
     tags: ['junk'],
-    lastWords: (c) => c.ping(1, 1),
+    lastWords: (c) => c.ping(1, 2),
   }),
   // ---------------- レンジャー
   follower({
@@ -534,5 +534,23 @@ export const TOKENS = [
     flavor: '「ふはは、まだ終わらぬ！」',
     token: true,
     turnEnd: (c) => c.face(3),
+  }),
+  spell({
+    id: 't_oldsword',
+    name: '古き天剣',
+    cls: 'minimal',
+    cost: 2,
+    rarity: 'bronze',
+    art: '🗡️',
+    art2: '✨',
+    text: '手札を1枚選んで捨てる。相手のリーダーに3ダメージ\n【捨てられた時】相手のフォロワーすべてに3ダメージ',
+    flavor: '捨てられてこそ、真の力が目覚める。',
+    token: true,
+    discardPick: 1,
+    spell: (c) => {
+      c.discard(1);
+      c.face(3);
+    },
+    onDiscard: (c) => c.dmgAll(c.enemies(), 3),
   }),
 ];

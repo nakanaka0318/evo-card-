@@ -336,10 +336,10 @@ export const SWIPE = [
     rarity: 'legend',
     atk: 3,
     hp: 3,
-    kw: ['storm', 'twin'],
+    kw: ['storm'],
     art: '🌠',
     art2: '⏱️',
-    text: '《疾走》《連撃》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+1\n【コンボ3】相手のフォロワーすべてに3ダメージ',
+    text: '《疾走》\n【ファンファーレ】このターンにプレイした他のカード1枚につき+1/+1\n【コンボ3】相手のフォロワーすべてに3ダメージ',
     flavor: '「0.1秒あれば、世界は終わる」',
     fanfare: (c) => {
       c.buff(c.self, c.combo, c.combo);

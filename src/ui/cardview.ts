@@ -29,7 +29,7 @@ function abilityKind(a: string): string {
   if (a.startsWith('財宝')) return 'treasure';
   if (a === 'ハモり') return 'harmony';
   if (a.startsWith('破壊') || a === 'いけにえ') return 'crash';
-  if (a.startsWith('連携')) return 'ranger';
+  if (a.startsWith('連携') || a === '変身時') return 'ranger';
   if (a === 'スペルブースト') return 'witch';
   if (a.startsWith('ハンドレス') || a === '捨てられた時' || a.startsWith('予約ドロー')) return 'minimal';
   if (a.startsWith('結晶') || a.startsWith('アクセラレート') || a.startsWith('エンハンス')) return 'jewel';

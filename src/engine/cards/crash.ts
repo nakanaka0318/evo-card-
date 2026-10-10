@@ -42,12 +42,13 @@ export const CRASH = [
     cost: 1,
     rarity: 'bronze',
     art: '🏏',
-    text: '相手のフォロワー1体に2ダメージ\n【破壊3】かわりに4ダメージ',
+    text: '自分の場の他のカード1つ（【いけにえ】と同じ順で選ばれる）と、相手のフォロワー1体を破壊する',
     flavor: 'バットは、ボールを打つためだけの道具じゃない。',
     target: { kind: 'enemyFollower' },
     aiPrefer: 'big',
     spell: (c) => {
-      c.dmg(c.target, c.broken(3) ? 4 : 2);
+      c.sacrifice();
+      c.destroy(c.targetCard());
     },
   }),
   follower({
@@ -74,10 +75,11 @@ export const CRASH = [
     atk: 2,
     hp: 3,
     art: '🍽️',
-    text: '自分の他のカードが壊れるたび、ランダムな相手のフォロワーかリーダーに1ダメージ',
+    text: '他のカードが壊れるたび（自分のも相手のも）、ランダムな相手のフォロワーかリーダーに1ダメージ',
     flavor: 'ガシャーン！（ちゃんと弁償済み）',
     aiValue: 2,
     onBreak: (c) => c.ping(1, 1),
+    onEnemyBreak: (c) => c.ping(1, 1),
   }),
   amulet({
     id: 'c_dynamite',
@@ -116,11 +118,12 @@ export const CRASH = [
     rarity: 'bronze',
     atk: 4,
     hp: 4,
+    kw: ['rush'],
     art: '🚜',
-    text: '【ファンファーレ】【いけにえ】したら、ランダムな相手のフォロワーに4ダメージ',
+    text: '《突進》\n【ファンファーレ】【いけにえ】したら、「解体ショベル」を2体出す',
     flavor: '壊した分だけ、前に進む。',
     fanfare: (c) => {
-      if (c.sacrifice()) c.pingFollowers(1, 4);
+      if (c.sacrifice()) c.summon('c_wrecker', 2);
     },
   }),
   // ---------------- silver
@@ -128,12 +131,11 @@ export const CRASH = [
     id: 'c_rageroom',
     name: 'レイジルーム',
     cls: 'crash',
-    cost: 3,
+    cost: 2,
     rarity: 'silver',
-    countdown: 3,
     art: '🏚️',
     art2: '💢',
-    text: '【カウントダウン3】\n【ファンファーレ】「ガラクタ」を2つ出す\n自分の他のカードが壊れるたび、相手のリーダーに1ダメージ',
+    text: '【ファンファーレ】「ガラクタ」を2つ出す\n自分の他のカードが壊れるたび、相手のリーダーに1ダメージ',
     flavor: '30分3000円。皿は割り放題。',
     aiValue: 4,
     fanfare: (c) => {
@@ -147,7 +149,7 @@ export const CRASH = [
     id: 'c_demolish',
     name: '解体工事',
     cls: 'crash',
-    cost: 2,
+    cost: 1,
     rarity: 'silver',
     art: '🚧',
     text: '相手のフォロワー1体に3ダメージ\n【いけにえ】できたら、かわりに破壊する',
@@ -232,12 +234,16 @@ export const CRASH = [
     hp: 5,
     art: '🦍',
     art2: '👑',
-    text: '【ファンファーレ】自分の場の他のカードをすべて破壊する。壊した1つにつき、カードを1枚引く',
+    text: '【ファンファーレ】自分の場の他のカードをすべて破壊する。壊した1つにつき、ランダムな相手のフォロワー1体を破壊し、相手のリーダーに1ダメージを与え、カードを1枚引く',
     flavor: '玉座も、ガラクタでできている。',
     fanfare: (c) => {
       const mine = c.P.board.filter((x) => x !== c.self && c.alive(x));
       for (const x of mine) c.destroy(x);
-      if (mine.length) c.draw(mine.length);
+      for (let i = 0; i < mine.length; i++) {
+        c.destroy(c.pick(c.enemies().filter((e) => !e.doomed)));
+        c.face(1);
+        c.draw(1);
+      }
     },
   }),
   amulet({
@@ -277,14 +283,19 @@ export const CRASH = [
     id: 'c_gigahammer',
     name: 'ギガントハンマー',
     cls: 'crash',
-    cost: 6,
+    cost: 5,
     rarity: 'gold',
-    atk: 5,
-    hp: 6,
+    atk: 4,
+    hp: 4,
     art: '⚒️',
-    text: '【ファンファーレ】相手のフォロワーすべてに2ダメージ\n【破壊6】かわりに4ダメージ',
+    text: '【ファンファーレ】相手のフォロワー1体を破壊する\n【破壊6】さらに相手のフォロワーすべてに2ダメージ',
     flavor: '振り下ろすと、地面が謝る。',
-    fanfare: (c) => c.dmgAll(c.enemies(), c.broken(6) ? 4 : 2),
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
+    fanfare: (c) => {
+      c.destroy(c.targetCard());
+      if (c.broken(6)) c.dmgAll(c.enemies(), 2);
+    },
   }),
   // ---------------- legend
   follower({
@@ -295,13 +306,21 @@ export const CRASH = [
     rarity: 'legend',
     atk: 4,
     hp: 5,
+    kw: ['ward'],
     art: '🦖',
     art2: '🧱',
-    text: '【ファンファーレ】「ガラクタ」を2つ出す\n自分の他のカードが壊れるたび、ランダムな相手のフォロワーかリーダーに2ダメージ',
+    text: '《守護》\n【ファンファーレ】「ガラクタ」を2つ出す\n【進化時】ファンファーレと同じ効果\n【超進化時】自分の場の他のランダムなカード1つと、相手の場のランダムなカード1つを破壊する\n自分の他のカードが壊れるたび、ランダムな相手のフォロワーかリーダーに2ダメージ',
     flavor: '「壊れる音が、オレのBGMだ」',
     aiValue: 5,
     fanfare: (c) => {
       c.summon('t_junk', 2);
+    },
+    evolve: (c) => {
+      c.summon('t_junk', 2);
+    },
+    superEvolve: (c) => {
+      c.destroy(c.pick(c.P.board.filter((x) => x !== c.self && c.alive(x) && !x.doomed)));
+      c.destroy(c.pick(c.O.board.filter((x) => c.alive(x) && !x.doomed)));
     },
     onBreak: (c) => c.ping(1, 2),
   }),
@@ -327,7 +346,7 @@ export const CRASH = [
     id: 'c_destroya',
     name: '破壊神デストロイア',
     cls: 'crash',
-    cost: 9,
+    cost: 8,
     rarity: 'legend',
     atk: 8,
     hp: 8,

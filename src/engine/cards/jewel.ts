@@ -16,9 +16,9 @@ export const JEWEL = [
     atk: 2,
     hp: 2,
     art: '👩‍🔬',
-    text: '【ファンファーレ】ランダムな相手のフォロワーに1ダメージ\n【エンハンス4】かわりに相手のフォロワー1体に3ダメージ',
+    text: '【ファンファーレ】ランダムな相手のフォロワーに1ダメージ\n【エンハンス3】かわりに相手のフォロワー1体に3ダメージ',
     flavor: '1日8時間、石とにらめっこ。',
-    enhance: 4,
+    enhance: 3,
     target: { kind: 'enemyFollower', cond: enhanced },
     aiPrefer: 'big',
     fanfare: (c) => {
@@ -30,16 +30,21 @@ export const JEWEL = [
     id: 'j_ruby',
     name: 'ルビーの指輪',
     cls: 'jewel',
-    cost: 3,
+    cost: 4,
     rarity: 'bronze',
-    atk: 3,
+    atk: 4,
     hp: 3,
     art: '💍',
-    text: '【ファンファーレ】ランダムな相手のフォロワーに2ダメージ\n【アクセラレート1】ランダムな相手のフォロワーに2ダメージ',
+    text: '【ファンファーレ】相手のフォロワー1体に4ダメージ\n【結晶1】カウントダウン2\n【結晶から出たとき】ランダムな相手のフォロワーに4ダメージ',
     flavor: '燃えるような赤。指にはめると熱い。',
-    accel: 1,
-    accelerate: (c) => c.pingFollowers(1, 2),
-    fanfare: (c) => c.pingFollowers(1, 2),
+    crystal: 1,
+    crystalCd: 2,
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
+    fanfare: (c) => {
+      if (c.target !== null) c.dmg(c.target, 4);
+    },
+    onHatch: (c) => c.pingFollowers(1, 4),
   }),
   follower({
     id: 'j_pearl',
@@ -47,14 +52,14 @@ export const JEWEL = [
     cls: 'jewel',
     cost: 4,
     rarity: 'bronze',
-    atk: 3,
-    hp: 5,
+    atk: 4,
+    hp: 6,
     kw: ['ward'],
     art: '🦪',
-    text: '《守護》\n【ファンファーレ】自分のリーダーを3回復\n【結晶2】カウントダウン1',
+    text: '《守護》\n【ファンファーレ】自分のリーダーを3回復\n【結晶2】カウントダウン3',
     flavor: '殻の中で、ゆっくり輝きを育てる。',
     crystal: 2,
-    crystalCd: 1,
+    crystalCd: 3,
     fanfare: (c) => {
       c.heal(3);
     },
@@ -68,7 +73,7 @@ export const JEWEL = [
     atk: 5,
     hp: 5,
     art: '🔷',
-    text: '【ファンファーレ】カードを1枚引く\n【アクセラレート2】カードを2枚引く',
+    text: '【ファンファーレ】カードを1枚引く\n【アクセラレート2】カードを2枚引く\n【進化時】PPを3回復',
     flavor: '青い誓いは、決して割れない。',
     accel: 2,
     accelerate: (c) => {
@@ -77,17 +82,20 @@ export const JEWEL = [
     fanfare: (c) => {
       c.draw(1);
     },
+    evolve: (c) => {
+      c.pp(3);
+    },
   }),
   spell({
     id: 'j_flash',
     name: '輝きの一撃',
     cls: 'jewel',
-    cost: 2,
+    cost: 1,
     rarity: 'bronze',
     art: '🔆',
-    text: '相手のフォロワー1体に3ダメージ\n【エンハンス5】かわりに相手のフォロワーすべてに3ダメージ',
+    text: '相手のフォロワー1体に3ダメージ\n【エンハンス3】かわりに相手のフォロワーすべてに3ダメージ',
     flavor: 'まぶしすぎて、目をつぶった隙に。',
-    enhance: 5,
+    enhance: 3,
     target: { kind: 'enemyFollower', cond: (_s, _c, info) => !info.enhanced },
     aiPrefer: 'big',
     spell: (c) => {
@@ -105,10 +113,10 @@ export const JEWEL = [
     hp: 6,
     art: '⛰️',
     art2: '💚',
-    text: '【ファンファーレ】ランダムな相手のフォロワーに3ダメージ\n【結晶2】カウントダウン2',
+    text: '【ファンファーレ】ランダムな相手のフォロワーに3ダメージ\n【結晶1】カウントダウン4',
     flavor: '山ひとつ分の、エメラルド。',
-    crystal: 2,
-    crystalCd: 2,
+    crystal: 1,
+    crystalCd: 4,
     fanfare: (c) => c.pingFollowers(1, 3),
   }),
   follower({
@@ -120,9 +128,9 @@ export const JEWEL = [
     atk: 2,
     hp: 4,
     art: '💜',
-    text: '【ファンファーレ】カードを1枚引く\n【エンハンス6】かわりに3枚引く',
+    text: '【ファンファーレ】カードを1枚引く\n【エンハンス5】かわりに3枚引く',
     flavor: '紫は、知恵の色。',
-    enhance: 6,
+    enhance: 5,
     fanfare: (c) => {
       c.draw(c.enhanced ? 3 : 1);
     },
@@ -135,7 +143,7 @@ export const JEWEL = [
     rarity: 'bronze',
     countdown: 3,
     art: '🪟',
-    text: '【カウントダウン3】\n【ファンファーレ】カードを1枚引く\n【自分のターン開始時】自分の「結晶」すべてのカウントダウンを1進める。「結晶」がなければ、ランダムな相手のフォロワーに1ダメージ',
+    text: '【カウントダウン3】\n【ファンファーレ】カードを1枚引く\n【自分のターン開始時】自分の「結晶」すべてのカウントダウンを1進める。「結晶」がなければ、ランダムな相手のフォロワーに1ダメージ\n【ラストワード】ランダムな相手のフォロワー1体を破壊する',
     flavor: 'ライトアップすると、宝石が目を覚ます。',
     aiValue: 3,
     turnStart: (c) => {
@@ -144,6 +152,9 @@ export const JEWEL = [
     },
     fanfare: (c) => {
       c.draw(1);
+    },
+    lastWords: (c) => {
+      c.destroy(c.pick(c.enemies()));
     },
   }),
   // ---------------- silver
@@ -189,9 +200,9 @@ export const JEWEL = [
     cost: 1,
     rarity: 'silver',
     art: '✂️',
-    text: 'カードを1枚引く\n【エンハンス4】かわりに2枚引き、PPを1回復',
+    text: 'カードを1枚引く\n【エンハンス2】かわりに2枚引き、PPを1回復',
     flavor: '58面体。全部の面で、きみを映す。',
-    enhance: 4,
+    enhance: 2,
     spell: (c) => {
       if (c.enhanced) {
         c.draw(2);
@@ -222,14 +233,18 @@ export const JEWEL = [
     id: 'j_tiara',
     name: 'リボンのティアラ',
     cls: 'jewel',
-    cost: 2,
+    cost: 1,
     rarity: 'silver',
-    countdown: 3,
+    countdown: 2,
     art: '🎀',
-    text: '【カウントダウン3】\n【自分のターン開始時】ランダムな相手のフォロワーに2ダメージ。自分の「結晶」があれば、かわりに3ダメージ',
+    text: '【カウントダウン2】\n【ファンファーレ】自分の「結晶」すべてのカウントダウンを1進める\n【ラストワード】カードを1枚引き、PPを1回復',
     flavor: 'かわいいは、正義。正義は、痛い。',
-    aiValue: 3,
-    turnStart: (c) => c.pingFollowers(1, c.crystals().length ? 3 : 2),
+    aiValue: 2,
+    fanfare: (c) => c.advanceCrystals(1),
+    lastWords: (c) => {
+      c.draw(1);
+      c.pp(1);
+    },
   }),
   follower({
     id: 'j_garnet',
@@ -240,14 +255,14 @@ export const JEWEL = [
     atk: 4,
     hp: 5,
     art: '🏇',
-    text: '【ファンファーレ】ランダムな相手のフォロワーに2ダメージ\n【エンハンス8】かわりに《守護》を得て、相手のフォロワー1体を破壊する',
+    text: '【ファンファーレ】ランダムな相手のフォロワーに2ダメージ\n【エンハンス8】かわりに《守護》と《疾走》を得て、相手のフォロワー1体を破壊する',
     flavor: '真紅の鎧は、勝利の数だけ深くなる。',
     enhance: 8,
     target: { kind: 'enemyFollower', cond: enhanced },
     aiPrefer: 'big',
     fanfare: (c) => {
       if (!c.enhanced) return c.pingFollowers(1, 2);
-      c.give(c.self, 'ward');
+      c.give(c.self, 'ward', 'storm');
       c.destroy(c.targetCard());
     },
   }),
@@ -260,11 +275,17 @@ export const JEWEL = [
     rarity: 'gold',
     art: '⭐',
     art2: '🔷',
-    text: '相手のフォロワーすべてに4ダメージ\n【アクセラレート2】ランダムな相手のフォロワーに4ダメージ',
+    text: '相手のフォロワーすべてと相手のリーダーに4ダメージ\n【アクセラレート2】ランダムな相手のフォロワーと相手のリーダーに4ダメージ',
     flavor: '中に、星がひとつ閉じこめられている。',
     accel: 2,
-    spell: (c) => c.dmgAll(c.enemies(), 4),
-    accelerate: (c) => c.pingFollowers(1, 4),
+    spell: (c) => {
+      c.dmgAll(c.enemies(), 4);
+      c.face(4);
+    },
+    accelerate: (c) => {
+      c.pingFollowers(1, 4);
+      c.face(4);
+    },
   }),
   follower({
     id: 'j_titan',
@@ -306,9 +327,9 @@ export const JEWEL = [
     cost: 3,
     rarity: 'gold',
     art: '🌈',
-    text: 'ランダムな相手のフォロワーに2ダメージを3回\n【エンハンス6】かわりに3ダメージを3回',
+    text: 'ランダムな相手のフォロワーに2ダメージを3回\n【エンハンス4】かわりに3ダメージを3回',
     flavor: '光を七つに分けて、七倍たのしい。',
-    enhance: 6,
+    enhance: 4,
     spell: (c) => c.pingFollowers(3, c.enhanced ? 3 : 2),
   }),
   // ---------------- legend
@@ -341,14 +362,14 @@ export const JEWEL = [
     hp: 5,
     art: '🦎',
     art2: '🌈',
-    text: '【ファンファーレ】ランダムな相手のフォロワーに3ダメージ\n【アクセラレート3】相手のフォロワーすべてに2ダメージ。カードを1枚引く\n【エンハンス9】かわりに相手のフォロワーすべてを破壊し、《守護》を得る',
+    text: '【ファンファーレ】ランダムな相手のフォロワーに3ダメージ\n【アクセラレート3】相手のフォロワーすべてに2ダメージ。カードを1枚引く\n【エンハンス9】かわりに相手のフォロワーすべてを破壊し、《守護》と《疾走》を得る',
     flavor: '七色の鱗は、PPの数だけ姿を変える。',
     accel: 3,
     enhance: 9,
     fanfare: (c) => {
       if (c.enhanced) {
         for (const e of c.enemies()) c.destroy(e);
-        c.give(c.self, 'ward');
+        c.give(c.self, 'ward', 'storm');
       } else c.pingFollowers(1, 3);
     },
     accelerate: (c) => {
