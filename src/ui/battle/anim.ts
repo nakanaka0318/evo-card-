@@ -745,6 +745,24 @@ export class Animator {
         await wait(T(320));
         return;
       }
+      case 'reserve': {
+        this.render(ev);
+        const L = g.leader[ev.side];
+        popText(L.x + 90, L.y - 30, `予約ドロー+${ev.n}`, { cls: 'pop-handless', size: 26, dy: -40, ms: 900 });
+        particles.burst(L.x + 70, L.y, { n: 10, type: 'glyph', glyph: '📦', speed: 5, size: 18, gravity: -0.05 });
+        audio.play('reveal', { vol: 0.5 });
+        await wait(T(200));
+        return;
+      }
+      case 'reserveDraw': {
+        this.render(ev);
+        const L = g.leader[ev.side];
+        popText(L.x, L.y - 90, `予約ドロー！ ${ev.n}枚`, { cls: 'pop-handless', size: 34, ms: 1000 });
+        particles.ring(L.x, L.y, '#34e0b0', 140, 0.5, 10);
+        audio.play('gachaSR', { vol: 0.6 });
+        await wait(T(320));
+        return;
+      }
       case 'accel': {
         const at = ev.side === 0 ? { x: g.cx, y: g.H * 0.55 } : { x: g.cx, y: g.H * 0.4 };
         popText(at.x, at.y - 80, 'アクセラレート！', { cls: 'pop-accel', size: 40, ms: 1000 });

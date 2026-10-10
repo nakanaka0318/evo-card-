@@ -14,12 +14,13 @@ export const MINIMAL = [
     atk: 1,
     hp: 2,
     art: '🚮',
-    text: '【ファンファーレ】手札を1枚捨てる。カードを1枚引く',
+    text: '【ファンファーレ】手札を1枚選んで捨てる。カードを1枚引く',
     flavor: '燃えるゴミは、月・木。',
     fanfare: (c) => {
       c.discard(1);
       c.draw(1);
     },
+    discardPick: 1,
   }),
   follower({
     id: 'q_box',
@@ -41,12 +42,13 @@ export const MINIMAL = [
     cost: 1,
     rarity: 'bronze',
     art: '🏷️',
-    text: '手札を1枚捨てる。「売上金」を2枚手札に加える',
+    text: '手札を1枚選んで捨てる。「売上金」を2枚手札に加える',
     flavor: '値下げ交渉は、即ブロック。',
     spell: (c) => {
       c.discard(1);
       c.addHand('t_cash', 2);
     },
+    discardPick: 1,
   }),
   follower({
     id: 'q_minimalist',
@@ -101,10 +103,11 @@ export const MINIMAL = [
     atk: 3,
     hp: 3,
     art: '🏃',
-    text: '【ファンファーレ】【ハンドレス2】《突進》と《バリア》を得る',
+    text: '【ファンファーレ】【ハンドレス2】《突進》と《バリア》を得る\n【ハンドレス0】さらに【予約ドロー2】',
     flavor: '荷物がないと、こんなに速い。',
     fanfare: (c) => {
       if (c.handless(2)) c.give(c.self, 'rush', 'barrier');
+      if (c.P.hand.length === 0 && c.handless(0)) c.reserveDraw(2);
     },
   }),
   amulet({
@@ -115,11 +118,12 @@ export const MINIMAL = [
     rarity: 'bronze',
     countdown: 3,
     art: '🗄️',
-    text: '【カウントダウン3】\n【自分のターン終了時】【ハンドレス2】ランダムな相手のフォロワーかリーダーに2ダメージ',
+    text: '【カウントダウン3】\n【自分のターン終了時】【ハンドレス2】ランダムな相手のフォロワーかリーダーに2ダメージ。【ハンドレス0】さらに【予約ドロー2】',
     flavor: '何も置かないための、棚。',
     aiValue: 3,
     turnEnd: (c) => {
       if (c.handless(2)) c.ping(1, 2);
+      if (c.P.hand.length === 0 && c.handless(0)) c.reserveDraw(2);
     },
   }),
   // ---------------- silver
@@ -147,11 +151,12 @@ export const MINIMAL = [
     hp: 5,
     kw: ['ward'],
     art: '👜',
-    text: '《守護》\n【ファンファーレ】手札を2枚捨てる',
+    text: '《守護》\n【ファンファーレ】手札を2枚選んで捨てる',
     flavor: '中身を全部出したら、軽くなった。',
     fanfare: (c) => {
       c.discard(2);
     },
+    discardPick: 2,
   }),
   spell({
     id: 'q_zen',
@@ -225,11 +230,12 @@ export const MINIMAL = [
     atk: 4,
     hp: 4,
     art: '🥋',
-    text: '【ファンファーレ】手札をすべて捨てる。その後【ハンドレス0】相手のフォロワーすべてに3ダメージ',
+    text: '【ファンファーレ】手札をすべて捨てる。その後【ハンドレス0】相手のフォロワーすべてに3ダメージ。【予約ドロー3】',
     flavor: '「ときめかないものは、すべて捨てなさい」',
     fanfare: (c) => {
       c.discardAll();
       if (c.handless(0)) c.dmgAll(c.enemies(), 3);
+      c.reserveDraw(3);
     },
   }),
   spell({
@@ -239,10 +245,10 @@ export const MINIMAL = [
     cost: 1,
     rarity: 'gold',
     art: '🪣',
-    text: 'カードを1枚引く\n【ハンドレス0】かわりに3枚引く',
+    text: '【予約ドロー2】\n【ハンドレス0】かわりに【予約ドロー4】',
     flavor: '空っぽだから、なんでも入る。',
     spell: (c) => {
-      c.draw(c.handless(0) ? 3 : 1);
+      c.reserveDraw(c.handless(0) ? 4 : 2);
     },
   }),
   follower({
@@ -284,7 +290,7 @@ export const MINIMAL = [
     hp: 3,
     art: '😇',
     art2: '🧹',
-    text: '【ファンファーレ】手札を1枚捨てる\n自分がカードを捨てるたび、ランダムな相手のフォロワーかリーダーに2ダメージ。自分のリーダーを1回復',
+    text: '【ファンファーレ】手札を1枚選んで捨てる\n自分がカードを捨てるたび、ランダムな相手のフォロワーかリーダーに2ダメージ。自分のリーダーを1回復',
     flavor: '「手放したぶんだけ、あなたは自由」',
     aiValue: 4,
     fanfare: (c) => {
@@ -294,6 +300,7 @@ export const MINIMAL = [
       c.ping(1, 2);
       c.heal(1);
     },
+    discardPick: 1,
   }),
   follower({
     id: 'q_muga',
@@ -306,14 +313,15 @@ export const MINIMAL = [
     kw: ['ward'],
     art: '☁️',
     art2: '🐉',
-    text: '《守護》\nこのカードのコストは、自分の手札の枚数と同じになる\n【ファンファーレ】相手のフォロワー1体を破壊する',
+    text: '《守護》\nこのカードのコストは、自分の手札の枚数と同じになる\n【ファンファーレ】相手のフォロワー1体を破壊する。【ハンドレス0】【予約ドロー3】',
     flavor: '何も持たぬ者の前にだけ、姿を現す。',
-    costFn: (s, card) => s.players[card.owner].hand.length - 9,
     target: { kind: 'enemyFollower' },
     aiPrefer: 'big',
     fanfare: (c) => {
       c.destroy(c.targetCard());
+      if (c.handless(0)) c.reserveDraw(3);
     },
+    costFn: (s, card) => s.players[card.owner].hand.length - 9,
   }),
   follower({
     id: 'q_merca',

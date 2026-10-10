@@ -642,11 +642,12 @@ export class Battle {
       content = [h('span.ctr-icon', '🪄'), h('span.ctr-label', 'スペル'), h('span.ctr-num', String(pv.spells))];
     } else if (kind === 'handless') {
       const n = pv.hand.length;
-      sig = `q${n}/${pv.discarded}`;
+      sig = `q${n}/${pv.discarded}/${pv.reserveDraw}`;
       content = [
         h('span.ctr-icon', '🧹'),
         h(`span.ctr-label${n <= 2 ? '.ctr-on' : ''}`, `手札${n}`),
         h('span.ctr-sub', `捨${pv.discarded}`),
+        pv.reserveDraw ? h('span.ctr-sub.ctr-reserve', `予約+${pv.reserveDraw}`) : '',
       ];
     } else if (kind === 'jewel') {
       sig = `j${pv.accels}/${pv.crystals}/${pv.enhances}`;
@@ -882,7 +883,7 @@ export class Battle {
       if (t === undefined || !st.targets.includes(t)) t = this.nearestTarget(p, st.targets, 60) ?? t;
       if (t !== undefined && st.targets.includes(t)) {
         audio.play('tap');
-        if (st.source === 'play') void this.commit({ t: 'play', uid: st.uid, target: t });
+        if (st.source === 'play') this.playWithPicks(st.uid, t);
         else void this.commit({ t: 'evolve', uid: st.uid, sup: st.sup, target: t });
       } else if (t !== undefined) {
         audio.play('error');
@@ -1057,7 +1058,84 @@ export class Battle {
       this.drawArrow(this.pointerXY);
       return;
     }
-    void this.commit({ t: 'play', uid });
+    this.playWithPicks(uid);
+  }
+
+  /** ステラー: cards that discard on play let the player choose which hand cards go */
+  private playWithPicks(uid: number, target?: Tgt): void {
+    const c = this.card(uid);
+    const d = c ? def(c.id) : undefined;
+    const others = this.s.players[PLAYER].hand.filter((x) => x.uid !== uid);
+    if (!c || !d?.discardPick || !others.length) {
+      void this.commit({ t: 'play', uid, target });
+      return;
+    }
+    const need = Math.min(d.discardPick, others.length);
+    const chosen: number[] = [];
+    audio.play('tap');
+    const title = h('div.dp-title');
+    const close = () => {
+      ov.classList.add('out');
+      setTimeout(() => ov.remove(), 180);
+    };
+    const ok = h(
+      'button.btn.btn-hot.dp-ok',
+      {
+        type: 'button',
+        onclick: () => {
+          if (chosen.length !== need) {
+            audio.play('error');
+            return;
+          }
+          close();
+          void this.commit({ t: 'play', uid, target, discard: [...chosen] });
+        },
+      },
+      '🗑️ 捨てる！',
+    );
+    const cancel = h(
+      'button.btn.dp-cancel',
+      {
+        type: 'button',
+        onclick: () => {
+          audio.play('back');
+          close();
+          this.setInput({ k: 'idle' });
+          this.refreshIdle();
+        },
+      },
+      'やめる',
+    );
+    const cells = others.map((hc) =>
+      h(
+        'button.dp-cell',
+        {
+          type: 'button',
+          'data-uid': String(hc.uid),
+          onclick: () => {
+            const i = chosen.indexOf(hc.uid);
+            if (i >= 0) chosen.splice(i, 1);
+            else {
+              if (chosen.length >= need) chosen.shift();
+              chosen.push(hc.uid);
+            }
+            audio.play('flip', { vol: 0.6 });
+            refresh();
+          },
+        },
+        staticCard(hc.id, 'collection'),
+        def(hc.id).onDiscard ? h('div.dp-tag', '捨てられた時') : null,
+        h('div.dp-mark', '🗑️'),
+      ),
+    );
+    const refresh = () => {
+      title.replaceChildren(h('b', `「${d.name}」`), `捨てる手札を${need}枚選んでね（${chosen.length}/${need}）`);
+      for (const cell of cells) cell.classList.toggle('on', chosen.includes(Number(cell.dataset.uid)));
+      ok.classList.toggle('disabled', chosen.length !== need);
+    };
+    const ov = h('div.discard-pick', h('div.dp-panel', title, h('div.dp-cards', cells), h('div.dp-btns', cancel, ok)));
+    refresh();
+    stage.overlay.append(ov);
   }
 
   private beginEvolve(uid: number, sup: boolean): void {
@@ -1347,6 +1425,10 @@ export class Battle {
       },
       act(a: Action) {
         void b.commit(a);
+      },
+      /** play a hand card through the normal UI path (targeting / discard picker) */
+      play(uid: number) {
+        b.beginPlay(uid);
       },
       legal: () => legalActions(b.s),
       legend: (id: string, enemy = false) => legendIntro(id, { enemy }),

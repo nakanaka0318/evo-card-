@@ -106,6 +106,7 @@ export function evaluate(s: GameState, me: Side, aggro = 1): number {
     if (d.accel !== undefined || d.crystal !== undefined) v += Math.min(d.cost, 9) * 0.35;
   }
   v += P.ep * 1.6 + P.sep * 2.4;
+  v += Math.min(P.reserveDraw, RULES.handMax - P.hand.length) * W.hand * 0.9;
   v += P.dopa * 0.2 + (P.dopa >= RULES.dopaMax && !P.fever ? 1.5 : 0);
   v += Math.min(P.likes, 15) * 0.25 + P.luck * 0.35 + P.kakuhen * 1.2 + Math.min(P.sweet, 25) * 0.06;
   v += Math.min(P.maxPp, 10) * 0.6;

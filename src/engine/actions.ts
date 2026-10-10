@@ -9,7 +9,7 @@ export function apply(s: GameState, a: Action): GameEvent[] {
       E.mulligan(s, a.side, a.swap);
       break;
     case 'play':
-      E.playCard(s, a.uid, a.target);
+      E.playCard(s, a.uid, a.target, a.discard);
       break;
     case 'attack':
       E.attack(s, a.uid, a.target);

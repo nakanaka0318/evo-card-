@@ -10,6 +10,8 @@ export interface TriggerExtra {
   other?: Card;
   amount?: number;
   mode?: PlayMode;
+  /** ステラー: uids of hand cards the player picked to discard */
+  discard?: number[];
 }
 
 /** the four ガジェッター パーツ tokens */
@@ -47,7 +49,10 @@ export class Ctx {
     this.other = extra.other;
     this.amount = extra.amount ?? 0;
     this.mode = extra.mode ?? 'normal';
+    this.picks = [...(extra.discard ?? [])];
   }
+  /** discard choices still to use (player-picked) */
+  private picks: number[];
 
   get P() {
     return this.s.players[this.me];
@@ -398,14 +403,22 @@ export class Ctx {
   }
 
   // ------------------------------------------------ ステラー
-  /** discard n cards (【捨てられた時】持ち優先、なければランダム) */
+  /** discard n cards: the player's picks first, otherwise 【捨てられた時】持ち優先、なければランダム */
   discard(n = 1): Card[] {
     const out: Card[] = [];
     for (let i = 0; i < n; i++) {
       const hand = this.P.hand.filter((c) => c !== this.self);
       if (!hand.length) break;
-      const pref = hand.filter((c) => def(c.id).onDiscard);
-      const c = (pref.length ? pref : hand)[E.rndInt(this.s, (pref.length ? pref : hand).length)];
+      let c: Card | undefined;
+      while (!c && this.picks.length) {
+        const u = this.picks.shift();
+        c = hand.find((x) => x.uid === u);
+      }
+      if (!c) {
+        const pref = hand.filter((x) => def(x.id).onDiscard);
+        const pool = pref.length ? pref : hand;
+        c = pool[E.rndInt(this.s, pool.length)];
+      }
       E.discard(this.s, c);
       out.push(c);
     }
@@ -413,6 +426,12 @@ export class Ctx {
   }
   discardAll(): Card[] {
     return this.discard(this.P.hand.length);
+  }
+  /** 予約ドロー: draw n more cards at the start of the next own turn */
+  reserveDraw(n: number): void {
+    if (n <= 0) return;
+    this.P.reserveDraw += n;
+    E.emit(this.s, { t: 'reserve', side: this.me, n, total: this.P.reserveDraw });
   }
   /** 【ハンドレスX】 hand size ≤ X */
   handless(x: number): boolean {

@@ -643,3 +643,45 @@ describe('jewel: 結晶 / アクセラレート / エンハンス', () => {
     expect(E.hpOf(big)).toBe(4);
   });
 });
+
+describe('minimal: picked discards / 予約ドロー', () => {
+  it('discards the cards the player picked', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    s.players[0].hand = [];
+    const keep = give(s, 0, 'q_ghost');
+    const toss = give(s, 0, 'n_bear');
+    const bag = give(s, 0, 'q_bag');
+    apply(s, { t: 'play', uid: bag.uid, discard: [toss.uid] });
+    // picked bear first, then the auto-pick fills the second slot
+    expect(s.players[0].grave.includes(toss)).toBe(true);
+    expect(s.players[0].hand.includes(keep)).toBe(false);
+    expect(s.players[0].discarded).toBe(2);
+  });
+
+  it('a pick that is not in hand is ignored', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].hand = [];
+    const a = give(s, 0, 'n_bear');
+    const t = give(s, 0, 'q_trash');
+    apply(s, { t: 'play', uid: t.uid, discard: [99999, t.uid] });
+    expect(s.players[0].grave.includes(a)).toBe(true);
+  });
+
+  it('reserved draws arrive at the start of the next own turn', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].hand = [];
+    const chest = give(s, 0, 'q_emptychest');
+    apply(s, { t: 'play', uid: chest.uid });
+    expect(s.players[0].reserveDraw).toBe(4);
+    expect(s.players[0].hand.length).toBe(0);
+    apply(s, { t: 'end' });
+    apply(s, { t: 'end' });
+    // 1 normal draw + 4 reserved
+    expect(s.players[0].hand.length).toBe(5);
+    expect(s.players[0].reserveDraw).toBe(0);
+  });
+});

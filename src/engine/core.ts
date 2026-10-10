@@ -173,6 +173,7 @@ export function view(s: GameState): View {
       broken: p.broken,
       rally: p.rally,
       discarded: p.discarded,
+      reserveDraw: p.reserveDraw,
       spells: p.stats.spells,
       accels: p.accels,
       crystals: p.crystals,
@@ -276,6 +277,7 @@ export function createGame(setup: GameSetup): GameState {
       broken: 0,
       rally: 0,
       discarded: 0,
+      reserveDraw: 0,
       accels: 0,
       crystals: 0,
       enhances: 0,
@@ -714,6 +716,13 @@ export function startTurn(s: GameState, side: Side): void {
   if (p.turns === superTurn(s, side)) emit(s, { t: 'unlock', side, kind: 'super' });
   draw(s, side, side !== s.first && p.turns === 1 ? 2 : 1);
   if (over(s)) return;
+  if (p.reserveDraw > 0) {
+    const n = p.reserveDraw;
+    p.reserveDraw = 0;
+    emit(s, { t: 'reserveDraw', side, n });
+    draw(s, side, n, true);
+    if (over(s)) return;
+  }
   tickCountdown(s, side);
   boardTrigger(s, side, 'turnStart');
   resolve(s);
@@ -865,7 +874,7 @@ export function evoTargets(s: GameState, c: Card): Tgt[] | null {
 
 // ---------------------------------------------------------------- actions
 
-export function playCard(s: GameState, uid: number, target?: Tgt): boolean {
+export function playCard(s: GameState, uid: number, target?: Tgt, discardPick?: number[]): boolean {
   const p = s.players[s.active];
   const c = p.hand.find((x) => x.uid === uid);
   if (!c || !canPlay(s, c)) return false;
@@ -891,7 +900,9 @@ export function playCard(s: GameState, uid: number, target?: Tgt): boolean {
   }
   gainLikes(s, p.side, 1);
   addDopa(s, p.side, DOPA.play);
-  const extra: TriggerExtra = { target: tgt, enhanced, combo: comboBefore, mode };
+  // ステラー: the hand cards the player chose to discard (validated; the rest is auto-picked)
+  const picks = d.discardPick ? [...new Set(discardPick ?? [])].filter((u) => u !== c.uid && p.hand.some((x) => x.uid === u)).slice(0, d.discardPick) : undefined;
+  const extra: TriggerExtra = { target: tgt, enhanced, combo: comboBefore, mode, discard: picks };
   let castSpell = false;
   if (mode === 'accel') {
     // played as a spell: the follower itself goes to the graveyard

@@ -385,6 +385,9 @@
   color: #fff;
   text-shadow: var(--outline-s);
 }
+.ctr-sub.ctr-reserve {
+  color: #8ff5d6;
+}
 .ctr-label.ctr-on {
   color: #ff8de8;
   text-shadow: 0 0 8px #ff4fd8;
@@ -1991,4 +1994,107 @@
     transform: translate(-50%, -170%) rotate(28deg) scale(0.6);
     opacity: 0;
   }
+}
+
+/* ステラー: choose which hand cards to discard */
+.discard-pick {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 3, 20, 0.72);
+  animation: fade-in 0.18s ease-out;
+}
+.discard-pick.out {
+  opacity: 0;
+  transition: opacity 0.18s;
+}
+.dp-panel {
+  width: min(94%, 900px);
+  max-height: 92%;
+  overflow-y: auto;
+  padding: 18px;
+  border-radius: 22px;
+  border: 4px solid #000;
+  background: linear-gradient(180deg, #1d4a4a, #14123a);
+  box-shadow: 0 8px 0 #000, 0 0 40px rgba(52, 224, 176, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+}
+.dp-title {
+  font: 900 20px/1.4 var(--f-body);
+  color: #fff;
+  text-align: center;
+  text-shadow: var(--outline-s);
+}
+.dp-title b {
+  color: #8ff5d6;
+  margin-right: 6px;
+}
+.dp-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.dp-cell {
+  position: relative;
+  width: 126px;
+  height: 176px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.dp-cell .card {
+  transform: scale(0.7);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.dp-cell.on {
+  transform: translateY(-8px);
+}
+.dp-cell.on .card {
+  filter: brightness(0.75) saturate(0.6);
+}
+.dp-mark {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  translate: -50% -50%;
+  font: 54px/1 var(--f-emoji);
+  opacity: 0;
+  transition: opacity 0.12s, transform 0.15s;
+  transform: scale(0.4);
+  pointer-events: none;
+}
+.dp-cell.on .dp-mark {
+  opacity: 1;
+  transform: scale(1);
+}
+.dp-tag {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  translate: -50% 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 2px solid #000;
+  background: #14a87a;
+  font: 900 11px/1.2 var(--f-body);
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.dp-btns {
+  display: flex;
+  gap: 14px;
+}
+.dp-ok.disabled {
+  filter: grayscale(0.8) brightness(0.7);
 }

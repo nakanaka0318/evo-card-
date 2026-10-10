@@ -99,6 +99,8 @@ export interface Player {
   rally: number;
   /** ステラー: cards discarded from hand this battle */
   discarded: number;
+  /** ステラー: cards drawn at the start of the next own turn (予約ドロー) */
+  reserveDraw: number;
   /** ジュエラー: cards played via 【アクセラレート】 / 【結晶】 / 【エンハンス・課金】 */
   accels: number;
   crystals: number;
@@ -208,6 +210,8 @@ export interface CardDef {
   onAllyEvolve?: Hook;
   /** スペラー: 【スペルブースト】 — +1 boost (card.data.sb) per spell cast while in hand */
   spellboost?: boolean;
+  /** ステラー: how many hand cards the player picks to discard when this is played */
+  discardPick?: number;
   /** ステラー: this card was discarded from the hand */
   onDiscard?: Hook;
   /** ステラー: the owner discarded another card while this is on board */
@@ -268,6 +272,7 @@ export interface PlayerView {
   broken: number;
   rally: number;
   discarded: number;
+  reserveDraw: number;
   spells: number;
   accels: number;
   crystals: number;
@@ -338,6 +343,8 @@ export type GameEvent = { snap?: View } & (
   | { t: 'boost'; side: Side; uids: number[] }
   | { t: 'discard'; side: Side; uid: number; id: string }
   | { t: 'handless'; side: Side; uid: number; need: number }
+  | { t: 'reserve'; side: Side; n: number; total: number }
+  | { t: 'reserveDraw'; side: Side; n: number }
   | { t: 'accel'; side: Side; uid: number; id: string }
   | { t: 'crystal'; side: Side; uid: number; id: string }
   | { t: 'hatch'; side: Side; uid: number; id: string }
@@ -359,7 +366,7 @@ export type GameEventType = GameEvent['t'];
 
 export type Action =
   | { t: 'mulligan'; side: Side; swap: number[] }
-  | { t: 'play'; uid: number; target?: Tgt }
+  | { t: 'play'; uid: number; target?: Tgt; discard?: number[] }
   | { t: 'attack'; uid: number; target: Tgt }
   | { t: 'evolve'; uid: number; sup: boolean; target?: Tgt }
   | { t: 'fever' }

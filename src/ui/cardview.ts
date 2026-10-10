@@ -31,7 +31,7 @@ function abilityKind(a: string): string {
   if (a.startsWith('破壊') || a === 'いけにえ') return 'crash';
   if (a.startsWith('連携')) return 'ranger';
   if (a === 'スペルブースト') return 'witch';
-  if (a.startsWith('ハンドレス') || a === '捨てられた時') return 'minimal';
+  if (a.startsWith('ハンドレス') || a === '捨てられた時' || a.startsWith('予約ドロー')) return 'minimal';
   if (a.startsWith('結晶') || a.startsWith('アクセラレート') || a.startsWith('エンハンス')) return 'jewel';
   if (a.startsWith('カウントダウン')) return 'cd';
   if (a === 'ガチャ' || a === '確変') return 'gacha';
@@ -59,6 +59,8 @@ export function abilityDesc(label: string): string | null {
   if (m) return `このバトルで場に出た自分のフォロワーが${m[1]}体以上なら発動。`;
   m = label.match(/^ハンドレス(\d+)$/);
   if (m) return `自分の手札が${m[1]}枚以下なら発動。`;
+  m = label.match(/^予約ドロー(\d+)$/);
+  if (m) return `次の自分のターン開始時に、カードを${m[1]}枚引く（いつものドローに追加）。`;
   m = label.match(/^アクセラレート(\d+)$/);
   if (m) return `PPがコストに足りないとき、${m[1]}PPでスペルとして使える（このフォロワーは場に出ない）。`;
   m = label.match(/^結晶(\d+)$/);
@@ -96,7 +98,8 @@ export function glossary(d: CardDef): { name: string; desc: string }[] {
   if (d.text.includes('「結晶」')) add('結晶', ABILITIES['結晶']);
   if (d.text.includes('変身')) add('変身', '進化のこと。進化ポイントを使わずに進化させる効果もある。');
   if (d.text.includes('進化ポイント')) add('進化ポイント', ABILITIES['進化ポイント']);
-  if (d.text.includes('捨てる')) add('捨てる', '自分の手札を捨てる。【捨てられた時】を持つカードが優先され、なければランダム。');
+  if (d.text.includes('選んで捨てる')) add('選んで捨てる', '出すときに、捨てる手札を自分で選ぶ。');
+  else if (d.text.includes('捨てる')) add('捨てる', '自分の手札を捨てる。');
   if (d.text.includes('DOPA')) add('DOPAゲージ', 'カードを出したり敵を倒したりすると溜まる。満タンでFEVER発動！');
   return out;
 }
