@@ -46,7 +46,10 @@ export interface BattleConfig {
   enemyName: string;
   enemyArt?: string;
   difficulty: Difficulty;
-  mode: 'rank' | 'story' | 'free' | 'tutorial';
+  mode: 'rank' | 'story' | 'free' | 'tutorial' | 'spectate';
+  /** AI観戦: the bottom side is played by the AI too */
+  playerAi?: Difficulty;
+  playerName?: string;
   enemyHp?: number;
   playerHp?: number;
   stageId?: string;
@@ -143,7 +146,8 @@ export class Battle {
       leaders: [cfg.playerCls, cfg.enemyCls],
       hp: [cfg.playerHp ?? RULES.leaderHp, cfg.enemyHp ?? RULES.leaderHp],
     });
-    markTrialCards(this.s.players[PLAYER], save.data.collection);
+    if (cfg.mode === 'spectate') this.auto = true;
+    else markTrialCards(this.s.players[PLAYER], save.data.collection);
     this.v = E.view(this.s);
     this.g = geometry(stage.w, stage.h, stage.portrait);
     this.anim = new Animator(this);
@@ -178,6 +182,10 @@ export class Battle {
     this.arrowHead.classList.add('arrow-head');
     this.arrow.append(this.arrowPath, this.arrowHead);
     this.autoBtn = h('button.bf-chip.auto-btn', { type: 'button', onclick: () => this.toggleAuto() }, 'AUTO');
+    if (this.cfg.mode === 'spectate') {
+      this.autoBtn.textContent = '👀 観戦中';
+      this.autoBtn.classList.add('on');
+    }
     this.speedBtn = h('button.bf-chip.speed-btn', { type: 'button', onclick: () => this.cycleSpeed() }, `x${fxConfig.speed}`);
     const menuBtn = h('button.bf-chip.menu-btn', { type: 'button', onclick: () => this.openMenu() }, '☰');
     const top = h('div.bf-top', menuBtn, this.autoBtn, this.speedBtn);
@@ -333,7 +341,8 @@ export class Battle {
     this.render();
     audio.play('draw');
     await wait(T(500));
-    const swap = await this.mulliganUi();
+    // AI観戦: the AI picks the bottom side's mulligan too
+    const swap = this.cfg.mode === 'spectate' ? chooseMulligan(this.s, PLAYER, { difficulty: this.cfg.playerAi ?? 'normal' }) : await this.mulliganUi();
     if (this.destroyed) return;
     const evs = [
       ...apply(this.s, { t: 'mulligan', side: PLAYER, swap }),
@@ -420,7 +429,7 @@ export class Battle {
       if (side === PLAYER && !this.auto) break;
       await wait(T(side === ENEMY ? 420 : 260));
       if (this.destroyed) return;
-      const prof: AiProfile = side === ENEMY ? this.profile : { difficulty: 'normal' };
+      const prof: AiProfile = side === ENEMY ? this.profile : { difficulty: this.cfg.playerAi ?? 'normal' };
       const a = chooseAction(this.s, prof);
       const evs = apply(this.s, a);
       this.thinkEl.classList.remove('on');
@@ -1312,7 +1321,7 @@ export class Battle {
         h('div.li-art', { style: { '--c1': cm.color, '--c2': cm.color2 } }, side === ENEMY && this.cfg.enemyArt ? this.cfg.enemyArt : cm.leaderArt),
         h(
           'div.inspect-side',
-          h('div.li-name', side === ENEMY ? this.cfg.enemyName : `${save.data.name}（${cm.name}）`),
+          h('div.li-name', side === ENEMY ? this.cfg.enemyName : `${this.cfg.playerName ?? save.data.name}（${cm.name}）`),
           h('div.li-mech', h('b', cm.mechanic), h('p', cm.mechanicDesc)),
           h('div.li-stats', `体力 ${p.hp}/${p.maxHp}　手札 ${p.hand.length}　山札 ${p.deck.length}　DOPA ${p.dopa}/${RULES.dopaMax}`),
           p.crests.length
@@ -1359,6 +1368,7 @@ export class Battle {
   }
 
   private toggleAuto(): void {
+    if (this.cfg.mode === 'spectate') return toast('AI観戦中：両方ともAIが操作しています', '🤖');
     audio.play('tap');
     this.auto = !this.auto;
     this.autoBtn.classList.toggle('on', this.auto);
@@ -1400,10 +1410,15 @@ export class Battle {
           (e.currentTarget as HTMLElement).textContent = perfLabel();
           toast(`動作モード：${PERF_INFO[next].name}`, PERF_INFO[next].emoji);
         } }, perfLabel()),
-        h('button.btn.btn-danger', { type: 'button', onclick: async () => {
-          close();
-          if (await confirmModal('降参する？ この試合は負けになるよ。', '降参する', '続ける')) void this.concede();
-        } }, '降参する'),
+        this.cfg.mode === 'spectate'
+          ? h('button.btn.btn-danger', { type: 'button', onclick: () => {
+              close();
+              this.cfg.onQuit?.();
+            } }, '観戦をやめる')
+          : h('button.btn.btn-danger', { type: 'button', onclick: async () => {
+              close();
+              if (await confirmModal('降参する？ この試合は負けになるよ。', '降参する', '続ける')) void this.concede();
+            } }, '降参する'),
         h('button.btn.btn-hot', { type: 'button', onclick: () => { audio.play('back'); close(); } }, 'バトルに戻る'),
       ),
     );

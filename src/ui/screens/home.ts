@@ -71,6 +71,7 @@ export const homeScreen: ScreenFn = (root) => {
     'div.home-sub',
     btn([h('span.hs-icon', '🗺️'), h('span', 'ストーリー')], () => void go('story'), 'home-subbtn'),
     btn([h('span.hs-icon', '⚔️'), h('span', 'フリーバトル')], () => void go('free'), 'home-subbtn'),
+    btn([h('span.hs-icon', '🤖'), h('span', 'AI観戦')], () => void go('aivs'), 'home-subbtn'),
   );
   const side = h(
     'div.home-side',

@@ -1097,6 +1097,16 @@ export class Animator {
       await slam('DRAW', 'slam-blue', 1400);
       return;
     }
+    if (b.cfg.mode === 'spectate') {
+      // AI観戦: no "you" — just name the winner
+      const side = win ? 0 : 1;
+      const name = win ? (b.cfg.playerName ?? CLASSES[b.cfg.playerCls].name) : b.cfg.enemyName;
+      particles.confetti(120);
+      audio.play('win');
+      this.say(side, CLASSES[win ? b.cfg.playerCls : b.cfg.enemyCls].lines.win);
+      await slam('WINNER', 'slam-win', 1600, `${name} の勝ち！`);
+      return;
+    }
     if (win) {
       particles.speedLines(1.2);
       flash('#fff', 0.9, 500);

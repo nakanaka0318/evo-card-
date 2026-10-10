@@ -28,6 +28,26 @@ export const battleScreen: ScreenFn = (root, params) => {
   const me = playerDeck();
   fxConfig.speed = save.data.settings.speed;
   let cfg: Omit<BattleConfig, 'onEnd'>;
+  if (mode === 'spectate') {
+    type Side = { cls: ClassId; cards: string[]; name: string; diff: Difficulty };
+    const a = params.a as Side;
+    const b = params.b as Side;
+    const battle = new Battle({
+      playerDeck: a.cards,
+      playerCls: a.cls,
+      playerName: a.name,
+      playerAi: a.diff,
+      enemyDeck: b.cards,
+      enemyCls: b.cls,
+      enemyName: b.name,
+      difficulty: b.diff,
+      mode,
+      onEnd: (r) => void go('aivs', { last: { aName: a.name, bName: b.name, winner: r.draw ? -1 : r.win ? 0 : 1, turns: r.turns } }),
+      onQuit: () => void go('aivs'),
+    });
+    battle.mount(root);
+    return () => battle.destroy();
+  }
   if (mode === 'story') {
     const st = STAGES.find((s) => s.id === params.stage) ?? STAGES[0];
     cfg = {

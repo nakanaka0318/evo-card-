@@ -20,6 +20,7 @@ import { resultsScreen } from './ui/screens/results';
 import { rulesScreen } from './ui/screens/rules';
 import { rankingScreen } from './ui/screens/ranking';
 import { historyScreen } from './ui/screens/history';
+import { aivsScreen } from './ui/screens/aivs';
 import { applySettings, settingsScreen } from './ui/screens/settings';
 import { freeScreen, storyScreen } from './ui/screens/story';
 import { titleScreen } from './ui/screens/title';
@@ -79,6 +80,7 @@ function boot(): void {
   registerScreen('rules', async () => rulesScreen);
   registerScreen('ranking', async () => rankingScreen);
   registerScreen('history', async () => historyScreen);
+  registerScreen('aivs', async () => aivsScreen);
   window.addEventListener(
     'pointerdown',
     () => {
