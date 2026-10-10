@@ -50,7 +50,7 @@ function boot(): void {
     });
   }
   // classes added after launch: starter share of their cards + a starter deck, once each
-  for (const cls of ['gadget', 'treasure', 'harmony'] as const) {
+  for (const cls of ['gadget', 'treasure', 'harmony', 'crash', 'ranger', 'witch', 'minimal', 'jewel'] as const) {
     if (!save.data.flags.starter || save.data.flags[cls]) continue;
     save.update((d) => {
       for (const c of collectible()) {

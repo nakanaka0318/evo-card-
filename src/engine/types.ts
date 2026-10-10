@@ -3,11 +3,13 @@
 // Card behaviour lives in CardDef hook functions, looked up by id.
 
 export type Side = 0 | 1;
-export type ClassId = 'neutral' | 'gacha' | 'stream' | 'sweets' | 'swipe' | 'gamer' | 'gadget' | 'treasure' | 'harmony';
+export type ClassId = 'neutral' | 'gacha' | 'stream' | 'sweets' | 'swipe' | 'gamer' | 'gadget' | 'treasure' | 'harmony' | 'crash' | 'ranger' | 'witch' | 'minimal' | 'jewel';
 export type CardType = 'follower' | 'spell' | 'amulet';
 export type Rarity = 'bronze' | 'silver' | 'gold' | 'legend';
 export type Keyword = 'ward' | 'storm' | 'rush' | 'bane' | 'drain' | 'ambush' | 'barrier' | 'aura' | 'twin';
 export type GachaTier = 'N' | 'R' | 'SR' | 'SSR';
+/** how a card is played: normal cost, 【エンハンス/課金】, 【アクセラレート】 (as a spell) or 【結晶】 (as a countdown amulet) */
+export type PlayMode = 'normal' | 'enhance' | 'accel' | 'crystal';
 
 /** Target reference: positive = card uid, -1 = leader of side 0, -2 = leader of side 1. */
 export type Tgt = number;
@@ -37,6 +39,8 @@ export interface Card {
   data: Record<string, number>;
   /** marked for destruction (bane etc.) */
   doomed?: boolean;
+  /** ジュエラー: the follower sleeping inside a 「結晶」 */
+  hold?: string;
 }
 
 export interface PlayerStats {
@@ -89,6 +93,16 @@ export interface Player {
   treasures: number;
   /** ハモラー: how many 【ハモり】 effects fired this battle */
   harmonies: number;
+  /** クラッシャー: own cards destroyed this battle */
+  broken: number;
+  /** レンジャー: own followers that entered the board this battle (【連携】) */
+  rally: number;
+  /** ステラー: cards discarded from hand this battle */
+  discarded: number;
+  /** ジュエラー: cards played via 【アクセラレート】 / 【結晶】 / 【エンハンス・課金】 */
+  accels: number;
+  crystals: number;
+  enhances: number;
   dopa: number;
   fever: boolean;
   stats: PlayerStats;
@@ -114,6 +128,7 @@ export type TargetKind = 'enemyFollower' | 'allyFollower' | 'anyFollower' | 'ene
 
 export interface PlayInfo {
   enhanced: boolean;
+  mode: PlayMode;
   /** number of OTHER cards played this turn before this one */
   combo: number;
 }
@@ -187,6 +202,25 @@ export interface CardDef {
   onLevelUp?: Hook;
   /** an allied follower (other than this) was destroyed */
   onAllyDestroyed?: Hook;
+  /** クラッシャー: any other own card (follower or amulet) was destroyed */
+  onBreak?: Hook;
+  /** レンジャー: another allied follower evolved */
+  onAllyEvolve?: Hook;
+  /** スペラー: 【スペルブースト】 — +1 boost (card.data.sb) per spell cast while in hand */
+  spellboost?: boolean;
+  /** ステラー: this card was discarded from the hand */
+  onDiscard?: Hook;
+  /** ステラー: the owner discarded another card while this is on board */
+  onAnyDiscard?: Hook;
+  /** ジュエラー: 【アクセラレートX】 — when PP can't pay the cost, play for X as a spell */
+  accel?: number;
+  accelerate?: Hook;
+  /** ジュエラー: 【結晶X】 — when PP can't pay the cost, play for X as a 「結晶」 amulet */
+  crystal?: number;
+  /** countdown of the 「結晶」 (default 2) */
+  crystalCd?: number;
+  /** ジュエラー: entered the board out of a 「結晶」 */
+  onHatch?: Hook;
 }
 
 // ---------- events (for the UI animator) ----------
@@ -209,6 +243,12 @@ export interface CardView {
   enhanced: boolean;
   /** 🔰 a copy the player doesn't own (お試し) */
   trial: boolean;
+  /** 【スペルブースト】 count while in hand (-1 = not a spellboost card) */
+  boost?: number;
+  /** how it would be played right now (hand only) */
+  mode?: PlayMode;
+  /** 「結晶」: the follower inside */
+  hold?: string;
 }
 
 export interface PlayerView {
@@ -225,6 +265,13 @@ export interface PlayerView {
   parts: number;
   treasures: number;
   harmonies: number;
+  broken: number;
+  rally: number;
+  discarded: number;
+  spells: number;
+  accels: number;
+  crystals: number;
+  enhances: number;
   luck: number;
   kakuhen: number;
   combo: number;
@@ -252,7 +299,7 @@ export type GameEvent = { snap?: View } & (
   | { t: 'draw'; side: Side; uid: number; burned?: boolean; fromEffect?: boolean }
   | { t: 'addHand'; side: Side; uid: number }
   | { t: 'deckout'; side: Side }
-  | { t: 'play'; side: Side; uid: number; id: string; target: Tgt | null; enhanced: boolean; combo: number }
+  | { t: 'play'; side: Side; uid: number; id: string; target: Tgt | null; enhanced: boolean; combo: number; mode?: PlayMode }
   | { t: 'summon'; side: Side; uid: number; fromHand: boolean }
   | { t: 'spell'; side: Side; uid: number; id: string; target: Tgt | null }
   | { t: 'trigger'; uid: number; kind: string; side: Side }
@@ -283,6 +330,17 @@ export type GameEvent = { snap?: View } & (
   | { t: 'treasure'; side: Side; id: string; total: number }
   | { t: 'rich'; side: Side; uid: number; need: number }
   | { t: 'harmony'; side: Side; uid: number; total: number }
+  | { t: 'broken'; side: Side; total: number }
+  | { t: 'smash'; side: Side; uid: number; need: number }
+  | { t: 'sacrifice'; side: Side; uid: number; victim: number }
+  | { t: 'rally'; side: Side; total: number }
+  | { t: 'rallyHit'; side: Side; uid: number; need: number }
+  | { t: 'boost'; side: Side; uids: number[] }
+  | { t: 'discard'; side: Side; uid: number; id: string }
+  | { t: 'handless'; side: Side; uid: number; need: number }
+  | { t: 'accel'; side: Side; uid: number; id: string }
+  | { t: 'crystal'; side: Side; uid: number; id: string }
+  | { t: 'hatch'; side: Side; uid: number; id: string }
   | { t: 'enhance'; side: Side; uid: number }
   | { t: 'exp'; uid: number; exp: number; need: number }
   | { t: 'levelUp'; uid: number; level: number }

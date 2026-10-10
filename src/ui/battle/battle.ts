@@ -631,7 +631,26 @@ export class Battle {
     } else if (kind === 'harmony') {
       const on = pv.deck % 2 === 0;
       sig = `h${on ? 1 : 0}/${pv.harmonies}`;
-      content = [h('span.ctr-icon', on ? '🎶' : '🎤'), h(`span.ctr-label${on ? '.ctr-on' : ''}`, on ? 'ハモり中' : 'ハモり待ち'), h('span.ctr-num', String(pv.harmonies))];
+      content = [h('span.ctr-icon', on ? '🎶' : '🎤'), h(`span.ctr-label${on ? '.ctr-on' : ''}`, on ? 'ハモり中' : 'ハモり待ち'), h('span.ctr-num', String(pv.harmonies))];    } else if (kind === 'broken') {
+      sig = `b${pv.broken}`;
+      content = [h('span.ctr-icon', '💥'), h('span.ctr-label', '破壊'), h('span.ctr-num', String(pv.broken))];
+    } else if (kind === 'rally') {
+      sig = `r${pv.rally}`;
+      content = [h('span.ctr-icon', '🦸'), h('span.ctr-label', '連携'), h('span.ctr-num', String(pv.rally))];
+    } else if (kind === 'spells') {
+      sig = `w${pv.spells}`;
+      content = [h('span.ctr-icon', '🪄'), h('span.ctr-label', 'スペル'), h('span.ctr-num', String(pv.spells))];
+    } else if (kind === 'handless') {
+      const n = pv.hand.length;
+      sig = `q${n}/${pv.discarded}`;
+      content = [
+        h('span.ctr-icon', '🧹'),
+        h(`span.ctr-label${n <= 2 ? '.ctr-on' : ''}`, `手札${n}`),
+        h('span.ctr-sub', `捨${pv.discarded}`),
+      ];
+    } else if (kind === 'jewel') {
+      sig = `j${pv.accels}/${pv.crystals}/${pv.enhances}`;
+      content = [h('span.ctr-icon', '💎'), h('span.ctr-sub', `⚡${pv.accels}`), h('span.ctr-sub', `💠${pv.crystals}`), h('span.ctr-sub', `✨${pv.enhances}`)];
     }
     if (el.dataset.sig !== sig) {
       el.dataset.sig = sig;

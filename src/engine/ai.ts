@@ -48,6 +48,12 @@ function hpVal(h: number): number {
 function unitVal(s: GameState, c: Card): number {
   const d = def(c.id);
   if (d.type === 'amulet') {
+    if (c.hold) {
+      // 「結晶」: worth a discounted share of the follower sleeping inside
+      const hd = def(c.hold);
+      const full = (hd.atk ?? 0) * 1.05 + (hd.hp ?? 0) * 0.95 + 0.6;
+      return full * (c.countdown <= 1 ? 0.75 : c.countdown === 2 ? 0.6 : 0.45);
+    }
     const base = d.aiValue ?? 2;
     return c.countdown > 0 ? base * Math.min(1, 0.4 + c.countdown * 0.25) : base;
   }
@@ -93,6 +99,12 @@ export function evaluate(s: GameState, me: Side, aggro = 1): number {
   v += hpVal(P.hp) - hpVal(O.hp) * aggro;
   v += boardVal(s, P) - boardVal(s, O);
   v += Math.min(P.hand.length, RULES.handMax) * W.hand - Math.min(O.hand.length, RULES.handMax) * W.oppHand;
+  // cards with a cheap alternative mode (アクセラレート/結晶) are worth their full cost while held,
+  // so the search doesn't throw a big follower away as a small effect too early
+  for (const c of P.hand) {
+    const d = def(c.id);
+    if (d.accel !== undefined || d.crystal !== undefined) v += Math.min(d.cost, 9) * 0.35;
+  }
   v += P.ep * 1.6 + P.sep * 2.4;
   v += P.dopa * 0.2 + (P.dopa >= RULES.dopaMax && !P.fever ? 1.5 : 0);
   v += Math.min(P.likes, 15) * 0.25 + P.luck * 0.35 + P.kakuhen * 1.2 + Math.min(P.sweet, 25) * 0.06;

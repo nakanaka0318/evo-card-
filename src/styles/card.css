@@ -204,6 +204,37 @@
     repeating-radial-gradient(circle at 50% 120%, transparent 0 10px, rgba(255, 255, 255, 0.2) 10px 12px);
 }
 
+.cls-crash .art-pattern {
+  background-image:
+    linear-gradient(115deg, transparent 0 46%, rgba(0, 0, 0, 0.35) 46% 48%, transparent 48%),
+    linear-gradient(35deg, transparent 0 60%, rgba(0, 0, 0, 0.3) 60% 61.5%, transparent 61.5%),
+    linear-gradient(160deg, transparent 0 30%, rgba(255, 255, 255, 0.25) 30% 31%, transparent 31%);
+}
+
+.cls-ranger .art-pattern {
+  background-image: repeating-conic-gradient(from 0deg at 50% 60%, rgba(255, 255, 255, 0.22) 0 10deg, transparent 10deg 30deg);
+}
+
+.cls-witch .art-pattern {
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.6) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 65% 70%, rgba(255, 230, 255, 0.5) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.4) 0 1px, transparent 2px);
+  background-size: 28px 28px, 36px 36px, 22px 22px;
+}
+
+.cls-minimal .art-pattern {
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 1px, transparent 1px);
+  background-size: 50% 100%;
+}
+
+.cls-jewel .art-pattern {
+  background-image:
+    linear-gradient(60deg, rgba(255, 255, 255, 0.22) 25%, transparent 25% 75%, rgba(255, 255, 255, 0.22) 75%),
+    linear-gradient(-60deg, rgba(255, 255, 255, 0.16) 25%, transparent 25% 75%, rgba(255, 255, 255, 0.16) 75%);
+  background-size: 26px 45px;
+}
+
 .cls-gamer .art-pattern {
   background-image:
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 8px),
@@ -442,6 +473,21 @@
 }
 .card-text .ab-harmony {
   background: linear-gradient(90deg, #1aa8d6, #d93ab8);
+}
+.card-text .ab-crash {
+  background: linear-gradient(90deg, #e0331a, #55556e);
+}
+.card-text .ab-ranger {
+  background: linear-gradient(90deg, #e8243f, #d9a400);
+}
+.card-text .ab-witch {
+  background: linear-gradient(90deg, #7a3fe0, #d94fb8);
+}
+.card-text .ab-minimal {
+  background: linear-gradient(90deg, #14a87a, #5a6ad9);
+}
+.card-text .ab-jewel {
+  background: linear-gradient(90deg, #e04fb8, #1aa8c4);
 }
 .card-text .ab-gadget {
   background: linear-gradient(90deg, #ff8a1f, #14a89c);
@@ -1085,4 +1131,80 @@
 .zone-detail .card-trial {
   bottom: auto;
   top: 60px;
+}
+
+/* ---------------------------------------------------------- play modes & boosts */
+.card-mode {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  z-index: 5;
+  translate: -50% 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 2px solid #000;
+  font: 900 13px/1.1 var(--f-body);
+  white-space: nowrap;
+  color: #fff;
+  text-shadow: var(--outline-s);
+  box-shadow: 0 3px 0 #000;
+  pointer-events: none;
+}
+.card-mode.mode-accel {
+  background: linear-gradient(90deg, #ff5ad0, #ffb000);
+}
+.card-mode.mode-crystal {
+  background: linear-gradient(90deg, #38d6ff, #b48cff);
+}
+.card-mode.mode-enhance {
+  background: linear-gradient(90deg, #ffb000, #ff4d2e);
+}
+.zone-hand.card[data-mode='accel'] .card-cost,
+.zone-hand.card[data-mode='crystal'] .card-cost {
+  filter: hue-rotate(160deg) saturate(1.4);
+}
+
+.card-boost {
+  position: absolute;
+  right: 6px;
+  bottom: 52px;
+  z-index: 4;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 2px solid #000;
+  background: #3a2470;
+  font: 900 16px/1.2 var(--f-body);
+  color: #d9c4ff;
+  text-shadow: var(--outline-s);
+  pointer-events: none;
+}
+.card-boost.on {
+  background: linear-gradient(180deg, #b48cff, #7a3fe0);
+  color: #fff;
+  box-shadow: 0 0 12px #b48cff;
+}
+.card.boosted .card-boost {
+  animation: boost-pop 0.35s ease-out;
+}
+@keyframes boost-pop {
+  40% {
+    transform: scale(1.5);
+  }
+}
+
+/* a 「結晶」 shows the follower sleeping inside */
+.card.crystal-hold .art-glyph {
+  filter: saturate(0.4) brightness(1.15) drop-shadow(0 0 10px #7af0ff);
+  opacity: 0.85;
+}
+.card.crystal-hold .card-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(122, 240, 255, 0.45), transparent 40%, rgba(255, 122, 217, 0.35) 70%, transparent),
+    linear-gradient(45deg, transparent 48%, rgba(255, 255, 255, 0.55) 49% 50%, transparent 51%),
+    linear-gradient(-45deg, transparent 48%, rgba(255, 255, 255, 0.4) 49% 50%, transparent 51%);
+  clip-path: polygon(50% 0, 100% 30%, 100% 70%, 50% 100%, 0 70%, 0 30%);
+  pointer-events: none;
 }

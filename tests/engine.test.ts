@@ -279,7 +279,7 @@ describe('cards & mechanics', () => {
     const s = game();
     s.players[0].pp = 4;
     const c = give(s, 0, 'm_card');
-    expect(E.playCost(s, c)).toEqual({ cost: 4, enhanced: true });
+    expect(E.playCost(s, c)).toEqual({ cost: 4, enhanced: true, mode: 'enhance' });
     apply(s, { t: 'play', uid: c.uid });
     expect(s.players[0].pp).toBe(0);
     expect(c.atk).toBe(5);
@@ -479,5 +479,167 @@ describe('harmony: even deck', () => {
     expect(s.players[0].harmonies).toBe(1);
     expect(s.players[0].deck.length).toBe(9);
     expect(s.players[0].deck.some((c) => c.id === 't_chorus')).toBe(true);
+  });
+});
+
+describe('crash: 破壊 / いけにえ', () => {
+  it('counts own destroyed cards, sacrifice prefers ガラクタ and fires onBreak', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    put(s, 0, 'c_plates');
+    put(s, 0, 'n_bear');
+    const kid = give(s, 0, 'c_kid');
+    apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === kid.uid)!);
+    expect(s.players[0].board.some((c) => c.id === 't_junk')).toBe(true);
+    const hp = s.players[1].hp;
+    const scr = give(s, 0, 'c_scrapper');
+    const hand = s.players[0].hand.length;
+    apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === scr.uid)!);
+    // ガラクタ was sacrificed (bear survives), its last words + お皿割り師 each hit for 1
+    expect(s.players[0].board.some((c) => c.id === 'n_bear')).toBe(true);
+    expect(s.players[0].board.some((c) => c.id === 't_junk')).toBe(false);
+    expect(s.players[0].broken).toBe(1);
+    expect(s.players[0].hand.length).toBe(hand - 1 + 2);
+    expect(s.players[1].hp).toBe(hp - 2);
+  });
+
+  it('終末時計 ticks down whenever another own card breaks', () => {
+    const s = game();
+    const clock = put(s, 0, 'c_doomclock');
+    clock.countdown = 2;
+    put(s, 1, 'n_bear');
+    const a = put(s, 0, 'n_slime');
+    const b = put(s, 0, 'n_slime');
+    a.doomed = true;
+    b.doomed = true;
+    E.resolve(s);
+    expect(s.players[0].board.includes(clock)).toBe(false);
+    expect(s.players[1].board.length).toBe(0);
+    expect(s.players[1].hp).toBe(15);
+  });
+});
+
+describe('ranger: 連携 / 変身', () => {
+  it('rally counts followers entering and free evolve triggers onAllyEvolve', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    put(s, 0, 'k_commander');
+    const r0 = s.players[0].rally;
+    const call = give(s, 0, 'k_call');
+    apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === call.uid)!);
+    expect(s.players[0].rally).toBe(r0 + 2);
+    const cadet = s.players[0].board.find((c) => c.id === 't_cadet')!;
+    const ep = s.players[0].ep;
+    const hand = s.players[0].hand.length;
+    const belt = give(s, 0, 'k_belt');
+    apply(s, { t: 'play', uid: belt.uid, target: cadet.uid });
+    expect(cadet.evolved).toBe(1);
+    expect(cadet.atk).toBe(3);
+    expect(s.players[0].ep).toBe(ep);
+    // ベルト left the hand, 長官 drew a card for the evolution
+    expect(s.players[0].hand.length).toBe(hand + 1);
+  });
+});
+
+describe('witch: スペルブースト', () => {
+  it('spells boost spellboost cards in hand, lowering cost and raising damage', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    const giant = give(s, 0, 'z_giant');
+    const fb = give(s, 0, 'z_fireball');
+    for (let i = 0; i < 3; i++) {
+      const sp = give(s, 0, 't_mspark');
+      apply(s, { t: 'play', uid: sp.uid });
+    }
+    expect(giant.data.sb).toBe(3);
+    expect(E.costOf(s, giant)).toBe(4);
+    expect(E.view(s).p[0].hand.find((c) => c.uid === fb.uid)!.boost).toBe(3);
+    const bear = put(s, 1, 'n_bear');
+    apply(s, { t: 'play', uid: fb.uid, target: bear.uid });
+    expect(E.hpOf(bear)).toBe(2);
+    expect(giant.data.sb).toBe(4);
+  });
+});
+
+describe('minimal: ハンドレス / 捨てる', () => {
+  it('discard prefers 捨てられた時 cards and triggers them and onAnyDiscard', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    s.players[0].hand = [];
+    put(s, 0, 'q_recycler');
+    give(s, 0, 'n_bear');
+    const ghost = give(s, 0, 'q_ghost');
+    const hp = s.players[1].hp;
+    const t = give(s, 0, 'q_trash');
+    apply(s, legalActions(s).find((a) => a.t === 'play' && a.uid === t.uid)!);
+    expect(s.players[0].discarded).toBe(1);
+    expect(s.players[0].board.some((c) => c.id === 'q_ghost')).toBe(true);
+    expect(s.players[0].hand.includes(ghost)).toBe(false);
+    expect(s.players[1].hp).toBe(hp - 1);
+  });
+
+  it('ムガ costs as much as the hand size', () => {
+    const s = game();
+    s.players[0].hand = [];
+    const m = give(s, 0, 'q_muga');
+    expect(E.costOf(s, m)).toBe(1);
+    give(s, 0, 'n_bear');
+    give(s, 0, 'n_bear');
+    expect(E.costOf(s, m)).toBe(3);
+  });
+});
+
+describe('jewel: 結晶 / アクセラレート / エンハンス', () => {
+  it('accelerate plays a follower as a spell when PP is short', () => {
+    const s = game();
+    s.players[0].pp = 1;
+    const ruby = give(s, 0, 'j_ruby');
+    const bear = put(s, 1, 'n_bear');
+    expect(E.playCost(s, ruby)).toEqual({ cost: 1, enhanced: false, mode: 'accel' });
+    apply(s, { t: 'play', uid: ruby.uid });
+    expect(s.players[0].board.includes(ruby)).toBe(false);
+    expect(s.players[0].grave.includes(ruby)).toBe(true);
+    expect(E.hpOf(bear)).toBe(5);
+    expect(s.players[0].accels).toBe(1);
+    expect(s.players[0].stats.spells).toBe(1);
+  });
+
+  it('crystallize leaves a 結晶 that hatches into the follower', () => {
+    const s = game();
+    s.players[0].pp = 2;
+    const pearl = give(s, 0, 'j_pearl');
+    expect(E.playCost(s, pearl).mode).toBe('crystal');
+    apply(s, { t: 'play', uid: pearl.uid });
+    const cr = s.players[0].board.find((c) => c.id === 't_crystal')!;
+    expect(cr.hold).toBe('j_pearl');
+    expect(cr.countdown).toBe(1);
+    put(s, 1, 'n_bear');
+    apply(s, { t: 'end' });
+    apply(s, { t: 'end' });
+    const hatched = s.players[0].board.find((c) => c.id === 'j_pearl')!;
+    expect(hatched).toBeTruthy();
+    expect(s.players[0].board.some((c) => c.id === 't_crystal')).toBe(false);
+    // hatched followers can attack on the turn they come out
+    expect(E.attackTargets(s, hatched).length).toBeGreaterThan(0);
+  });
+
+  it('jewelia: hatch effect fires, fanfare does not', () => {
+    const s = game();
+    const cr = E.makeCard(s, 't_crystal', 0);
+    cr.hold = 'j_jewelia';
+    cr.countdown = 1;
+    cr.enteredOn = s.turn - 1;
+    s.players[0].board.push(cr);
+    const big = put(s, 1, 'n_bear');
+    const small = put(s, 1, 'n_slime');
+    cr.doomed = true;
+    E.resolve(s);
+    expect(s.players[0].board.some((c) => c.id === 'j_jewelia')).toBe(true);
+    expect(s.players[1].board.includes(small)).toBe(false);
+    expect(E.hpOf(big)).toBe(4);
   });
 });

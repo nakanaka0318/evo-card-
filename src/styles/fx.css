@@ -228,6 +228,65 @@
     0 0 34px #ff4fd8;
 }
 
+.pop-broken,
+.pop-rally {
+  font-family: var(--f-body);
+  font-weight: 900;
+}
+.pop-broken {
+  color: #ff8a6b;
+}
+.pop-rally {
+  color: #ffd23d;
+}
+
+.pop-smash,
+.pop-sacrifice {
+  color: #ff5a3d;
+  text-shadow:
+    var(--outline),
+    0 0 26px #ff2e00;
+}
+.pop-sacrifice {
+  font-style: italic;
+}
+
+.pop-rallyhit {
+  font-style: italic;
+  background: linear-gradient(90deg, #ff2e4d, #ffd23d, #2e7bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 0 #000) drop-shadow(2px 0 0 #000) drop-shadow(-2px 0 0 #000);
+  text-shadow: none;
+}
+
+.pop-discard {
+  color: #8ff5d6;
+  font-style: italic;
+}
+.pop-handless {
+  color: #34e0b0;
+  text-shadow:
+    var(--outline),
+    0 0 24px #34e0b0;
+}
+
+.pop-accel {
+  font-style: italic;
+  color: #ffd1f2;
+  text-shadow:
+    var(--outline),
+    0 0 26px #ff5ad0;
+}
+.pop-crystal {
+  color: #c9f8ff;
+  text-shadow:
+    var(--outline),
+    0 0 26px #7af0ff,
+    0 0 40px #ff7ad9;
+}
+
 .pop-exp {
   font-family: var(--f-body);
   font-weight: 900;

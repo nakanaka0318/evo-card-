@@ -24,6 +24,12 @@ const TRIGGER_LABEL: Record<string, string | null> = {
   onHeal: '発動！',
   onLevelUp: null,
   onAllyDestroyed: '発動！',
+  onBreak: '発動！',
+  onAllyEvolve: '発動！',
+  onDiscard: '捨てられた時',
+  onAnyDiscard: '発動！',
+  accelerate: null,
+  onHatch: null,
 };
 
 const TIER_COLOR: Record<GachaTier, string> = {
@@ -659,6 +665,113 @@ export class Animator {
         audio.tone(825, 0.18, { type: 'sine', vol: 0.07 });
         audio.tone(990, 0.25, { type: 'sine', vol: 0.06, at: 0.08 });
         await wait(T(340));
+        return;
+      }
+      case 'broken': {
+        this.render(ev);
+        if (this.clsOf(ev.side).counter !== 'broken') return;
+        const L = g.leader[ev.side];
+        popText(L.x + 90, L.y - 20, `破壊${ev.total}`, { cls: 'pop-broken', size: 22, dy: -36, ms: 600 });
+        particles.burst(L.x + 70, L.y, { n: 8, type: 'glyph', glyph: '🔩', speed: 5, size: 16, gravity: 0.3 });
+        await wait(T(60));
+        return;
+      }
+      case 'smash': {
+        const p = b.pos.has(ev.uid) ? this.posOf(ev.uid) : { x: g.cx, y: g.H / 2 };
+        popText(p.x, p.y - 60, `破壊${ev.need}！`, { cls: 'pop-smash', size: 38, ms: 1000 });
+        particles.burst(p.x, p.y, { n: 26, colors: ['#ff4d2e', '#ffb000', '#3a3a50'], speed: 11, size: 7 });
+        shake(10, 220);
+        audio.play('bigHit', { vol: 0.7 });
+        await wait(T(340));
+        return;
+      }
+      case 'sacrifice': {
+        const p = b.pos.has(ev.victim) ? this.posOf(ev.victim) : { x: g.cx, y: g.H / 2 };
+        popText(p.x, p.y - 50, 'いけにえ！', { cls: 'pop-sacrifice', size: 30, ms: 900 });
+        particles.ring(p.x, p.y, '#ff4d2e', 100, 0.4, 10);
+        particles.burst(p.x, p.y, { n: 18, type: 'glyph', glyph: '💥', speed: 7, size: 20, gravity: 0.2 });
+        this.bump(b.els.get(ev.victim), 'triggered');
+        audio.play('shatter', { vol: 0.8 });
+        await wait(T(300));
+        return;
+      }
+      case 'rally': {
+        this.render(ev);
+        if (this.clsOf(ev.side).counter !== 'rally') return;
+        const L = g.leader[ev.side];
+        popText(L.x + 90, L.y - 20, `連携${ev.total}`, { cls: 'pop-rally', size: 22, dy: -36, ms: 600 });
+        await wait(T(40));
+        return;
+      }
+      case 'rallyHit': {
+        const p = b.pos.has(ev.uid) ? this.posOf(ev.uid) : { x: g.cx, y: g.H / 2 };
+        popText(p.x, p.y - 60, `連携${ev.need}！`, { cls: 'pop-rallyhit', size: 36, ms: 1000 });
+        particles.burst(p.x, p.y, { n: 30, colors: ['#ff2e4d', '#2e7bff', '#ffd23d', '#3dff95', '#ff7ad9'], speed: 10, type: 'star', size: 7 });
+        audio.play('combo', { pitch: 1.3 });
+        await wait(T(340));
+        return;
+      }
+      case 'boost': {
+        this.render(ev);
+        if (ev.side !== 0) return;
+        for (const uid of ev.uids) {
+          if (!b.pos.has(uid)) continue;
+          const p = this.posOf(uid);
+          particles.burst(p.x, p.y - 30, { n: 8, colors: ['#c9a6ff', '#ff8de8', '#fff'], speed: 4, type: 'star', size: 5, gravity: -0.05 });
+          this.bump(b.els.get(uid), 'boosted');
+        }
+        audio.tone(1320, 0.12, { type: 'sine', vol: 0.05 });
+        audio.tone(1760, 0.14, { type: 'sine', vol: 0.04, at: 0.06 });
+        await wait(T(110));
+        return;
+      }
+      case 'discard': {
+        const from = b.pos.has(ev.uid) ? this.posOf(ev.uid) : g.leader[ev.side];
+        this.render(ev);
+        const wrap = h('div.discard-card', { style: { left: `${from.x}px`, top: `${from.y}px` } }, staticCard(ev.id, 'detail'));
+        b.root.append(wrap);
+        popText(from.x, from.y - 90, 'ポイッ！', { cls: 'pop-discard', size: 28, ms: 800 });
+        audio.play('whoosh', { pitch: 1.3, vol: 0.7 });
+        await wait(T(420));
+        particles.burst(from.x, from.y - 120, { n: 12, type: 'glyph', glyph: '✨', speed: 5, size: 16, gravity: 0.1 });
+        wrap.remove();
+        return;
+      }
+      case 'handless': {
+        const p = b.pos.has(ev.uid) ? this.posOf(ev.uid) : { x: g.cx, y: g.H / 2 };
+        popText(p.x, p.y - 60, `ハンドレス${ev.need}！`, { cls: 'pop-handless', size: 32, ms: 1000 });
+        particles.ring(p.x, p.y, '#34e0b0', 130, 0.5, 8);
+        audio.play('gachaSR', { vol: 0.6 });
+        await wait(T(320));
+        return;
+      }
+      case 'accel': {
+        const at = ev.side === 0 ? { x: g.cx, y: g.H * 0.55 } : { x: g.cx, y: g.H * 0.4 };
+        popText(at.x, at.y - 80, 'アクセラレート！', { cls: 'pop-accel', size: 40, ms: 1000 });
+        particles.speedLines(0.4, 'rgba(255,170,240,0.9)');
+        particles.burst(at.x, at.y, { n: 20, type: 'glyph', glyph: '⚡', speed: 10, size: 20, gravity: 0 });
+        audio.play('whoosh', { pitch: 1.5 });
+        await wait(T(320));
+        return;
+      }
+      case 'crystal': {
+        const at = { x: g.cx, y: ev.side === 0 ? g.H * 0.55 : g.H * 0.4 };
+        popText(at.x, at.y - 80, '結晶化！', { cls: 'pop-crystal', size: 40, ms: 1000 });
+        particles.burst(at.x, at.y, { n: 22, type: 'glyph', glyph: '💠', speed: 8, size: 20, gravity: 0.1 });
+        audio.tone(1568, 0.3, { type: 'triangle', vol: 0.06 });
+        audio.tone(2093, 0.4, { type: 'triangle', vol: 0.05, at: 0.08 });
+        await wait(T(300));
+        return;
+      }
+      case 'hatch': {
+        this.render(ev);
+        const p = this.posOf(ev.uid);
+        popText(p.x, p.y - 70, '結晶から目覚めた！', { cls: 'pop-crystal', size: 30, ms: 1100 });
+        particles.burst(p.x, p.y, { n: 30, type: 'glyph', glyph: '💎', speed: 11, size: 20, gravity: 0.25 });
+        particles.ring(p.x, p.y, '#7af0ff', 150, 0.55, 12);
+        this.bump(b.els.get(ev.uid), 'evo-flash');
+        audio.play('gachaSR');
+        await wait(T(420));
         return;
       }
       case 'exp': {

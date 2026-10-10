@@ -63,6 +63,7 @@ export const onboardScreen: ScreenFn = (root) => {
       if (!picked) return;
       finish(picked);
     }, 'btn-hot btn-big disabled');
+    const detail = h('div.cp-detail', h('div.cp-detail-hint', '気になるクラスをタップしてね'));
     const cards = PLAYABLE_CLASSES.map((c) => {
       const m = CLASSES[c];
       const el = h(
@@ -75,6 +76,11 @@ export const onboardScreen: ScreenFn = (root) => {
             picked = c;
             root.querySelectorAll('.class-pick').forEach((x) => x.classList.toggle('on', x === el));
             go2.classList.remove('disabled');
+            detail.style.setProperty('--c1', m.color);
+            detail.replaceChildren(
+              h('div.cp-detail-head', h('span.cp-detail-art', m.leaderArt), h('div', h('div.cp-detail-name', `${m.emoji} ${m.name}`), h('div.cp-detail-pitch', m.pitch))),
+              h('div.cp-detail-mech', h('b', m.mechanic), '　', m.mechanicDesc),
+            );
             particles.burst(stage.w / 2, stage.h / 2, { n: 24, colors: [m.color, m.color2, '#fff'], speed: 9, type: 'star' });
           },
         },
@@ -82,8 +88,6 @@ export const onboardScreen: ScreenFn = (root) => {
         h('div.cp-emoji', m.emoji),
         h('div.cp-name', m.name),
         h('div.cp-tag', m.tag),
-        h('div.cp-pitch', m.pitch),
-        h('div.cp-mech', m.mechanic),
       );
       return el;
     });
@@ -94,6 +98,7 @@ export const onboardScreen: ScreenFn = (root) => {
         h('div.onb-title', '最初のクラスを選ぼう'),
         h('div.onb-sub', '全クラスのスターターデッキがもらえる。あとで自由に乗り換えOK！'),
         h('div.class-picks', cards),
+        detail,
         go2,
       ),
     );

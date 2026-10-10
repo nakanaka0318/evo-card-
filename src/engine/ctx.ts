@@ -1,7 +1,7 @@
 import * as E from './core';
 import { def } from './defs';
 import { RULES } from './rules';
-import { isLeaderTgt, leaderTgt, type Card, type GachaTier, type GameState, type Keyword, type Side, type Tgt } from './types';
+import { isLeaderTgt, leaderTgt, type Card, type GachaTier, type GameState, type Keyword, type PlayMode, type Side, type Tgt } from './types';
 
 export interface TriggerExtra {
   target?: Tgt | null;
@@ -9,6 +9,7 @@ export interface TriggerExtra {
   combo?: number;
   other?: Card;
   amount?: number;
+  mode?: PlayMode;
 }
 
 /** the four ガジェッター パーツ tokens */
@@ -30,6 +31,8 @@ export class Ctx {
   readonly combo: number;
   readonly other?: Card;
   readonly amount: number;
+  /** how the card (or, for onPlay, the other card) was played */
+  readonly mode: PlayMode;
 
   constructor(
     readonly s: GameState,
@@ -43,6 +46,7 @@ export class Ctx {
     this.combo = extra.combo ?? 0;
     this.other = extra.other;
     this.amount = extra.amount ?? 0;
+    this.mode = extra.mode ?? 'normal';
   }
 
   get P() {
@@ -75,6 +79,10 @@ export class Ctx {
   pick<T>(arr: T[]): T | undefined {
     if (!arr.length) return undefined;
     return arr[E.rndInt(this.s, arr.length)];
+  }
+  /** engine RNG in [0, 1) (deterministic per game seed) */
+  rand(): number {
+    return E.rnd(this.s);
   }
   chance(p: number): boolean {
     return E.rnd(this.s) < p;
@@ -336,6 +344,104 @@ export class Ctx {
   burnTop(n = 1): void {
     const gone = this.P.deck.splice(0, n);
     if (gone.length) this.msg(`山札の上から${gone.length}枚を消滅`);
+  }
+
+  // ------------------------------------------------ クラッシャー
+  /** 【いけにえ】 destroy another own card (ガラクタ → ラストワード持ち → 低コスト順); returns it */
+  sacrifice(): Card | undefined {
+    const pool = this.P.board.filter((c) => c !== this.self && E.alive(c) && !c.doomed);
+    if (!pool.length) return undefined;
+    const score = (c: Card) => {
+      const d = def(c.id);
+      return (d.tags?.includes('junk') ? -100 : 0) + (d.lastWords ? -20 : 0) + d.cost * 2 + (E.isFollower(c) ? E.hpOf(c) + c.atk : 0) * 0.5;
+    };
+    const v = [...pool].sort((a, b) => score(a) - score(b))[0];
+    E.emit(this.s, { t: 'sacrifice', side: this.me, uid: this.self.uid, victim: v.uid });
+    E.destroy(this.s, v);
+    return v;
+  }
+  /** 【破壊X】 own cards destroyed this battle ≥ X */
+  broken(x: number): boolean {
+    if (this.P.broken < x) return false;
+    E.emit(this.s, { t: 'smash', side: this.me, uid: this.self.uid, need: x });
+    return true;
+  }
+
+  // ------------------------------------------------ レンジャー
+  /** 【連携X】 own followers that entered the board this battle ≥ X */
+  rallyAt(x: number): boolean {
+    if (this.P.rally < x) return false;
+    E.emit(this.s, { t: 'rallyHit', side: this.me, uid: this.self.uid, need: x });
+    return true;
+  }
+  /** evolve a follower without spending evolve points; default: a random un-evolved ally */
+  evolve(c?: Card): boolean {
+    const t = c ?? this.pick(this.allies(false).filter((a) => a.evolved === 0 && !def(a.id).noEvolve));
+    return t ? E.evolveFree(this.s, t) : false;
+  }
+  addEp(n: number): void {
+    this.P.ep += n;
+    this.msg(`進化ポイント+${n}`);
+  }
+
+  // ------------------------------------------------ スペラー
+  /** this card's 【スペルブースト】 count */
+  get boost(): number {
+    return this.self.data.sb ?? 0;
+  }
+  /** extra 【スペルブースト】 on the hand */
+  spellboost(n = 1): void {
+    E.boostHand(this.s, this.me, n);
+  }
+  isSpell(c: Card | undefined): boolean {
+    return !!c && (def(c.id).type === 'spell' || this.mode === 'accel');
+  }
+
+  // ------------------------------------------------ ステラー
+  /** discard n cards (【捨てられた時】持ち優先、なければランダム) */
+  discard(n = 1): Card[] {
+    const out: Card[] = [];
+    for (let i = 0; i < n; i++) {
+      const hand = this.P.hand.filter((c) => c !== this.self);
+      if (!hand.length) break;
+      const pref = hand.filter((c) => def(c.id).onDiscard);
+      const c = (pref.length ? pref : hand)[E.rndInt(this.s, (pref.length ? pref : hand).length)];
+      E.discard(this.s, c);
+      out.push(c);
+    }
+    return out;
+  }
+  discardAll(): Card[] {
+    return this.discard(this.P.hand.length);
+  }
+  /** 【ハンドレスX】 hand size ≤ X */
+  handless(x: number): boolean {
+    if (this.P.hand.length > x) return false;
+    E.emit(this.s, { t: 'handless', side: this.me, uid: this.self.uid, need: x });
+    return true;
+  }
+
+  // ------------------------------------------------ ジュエラー
+  crystals(): Card[] {
+    return this.P.board.filter((c) => c.id === 't_crystal' && E.alive(c));
+  }
+  /** advance every own 「結晶」 countdown by n (0 → hatches) */
+  advanceCrystals(n: number): void {
+    for (const c of this.crystals()) this.advanceCountdown(c, n);
+  }
+  /** move an amulet's countdown n steps closer to 0 (0 → destroyed) */
+  advanceCountdown(c: Card, n: number): void {
+    if (c.countdown <= 0 || c.doomed) return;
+    c.countdown = Math.max(0, c.countdown - n);
+    E.emit(this.s, { t: 'countdown', uid: c.uid, value: c.countdown });
+    if (c.countdown === 0) c.doomed = true;
+  }
+  hatch(): Card | undefined {
+    return E.hatch(this.s, this.self);
+  }
+  /** the other card (onPlay) was played via 【アクセラレート】/【結晶】/【エンハンス】 */
+  get altPlay(): boolean {
+    return this.mode !== 'normal';
   }
 
   /** ゲーマー: grant EXP */

@@ -28,6 +28,11 @@ function abilityKind(a: string): string {
   if (a.startsWith('合体') || a.startsWith('コンプリート')) return 'gadget';
   if (a.startsWith('財宝')) return 'treasure';
   if (a === 'ハモり') return 'harmony';
+  if (a.startsWith('破壊') || a === 'いけにえ') return 'crash';
+  if (a.startsWith('連携')) return 'ranger';
+  if (a === 'スペルブースト') return 'witch';
+  if (a.startsWith('ハンドレス') || a === '捨てられた時') return 'minimal';
+  if (a.startsWith('結晶') || a.startsWith('アクセラレート') || a.startsWith('エンハンス')) return 'jewel';
   if (a.startsWith('カウントダウン')) return 'cd';
   if (a === 'ガチャ' || a === '確変') return 'gacha';
   if (a === 'レベル') return 'level';
@@ -48,6 +53,18 @@ export function abilityDesc(label: string): string | null {
   if (m) return `手札のパーツを最大${m[1]}枚取り込む（手札から消える）。取り込んだ枚数で効果が変わる。`;
   m = label.match(/^コンプリート(\d+)$/);
   if (m) return `このバトルで出した／取り込んだパーツが${m[1]}種類以上なら発動。`;
+  m = label.match(/^破壊(\d+)$/);
+  if (m) return `このバトルで自分のカードが${m[1]}回以上壊れていれば発動。`;
+  m = label.match(/^連携(\d+)$/);
+  if (m) return `このバトルで場に出た自分のフォロワーが${m[1]}体以上なら発動。`;
+  m = label.match(/^ハンドレス(\d+)$/);
+  if (m) return `自分の手札が${m[1]}枚以下なら発動。`;
+  m = label.match(/^アクセラレート(\d+)$/);
+  if (m) return `PPがコストに足りないとき、${m[1]}PPでスペルとして使える（このフォロワーは場に出ない）。`;
+  m = label.match(/^結晶(\d+)$/);
+  if (m) return `PPがコストに足りないとき、${m[1]}PPで「結晶」として出せる。カウントダウンが0になると、このフォロワーが出てきてすぐに攻撃できる（ファンファーレは発動しない）。`;
+  m = label.match(/^エンハンス(\d+)$/);
+  if (m) return `PPが${m[1]}以上あれば、${m[1]}PP払って強化版でプレイ。`;
   m = label.match(/^財宝(\d+)$/);
   if (m) return `このバトルで財宝を${m[1]}枚以上使っていれば発動。`;
   m = label.match(/^カウントダウン(\d+)$/);
@@ -75,6 +92,11 @@ export function glossary(d: CardDef): { name: string; desc: string }[] {
   if (d.text.includes('パーツ')) add('パーツ', ABILITIES['パーツ']);
   if (d.text.includes('財宝')) add('財宝', ABILITIES['財宝']);
   if (d.text.includes('コーラス')) add('コーラス', ABILITIES['コーラス']);
+  if (d.text.includes('ガラクタ')) add('ガラクタ', ABILITIES['ガラクタ']);
+  if (d.text.includes('「結晶」')) add('結晶', ABILITIES['結晶']);
+  if (d.text.includes('変身')) add('変身', '進化のこと。進化ポイントを使わずに進化させる効果もある。');
+  if (d.text.includes('進化ポイント')) add('進化ポイント', ABILITIES['進化ポイント']);
+  if (d.text.includes('捨てる')) add('捨てる', '自分の手札を捨てる。【捨てられた時】を持つカードが優先され、なければランダム。');
   if (d.text.includes('DOPA')) add('DOPAゲージ', 'カードを出したり敵を倒したりすると溜まる。満タンでFEVER発動！');
   return out;
 }
@@ -190,6 +212,29 @@ export function updateCard(el: HTMLElement, v: CardView, zone: 'hand' | 'board')
   el.classList.toggle('cost-down', v.cost < d.cost);
   el.classList.toggle('cost-up', v.cost > d.cost);
   el.classList.toggle('enhanced', v.enhanced);
+  const mode = v.mode ?? 'normal';
+  if ((el.dataset.mode ?? 'normal') !== mode) {
+    el.dataset.mode = mode;
+    el.querySelector('.card-mode')?.remove();
+    const label = mode === 'accel' ? 'アクセラレート' : mode === 'crystal' ? '結晶' : mode === 'enhance' && d.cls === 'jewel' ? 'エンハンス' : '';
+    if (label) el.querySelector('.card-face')?.append(h(`div.card-mode.mode-${mode}`, label));
+  }
+  const boost = v.boost ?? -1;
+  if (String(boost) !== (el.dataset.boost ?? '-1')) {
+    el.dataset.boost = String(boost);
+    el.querySelector('.card-boost')?.remove();
+    if (boost >= 0) el.querySelector('.card-face')?.append(h(`div.card-boost${boost > 0 ? '.on' : ''}`, { title: 'スペルブースト' }, `✨${boost}`));
+  }
+  if (v.hold && el.dataset.hold !== v.hold) {
+    el.dataset.hold = v.hold;
+    const hd = def(v.hold);
+    el.classList.add('crystal-hold');
+    const glyph = el.querySelector('.art-glyph');
+    if (glyph) glyph.textContent = hd.art;
+    setText(el.querySelector('.card-name span'), `${hd.name}の結晶`);
+    const text = el.querySelector('.card-text');
+    if (text) text.innerHTML = formatText(`【ラストワード】「${hd.name}」が出てくる`);
+  }
   if (d.type === 'follower') {
     const atk = el.querySelector('.card-atk');
     const hp = el.querySelector('.card-hp');

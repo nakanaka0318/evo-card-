@@ -12,7 +12,7 @@ export interface ClassMeta {
   leaderArt: string;
   mechanic: string;
   mechanicDesc: string;
-  counter: 'luck' | 'likes' | 'sweet' | 'combo' | 'level' | 'parts' | 'treasure' | 'harmony' | 'none';
+  counter: 'luck' | 'likes' | 'sweet' | 'combo' | 'level' | 'parts' | 'treasure' | 'harmony' | 'broken' | 'rally' | 'spells' | 'handless' | 'jewel' | 'none';
   /** short pitch shown on class select */
   pitch: string;
   /** leader lines used in battle */
@@ -219,9 +219,124 @@ export const CLASSES: Record<ClassId, ClassMeta> = {
       fever: '全員でハモって！',
     },
   },
+  crash: {
+    id: 'crash',
+    name: 'クラッシャー',
+    tag: '破壊衝動',
+    emoji: '💥',
+    color: '#ff4d2e',
+    color2: '#6a6a8a',
+    leaderName: 'クラッシャー ゴウ',
+    leaderArt: '🦏',
+    mechanic: '破壊・いけにえ',
+    mechanicDesc:
+      '自分のカードが壊れるほど強くなる。【いけにえ】で自分の場のカードをわざと壊して効果を発動！ 壊れたカードの【ラストワード】も発動して一石二鳥。このバトルで壊れた自分のカードの数が【破壊X】の条件。',
+    counter: 'broken',
+    pitch: 'ぶっ壊して、スッキリ。壊れたものも全部チカラ。',
+    lines: {
+      start: 'ストレス、ぜんぶ壊してやる！',
+      evolve: 'まだまだ壊し足りねぇ！',
+      win: 'あースッキリした！',
+      lose: '……オレが、壊された……？',
+      hurt: 'いってぇ！ 倍返しだ！',
+      fever: 'ぜーんぶ、ぶっ壊せ！',
+    },
+  },
+  ranger: {
+    id: 'ranger',
+    name: 'レンジャー',
+    tag: '集結変身',
+    emoji: '🦸',
+    color: '#ff2e4d',
+    color2: '#ffd23d',
+    leaderName: 'レンジャー レッド',
+    leaderArt: '🦸',
+    mechanic: '連携・変身',
+    mechanicDesc:
+      '仲間をどんどん場に出そう。このバトルで場に出た自分のフォロワーの数が【連携X】の条件。カードの力で進化ポイントを使わずに「変身（進化）」でき、仲間が進化するたびに発動するカードも！',
+    counter: 'rally',
+    pitch: 'みんな集まれ！ 変身して、必殺技でキメろ。',
+    lines: {
+      start: 'ドパレンジャー、出動！',
+      evolve: '変身ッ！',
+      win: '正義は、勝つ！',
+      lose: 'ここで……終われない……！',
+      hurt: 'まだだ、まだ戦える！',
+      fever: '必殺・ドパミンバースト！',
+    },
+  },
+  witch: {
+    id: 'witch',
+    name: 'スペラー',
+    tag: '魔力充填',
+    emoji: '🪄',
+    color: '#9b5cff',
+    color2: '#ff8de8',
+    leaderName: 'スペラー ルル',
+    leaderArt: '🧙‍♀️',
+    mechanic: 'スペルブースト',
+    mechanicDesc:
+      '【スペルブースト】を持つカードは、手札にあるあいだ自分がスペルを使うたびにブースト+1（カードに✨数字で表示）。コストが下がったり、威力が上がったり。スペルを連打して魔法を育てよう！',
+    counter: 'spells',
+    pitch: 'スペルを撃つほど、魔法が育つ。',
+    lines: {
+      start: 'マジカル☆スタート！',
+      evolve: '魔力、全開！',
+      win: '今日の魔法も、大成功♪',
+      lose: '呪文、かんじゃった……',
+      hurt: 'きゃっ！ 魔法障壁が！',
+      fever: 'マジカル☆フルバースト！',
+    },
+  },
+  minimal: {
+    id: 'minimal',
+    name: 'ステラー',
+    tag: '断捨離',
+    emoji: '🧹',
+    color: '#34e0b0',
+    color2: '#7a8cff',
+    leaderName: 'ステラー スッキリ',
+    leaderArt: '🦦',
+    mechanic: 'ハンドレス・捨てる',
+    mechanicDesc:
+      '手札が少ないほど強い。【ハンドレスX】は手札がX枚以下なら発動。カードの効果で手札を「捨てる」と、【捨てられた時】を持つカードが発動！ 捨てるカードは【捨てられた時】持ちが優先。',
+    counter: 'handless',
+    pitch: '捨てるほど、身軽で強い。',
+    lines: {
+      start: 'いらないものは、ぜんぶ捨てよっか。',
+      evolve: '身軽になったら、本気出す！',
+      win: '部屋も試合も、スッキリ！',
+      lose: '……捨てすぎた、かも。',
+      hurt: 'ちょっと、散らかさないで！',
+      fever: '大掃除フィーバー！',
+    },
+  },
+  jewel: {
+    id: 'jewel',
+    name: 'ジュエラー',
+    tag: '変幻自在',
+    emoji: '💎',
+    color: '#ff7ad9',
+    color2: '#7af0ff',
+    leaderName: 'ジュエラー キララ',
+    leaderArt: '🦢',
+    mechanic: '結晶・アクセラレート・エンハンス',
+    mechanicDesc:
+      'PPが足りないときは【アクセラレート】（安いスペルとして使う）や【結晶】（カウントダウン後にフォロワーが出てくるアミュレット）、PPが多いときは【エンハンス】（強化版）。同じカードが、PPによって姿を変える！',
+    counter: 'jewel',
+    pitch: 'PPが少なくても多くても、ずっと輝ける。',
+    lines: {
+      start: 'キラキラ、はじめよっ！',
+      evolve: 'もっと、輝いて！',
+      win: 'いちばん輝いたのは、わたし！',
+      lose: '……くすんじゃった。',
+      hurt: '傷がついちゃう！',
+      fever: 'ブリリアント・フィーバー！',
+    },
+  },
 };
 
-export const PLAYABLE_CLASSES: ClassId[] = ['gacha', 'stream', 'sweets', 'swipe', 'gamer', 'gadget', 'treasure', 'harmony'];
+export const PLAYABLE_CLASSES: ClassId[] = ['gacha', 'stream', 'sweets', 'swipe', 'gamer', 'gadget', 'treasure', 'harmony', 'crash', 'ranger', 'witch', 'minimal', 'jewel'];
 
 export interface KeywordMeta {
   name: string;
@@ -262,6 +377,13 @@ export const ABILITIES: Record<string, string> = {
   バズ4: 'いいねが4以上あれば、4消費して発動。',
   バズ5: 'いいねが5以上あれば、5消費して発動。',
   パーツ: 'ガジェッターのトークン（ボルト・バネ・バッテリー・チップの4種類）。出しても合体に使ってもいい。',
+  いけにえ: '自分の場の他のカード1つを破壊する（「ガラクタ」→【ラストワード】持ち→コストの低いカードの順に選ばれる）。',
+  ガラクタ: 'クラッシャーのトークン（0コストのアミュレット）。壊れると相手に1ダメージ。【いけにえ】で真っ先に選ばれる。',
+  スペルブースト: '手札にあるあいだ、自分がスペルを使うたびにブースト+1（カードに✨で表示）。',
+  捨てられた時: '効果で手札から捨てられたときに発動。',
+  結晶から出たとき: '「結晶」のカウントダウンが0になって、このフォロワーが出てきたときに発動。',
+  結晶: '【結晶】で出したアミュレット。カウントダウンが0になると中のフォロワーが出てくる（ファンファーレは発動しないが、出たターンからすぐに攻撃できる）。',
+  進化ポイント: '進化に使うポイント。カードの効果で増やせる。',
   財宝: 'トレジャラーのトークン（金貨・宝石・黄金の杯・王冠の4種類のスペル）。使った枚数が【財宝X】の条件になる。',
   ハモり: '自分の山札が偶数枚なら発動。',
   コーラス: 'ハモラーのトークン（0コストのスペル。カードを1枚引く）。山札に加えると偶数・奇数が入れかわる。',

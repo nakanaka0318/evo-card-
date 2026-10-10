@@ -1,4 +1,4 @@
-import { follower, spell } from './util';
+import { amulet, follower, spell } from './util';
 
 export const TOKENS = [
   follower({
@@ -263,6 +263,91 @@ export const TOKENS = [
     spell: (c) => {
       c.draw(1);
       c.heal(1);
+    },
+  }),
+  // ---------------- クラッシャー
+  amulet({
+    id: 't_junk',
+    name: 'ガラクタ',
+    cls: 'crash',
+    cost: 0,
+    rarity: 'bronze',
+    countdown: 2,
+    art: '🗑️',
+    art2: '🔩',
+    text: '【カウントダウン2】\n【ラストワード】ランダムな相手のフォロワーかリーダーに1ダメージ',
+    flavor: '壊すために、ある。',
+    token: true,
+    tags: ['junk'],
+    lastWords: (c) => c.ping(1, 1),
+  }),
+  // ---------------- レンジャー
+  follower({
+    id: 't_cadet',
+    name: '研修隊員',
+    cls: 'ranger',
+    cost: 1,
+    rarity: 'bronze',
+    atk: 1,
+    hp: 1,
+    art: '🧑‍🚒',
+    text: '',
+    flavor: '変身ポーズの練習中。',
+    token: true,
+  }),
+  // ---------------- スペラー
+  spell({
+    id: 't_mspark',
+    name: 'マジカルスパーク',
+    cls: 'witch',
+    cost: 0,
+    rarity: 'bronze',
+    art: '✨',
+    text: 'ランダムな相手のフォロワーに1ダメージ',
+    flavor: 'ちいさな魔法も、魔法は魔法。',
+    token: true,
+    spell: (c) => c.pingFollowers(1, 1),
+  }),
+  follower({
+    id: 't_familiar',
+    name: '使い魔',
+    cls: 'witch',
+    cost: 2,
+    rarity: 'bronze',
+    atk: 2,
+    hp: 2,
+    art: '🦇',
+    text: '',
+    flavor: 'ご主人の言うことは、半分聞く。',
+    token: true,
+  }),
+  // ---------------- ステラー
+  spell({
+    id: 't_cash',
+    name: '売上金',
+    cls: 'minimal',
+    cost: 0,
+    rarity: 'bronze',
+    art: '💴',
+    text: 'ランダムな相手のフォロワーかリーダーに1ダメージ',
+    flavor: '300円で売れた。送料は400円。',
+    token: true,
+    spell: (c) => c.ping(1, 1),
+  }),
+  // ---------------- ジュエラー
+  amulet({
+    id: 't_crystal',
+    name: '結晶',
+    cls: 'jewel',
+    cost: 0,
+    rarity: 'bronze',
+    countdown: 2,
+    art: '💠',
+    text: '【ラストワード】中のフォロワーが出てくる',
+    flavor: 'まだ、眠っている。',
+    token: true,
+    lastWords: (c) => {
+      c.hatch();
     },
   }),
 ];

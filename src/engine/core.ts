@@ -16,6 +16,7 @@ import {
   type Keyword,
   type Player,
   type PlayerStats,
+  type PlayMode,
   type Side,
   type TargetSpec,
   type Tgt,
@@ -125,7 +126,7 @@ export function superTurn(s: GameState, side: Side): number {
 
 export function cardView(s: GameState, c: Card, zone: 'hand' | 'board'): CardView {
   const d = def(c.id);
-  const pc = zone === 'hand' ? playCost(s, c) : { cost: d.cost, enhanced: false };
+  const pc = zone === 'hand' ? playCost(s, c) : { cost: d.cost, enhanced: false, mode: 'normal' as PlayMode };
   return {
     uid: c.uid,
     id: c.id,
@@ -143,6 +144,9 @@ export function cardView(s: GameState, c: Card, zone: 'hand' | 'board'): CardVie
     attacks: c.attacks,
     enhanced: pc.enhanced,
     trial: !!c.data.trial,
+    boost: zone === 'hand' && d.spellboost ? c.data.sb ?? 0 : -1,
+    mode: pc.mode,
+    hold: c.hold,
   };
 }
 
@@ -166,6 +170,13 @@ export function view(s: GameState): View {
       parts: p.parts.length,
       treasures: p.treasures,
       harmonies: p.harmonies,
+      broken: p.broken,
+      rally: p.rally,
+      discarded: p.discarded,
+      spells: p.stats.spells,
+      accels: p.accels,
+      crystals: p.crystals,
+      enhances: p.enhances,
       luck: p.luck,
       kakuhen: p.kakuhen,
       combo: p.combo,
@@ -262,6 +273,12 @@ export function createGame(setup: GameSetup): GameState {
       parts: [],
       treasures: 0,
       harmonies: 0,
+      broken: 0,
+      rally: 0,
+      discarded: 0,
+      accels: 0,
+      crystals: 0,
+      enhances: 0,
       dopa: 0,
       fever: false,
       stats: emptyStats(),
@@ -463,9 +480,15 @@ function placeOnBoard(s: GameState, c: Card, fromHand: boolean): void {
   c.enteredOn = s.turn;
   c.attacks = 0;
   p.board.push(c);
-  if (isFollower(c)) p.stats.summoned++;
+  if (isFollower(c)) {
+    p.stats.summoned++;
+    p.rally++;
+  }
   emit(s, { t: 'summon', side: c.owner, uid: c.uid, fromHand });
-  if (isFollower(c)) boardTrigger(s, c.owner, 'onSummon', { other: c }, c);
+  if (isFollower(c)) {
+    emit(s, { t: 'rally', side: c.owner, total: p.rally });
+    boardTrigger(s, c.owner, 'onSummon', { other: c }, c);
+  }
 }
 
 export function summon(s: GameState, side: Side, id: string, n = 1): Card[] {
@@ -553,7 +576,8 @@ export function bounce(s: GameState, c: Card): void {
   const i = p.board.indexOf(c);
   if (i < 0 || !alive(c)) return;
   p.board.splice(i, 1);
-  resetCard(c, c.id);
+  resetCard(c, c.hold ?? c.id);
+  c.hold = undefined;
   c.enteredOn = -1;
   c.attacks = 0;
   if (p.hand.length >= RULES.handMax) {
@@ -586,7 +610,9 @@ export function resolve(s: GameState): void {
       if (i < 0) continue;
       p.board.splice(i, 1);
       p.grave.push(c);
+      p.broken++;
       emit(s, { t: 'destroy', uid: c.uid, side: c.owner });
+      emit(s, { t: 'broken', side: c.owner, total: p.broken });
       if (isFollower(c)) {
         const killer = other(c.owner);
         s.players[killer].stats.kills++;
@@ -596,6 +622,7 @@ export function resolve(s: GameState): void {
     for (const c of dead) {
       trigger(s, c, 'lastWords');
       if (isFollower(c)) boardTrigger(s, c.owner, 'onAllyDestroyed', { other: c });
+      boardTrigger(s, c.owner, 'onBreak', { other: c });
     }
   }
 }
@@ -713,15 +740,27 @@ export function costOf(s: GameState, c: Card): number {
   return Math.max(0, v);
 }
 
-export function playCost(s: GameState, c: Card): { cost: number; enhanced: boolean } {
+export function playCost(s: GameState, c: Card): { cost: number; enhanced: boolean; mode: PlayMode } {
   const base = costOf(s, c);
   const d = def(c.id);
   const p = s.players[c.owner];
+  const fv = p.fever ? 1 : 0;
   if (d.enhance !== undefined) {
-    const ec = Math.max(0, d.enhance - (p.fever ? 1 : 0));
-    if (p.pp >= ec && ec > base) return { cost: ec, enhanced: true };
+    const ec = Math.max(0, d.enhance - fv);
+    if (p.pp >= ec && ec > base) return { cost: ec, enhanced: true, mode: 'enhance' };
   }
-  return { cost: base, enhanced: false };
+  if (p.pp < base) {
+    // 【アクセラレート】/【結晶】 only kick in when the normal cost can't be paid
+    if (d.accel !== undefined) {
+      const ac = Math.max(0, d.accel - fv);
+      if (p.pp >= ac) return { cost: ac, enhanced: false, mode: 'accel' };
+    }
+    if (d.crystal !== undefined) {
+      const cc = Math.max(0, d.crystal - fv);
+      if (p.pp >= cc) return { cost: cc, enhanced: false, mode: 'crystal' };
+    }
+  }
+  return { cost: base, enhanced: false, mode: 'normal' };
 }
 
 export function validTargets(s: GameState, side: Side, spec: TargetSpec, exclude?: number): Tgt[] {
@@ -757,8 +796,9 @@ export function validTargets(s: GameState, side: Side, spec: TargetSpec, exclude
 export function needsPlayTarget(s: GameState, c: Card): TargetSpec | null {
   const d = def(c.id);
   if (!d.target) return null;
-  const { enhanced } = playCost(s, c);
-  const info = { enhanced, combo: s.players[c.owner].combo };
+  const { enhanced, mode } = playCost(s, c);
+  if (mode === 'accel' || mode === 'crystal') return null;
+  const info = { enhanced, mode, combo: s.players[c.owner].combo };
   if (d.target.cond && !d.target.cond(s, c, info)) return null;
   return d.target;
 }
@@ -774,9 +814,11 @@ export function canPlay(s: GameState, c: Card): boolean {
   if (s.phase !== 'main' || c.owner !== s.active) return false;
   const p = s.players[c.owner];
   if (!p.hand.includes(c)) return false;
-  if (playCost(s, c).cost > p.pp) return false;
+  const pc = playCost(s, c);
+  if (pc.cost > p.pp) return false;
   const d = def(c.id);
-  if (d.type !== 'spell' && p.board.length >= RULES.boardMax) return false;
+  const asSpell = d.type === 'spell' || pc.mode === 'accel';
+  if (!asSpell && p.board.length >= RULES.boardMax) return false;
   if (d.type === 'spell') {
     const ts = playTargets(s, c);
     if (ts && ts.length === 0) return false;
@@ -816,7 +858,7 @@ export function canEvolve(s: GameState, c: Card, sup: boolean): boolean {
 export function evoTargets(s: GameState, c: Card): Tgt[] | null {
   const d = def(c.id);
   if (!d.evoTarget) return null;
-  const info = { enhanced: false, combo: s.players[c.owner].combo };
+  const info = { enhanced: false, mode: 'normal' as PlayMode, combo: s.players[c.owner].combo };
   if (d.evoTarget.cond && !d.evoTarget.cond(s, c, info)) return null;
   return validTargets(s, c.owner, d.evoTarget, c.uid);
 }
@@ -828,7 +870,7 @@ export function playCard(s: GameState, uid: number, target?: Tgt): boolean {
   const c = p.hand.find((x) => x.uid === uid);
   if (!c || !canPlay(s, c)) return false;
   const d = def(c.id);
-  const { cost, enhanced } = playCost(s, c);
+  const { cost, enhanced, mode } = playCost(s, c);
   const ts = playTargets(s, c);
   let tgt: Tgt | null = null;
   if (ts && ts.length) {
@@ -841,14 +883,36 @@ export function playCard(s: GameState, uid: number, target?: Tgt): boolean {
   p.combo++;
   p.stats.cardsPlayed++;
   p.stats.maxCombo = Math.max(p.stats.maxCombo, p.combo);
-  emit(s, { t: 'play', side: p.side, uid: c.uid, id: c.id, target: tgt, enhanced, combo: p.combo });
+  emit(s, { t: 'play', side: p.side, uid: c.uid, id: c.id, target: tgt, enhanced, combo: p.combo, mode });
   if (p.combo >= 2) emit(s, { t: 'combo', side: p.side, count: p.combo });
-  if (enhanced) emit(s, { t: 'enhance', side: p.side, uid: c.uid });
+  if (enhanced) {
+    p.enhances++;
+    emit(s, { t: 'enhance', side: p.side, uid: c.uid });
+  }
   gainLikes(s, p.side, 1);
   addDopa(s, p.side, DOPA.play);
-  const extra: TriggerExtra = { target: tgt, enhanced, combo: comboBefore };
-  if (d.type === 'spell') {
+  const extra: TriggerExtra = { target: tgt, enhanced, combo: comboBefore, mode };
+  let castSpell = false;
+  if (mode === 'accel') {
+    // played as a spell: the follower itself goes to the graveyard
+    p.accels++;
     p.stats.spells++;
+    castSpell = true;
+    emit(s, { t: 'accel', side: p.side, uid: c.uid, id: c.id });
+    emit(s, { t: 'spell', side: p.side, uid: c.uid, id: c.id, target: null });
+    trigger(s, c, 'accelerate', extra);
+    p.grave.push(c);
+  } else if (mode === 'crystal') {
+    // a 「結晶」 amulet that hatches into this follower when its countdown ends
+    p.crystals++;
+    const cr = makeCard(s, 't_crystal', p.side);
+    cr.hold = c.id;
+    cr.countdown = d.crystalCd ?? 2;
+    emit(s, { t: 'crystal', side: p.side, uid: c.uid, id: c.id });
+    placeOnBoard(s, cr, true);
+  } else if (d.type === 'spell') {
+    p.stats.spells++;
+    castSpell = true;
     emit(s, { t: 'spell', side: p.side, uid: c.uid, id: c.id, target: tgt });
     trigger(s, c, 'spell', extra);
     p.grave.push(c);
@@ -856,15 +920,53 @@ export function playCard(s: GameState, uid: number, target?: Tgt): boolean {
     placeOnBoard(s, c, true);
     trigger(s, c, 'fanfare', extra);
   }
+  if (castSpell) boostHand(s, p.side, 1);
   resolve(s);
   if (d.tags?.includes('part')) addPart(s, p.side, c.id);
   if (d.tags?.includes('treasure')) {
     p.treasures++;
     emit(s, { t: 'treasure', side: p.side, id: c.id, total: p.treasures });
   }
-  boardTrigger(s, p.side, 'onPlay', { other: c }, c);
+  boardTrigger(s, p.side, 'onPlay', { other: c, mode }, c);
   resolve(s);
   return true;
+}
+
+/** スペラー: +n 【スペルブースト】 on every spellboost card in the hand */
+export function boostHand(s: GameState, side: Side, n: number): void {
+  const p = s.players[side];
+  const uids: number[] = [];
+  for (const h of p.hand) {
+    if (!def(h.id).spellboost) continue;
+    h.data.sb = (h.data.sb ?? 0) + n;
+    uids.push(h.uid);
+  }
+  if (uids.length) emit(s, { t: 'boost', side, uids });
+}
+
+/** ステラー: discard a card from the hand (triggers its 【捨てられた時】) */
+export function discard(s: GameState, c: Card): void {
+  const p = s.players[c.owner];
+  const i = p.hand.indexOf(c);
+  if (i < 0) return;
+  p.hand.splice(i, 1);
+  p.grave.push(c);
+  p.discarded++;
+  emit(s, { t: 'discard', side: c.owner, uid: c.uid, id: c.id });
+  trigger(s, c, 'onDiscard');
+  boardTrigger(s, c.owner, 'onAnyDiscard', { other: c });
+}
+
+/** ジュエラー: a 「結晶」 hatches — summon the follower inside (no fanfare) */
+export function hatch(s: GameState, cr: Card): Card | undefined {
+  if (!cr.hold) return undefined;
+  const [c] = summon(s, cr.owner, cr.hold, 1);
+  if (!c) return undefined;
+  // it slept long enough: a hatched follower can attack right away
+  c.enteredOn = s.turn - 1;
+  emit(s, { t: 'hatch', side: c.owner, uid: c.uid, id: c.id });
+  trigger(s, c, 'onHatch');
+  return c;
 }
 
 /** ガジェッター: remember a パーツ type as started (played or 合体'd) */
@@ -917,7 +1019,6 @@ export function evolve(s: GameState, uid: number, sup: boolean, target?: Tgt): b
   const p = s.players[s.active];
   const c = p.board.find((x) => x.uid === uid);
   if (!c || !canEvolve(s, c, sup)) return false;
-  const d = def(c.id);
   const ts = evoTargets(s, c);
   let tgt: Tgt | null = null;
   if (ts && ts.length) {
@@ -927,6 +1028,23 @@ export function evolve(s: GameState, uid: number, sup: boolean, target?: Tgt): b
   p.evolvedThisTurn = true;
   if (sup) p.sep--;
   else p.ep--;
+  applyEvolve(s, c, sup, tgt);
+  resolve(s);
+  return true;
+}
+
+/** レンジャー: evolve a follower by a card effect (no evolve point, no once-per-turn limit) */
+export function evolveFree(s: GameState, c: Card, sup = false): boolean {
+  if (!onBoard(s, c) || !isFollower(c) || !alive(c) || c.evolved !== 0 || def(c.id).noEvolve) return false;
+  const ts = evoTargets(s, c);
+  const tgt = ts && ts.length ? ts[rndInt(s, ts.length)] : null;
+  applyEvolve(s, c, sup, tgt);
+  return true;
+}
+
+function applyEvolve(s: GameState, c: Card, sup: boolean, tgt: Tgt | null): void {
+  const p = s.players[c.owner];
+  const d = def(c.id);
   const [ea, eh] = d.evo ?? [(d.atk ?? 0) + 2, (d.hp ?? 0) + 2];
   let da = ea - (d.atk ?? 0);
   let dh = eh - (d.hp ?? 0);
@@ -944,6 +1062,5 @@ export function evolve(s: GameState, uid: number, sup: boolean, target?: Tgt): b
   addDopa(s, p.side, sup ? DOPA.super : DOPA.evolve);
   trigger(s, c, 'evolve', { target: tgt });
   if (sup) trigger(s, c, 'superEvolve', { target: tgt });
-  resolve(s);
-  return true;
+  boardTrigger(s, p.side, 'onAllyEvolve', { other: c }, c);
 }
