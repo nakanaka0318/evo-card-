@@ -174,6 +174,12 @@ export function view(s: GameState): View {
       rally: p.rally,
       discarded: p.discarded,
       reserveDraw: p.reserveDraw,
+      chapter: p.chapter,
+      flips: p.flips,
+      crests: p.crests.map((c) => c.id),
+      selfDmg: p.selfDmg,
+      fulfilled: p.fulfilled,
+      puppets: p.puppets,
       spells: p.stats.spells,
       accels: p.accels,
       crystals: p.crystals,
@@ -278,6 +284,12 @@ export function createGame(setup: GameSetup): GameState {
       rally: 0,
       discarded: 0,
       reserveDraw: 0,
+      chapter: 0,
+      flips: 0,
+      crests: [],
+      selfDmg: 0,
+      fulfilled: 0,
+      puppets: 0,
       accels: 0,
       crystals: 0,
       enhances: 0,
@@ -388,8 +400,14 @@ export function trigger(s: GameState, card: Card, hook: HookName, extra: Trigger
 }
 
 function boardTrigger(s: GameState, side: Side, hook: HookName, extra: TriggerExtra = {}, except?: Card): void {
-  for (const c of [...s.players[side].board]) {
+  const p = s.players[side];
+  for (const c of [...p.board]) {
     if (c === except || !alive(c) || !onBoard(s, c)) continue;
+    if (def(c.id)[hook]) trigger(s, c, hook, extra);
+  }
+  // デコラー: 【クレスト】 sit on the leader and react like board cards
+  for (const c of [...p.crests]) {
+    if (c === except) continue;
     if (def(c.id)[hook]) trigger(s, c, hook, extra);
   }
 }
@@ -416,6 +434,7 @@ export function damage(s: GameState, src: Card | null, tgt: Tgt, n: number, comb
       addDopa(s, side, DOPA.hurt);
     }
     checkLeaders(s);
+    if (!over(s)) boardTrigger(s, side, 'onLeaderHurt', { amount: n });
     return n;
   }
   const c = boardCard(s, tgt);
@@ -485,6 +504,10 @@ function placeOnBoard(s: GameState, c: Card, fromHand: boolean): void {
   if (isFollower(c)) {
     p.stats.summoned++;
     p.rally++;
+    if (def(c.id).tags?.includes('puppet')) {
+      p.puppets++;
+      emit(s, { t: 'puppet', side: c.owner, total: p.puppets });
+    }
   }
   emit(s, { t: 'summon', side: c.owner, uid: c.uid, fromHand });
   if (isFollower(c)) {
@@ -695,9 +718,42 @@ function tickCountdown(s: GameState, side: Side): void {
     if (def(c.id).type !== 'amulet' || c.countdown <= 0) continue;
     c.countdown--;
     emit(s, { t: 'countdown', uid: c.uid, value: c.countdown });
-    if (c.countdown === 0) c.doomed = true;
+    if (c.countdown === 0) expire(s, c);
   }
   resolve(s);
+}
+
+/** an amulet's countdown reached 0: it will be destroyed — オマモラー calls that 【成就】 */
+export function expire(s: GameState, c: Card): void {
+  if (c.doomed) return;
+  c.doomed = true;
+  const p = s.players[c.owner];
+  p.fulfilled++;
+  emit(s, { t: 'fulfill', side: c.owner, uid: c.uid, id: c.id, total: p.fulfilled });
+  boardTrigger(s, c.owner, 'onFulfill', { other: c }, c);
+}
+
+/** ノベラー: turn the page (or open a given chapter; no flip if it's already open) */
+export function flipChapter(s: GameState, side: Side, to?: 0 | 1): boolean {
+  const p = s.players[side];
+  const next = to ?? ((p.chapter ^ 1) as 0 | 1);
+  if (next === p.chapter) return false;
+  p.chapter = next;
+  p.flips++;
+  emit(s, { t: 'flip', side, chapter: next, total: p.flips });
+  boardTrigger(s, side, 'onFlip');
+  return true;
+}
+
+/** デコラー: put a 【クレスト】 on the leader (max 8) */
+export function addCrest(s: GameState, side: Side, id: string): Card | undefined {
+  const p = s.players[side];
+  if (p.crests.length >= 8) return undefined;
+  const c = makeCard(s, id, side);
+  p.crests.push(c);
+  emit(s, { t: 'crest', side, id, total: p.crests.length });
+  boardTrigger(s, side, 'onCrest', { other: c });
+  return c;
 }
 
 export function startTurn(s: GameState, side: Side): void {
@@ -735,6 +791,8 @@ export function endTurn(s: GameState): void {
   resolve(s);
   if (over(s)) return;
   for (const p of s.players) for (const c of p.board) c.tmpAtk = 0;
+  // 人形 only last until the end of the opponent's turn
+  for (const c of [...s.players[other(side)].board]) if (def(c.id).fleeting && alive(c)) banish(s, c);
   s.players[side].fever = false;
   emit(s, { t: 'turnEnd', side });
   startTurn(s, other(side));

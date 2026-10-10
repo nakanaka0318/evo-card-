@@ -235,6 +235,40 @@
   background-size: 26px 45px;
 }
 
+.cls-novel .art-pattern {
+  /* ruled manuscript lines + a page fold */
+  background-image:
+    linear-gradient(135deg, transparent 82%, rgba(255, 255, 255, 0.35) 82% 84%, rgba(0, 0, 0, 0.12) 84%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 12px);
+}
+
+.cls-deco .art-pattern {
+  background-image:
+    radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.55) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 65%, rgba(255, 240, 120, 0.5) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.14) 0 6px, transparent 7px);
+  background-size: 24px 24px, 32px 32px, 40px 40px;
+}
+
+.cls-spicy .art-pattern {
+  background-image:
+    radial-gradient(ellipse at 50% 120%, rgba(255, 220, 0, 0.35), transparent 60%),
+    repeating-linear-gradient(-70deg, rgba(255, 255, 255, 0.12) 0 4px, transparent 4px 14px);
+}
+
+.cls-shrine .art-pattern {
+  /* seigaiha waves */
+  background-image:
+    radial-gradient(circle at 50% 100%, transparent 8px, rgba(255, 255, 255, 0.2) 8px 10px, transparent 10px 14px, rgba(255, 255, 255, 0.14) 14px 16px, transparent 16px);
+  background-size: 32px 16px;
+}
+
+.cls-puppet .art-pattern {
+  background-image:
+    linear-gradient(90deg, transparent 18%, rgba(255, 255, 255, 0.2) 18% 19%, transparent 19% 49%, rgba(255, 255, 255, 0.2) 49% 50%, transparent 50% 80%, rgba(255, 255, 255, 0.2) 80% 81%, transparent 81%),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.1) 0 6px, transparent 6px 12px);
+}
+
 .cls-gamer .art-pattern {
   background-image:
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 8px),
@@ -488,6 +522,26 @@
 }
 .card-text .ab-jewel {
   background: linear-gradient(90deg, #e04fb8, #1aa8c4);
+}
+.card-text .ab-white {
+  background: linear-gradient(90deg, #f4ecd6, #c9b48a);
+  color: #4a2a7a;
+}
+.card-text .ab-black {
+  background: linear-gradient(90deg, #2a1a40, #4a2a7a);
+  color: #f4ecd6;
+}
+.card-text .ab-deco {
+  background: linear-gradient(90deg, #ff6fc4, #ffb43d);
+}
+.card-text .ab-spicy {
+  background: linear-gradient(90deg, #e8250f, #ff8a00);
+}
+.card-text .ab-shrine {
+  background: linear-gradient(90deg, #d93030, #a8762a);
+}
+.card-text .ab-puppet {
+  background: linear-gradient(90deg, #8a5ae0, #e04a72);
 }
 .card-text .ab-gadget {
   background: linear-gradient(90deg, #ff8a1f, #14a89c);

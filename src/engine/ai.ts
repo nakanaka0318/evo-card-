@@ -55,6 +55,8 @@ function unitVal(s: GameState, c: Card): number {
       return full * (c.countdown <= 1 ? 0.75 : c.countdown === 2 ? 0.6 : 0.45);
     }
     const base = d.aiValue ?? 2;
+    // an amulet whose payoff is its ラストワード is no less valuable as it nears 0 (祈願 shouldn't look like a loss)
+    if (d.lastWords && c.countdown > 0) return base + (c.countdown <= 1 ? 0.5 : 0);
     return c.countdown > 0 ? base * Math.min(1, 0.4 + c.countdown * 0.25) : base;
   }
   const atk = E.atkOf(s, c) - (s.players[c.owner].fever && s.active === c.owner ? 1 : 0);
@@ -73,6 +75,14 @@ function unitVal(s: GameState, c: Card): number {
   if (d.level && c.level < d.level.max) v += 0.6 + c.exp * 0.4;
   if (d.lastWords) v += 1;
   if (d.turnEnd || d.turnStart || d.onPlay || d.onHeal || d.onSummon) v += 1.2;
+  // 人形 vanish after the opponent's turn: worth what they can do right now
+  if (d.fleeting) v *= 0.55;
+  return v;
+}
+
+function crestVal(p: Player): number {
+  let v = 0;
+  for (const c of p.crests) v += c.id === 't_dhalo' || c.id === 't_dgold' ? 3.5 : 2;
   return v;
 }
 
@@ -106,6 +116,8 @@ export function evaluate(s: GameState, me: Side, aggro = 1): number {
     if (d.accel !== undefined || d.crystal !== undefined) v += Math.min(d.cost, 9) * 0.35;
   }
   v += P.ep * 1.6 + P.sep * 2.4;
+  // デコラー: crests are permanent engines that can't be removed
+  v += crestVal(P) - crestVal(O);
   v += Math.min(P.reserveDraw, RULES.handMax - P.hand.length) * W.hand * 0.9;
   v += P.dopa * 0.2 + (P.dopa >= RULES.dopaMax && !P.fever ? 1.5 : 0);
   v += Math.min(P.likes, 15) * 0.25 + P.luck * 0.35 + P.kakuhen * 1.2 + Math.min(P.sweet, 25) * 0.06;

@@ -30,6 +30,10 @@ const TRIGGER_LABEL: Record<string, string | null> = {
   onAnyDiscard: '発動！',
   accelerate: null,
   onHatch: null,
+  onFlip: '発動！',
+  onCrest: '発動！',
+  onLeaderHurt: '発動！',
+  onFulfill: '発動！',
 };
 
 const TIER_COLOR: Record<GachaTier, string> = {
@@ -102,6 +106,16 @@ export class Animator {
   private tgtPos(t: number): { x: number; y: number } {
     if (t < 0) return this.b.g.leader[tgtSide(t)];
     return this.posOf(t);
+  }
+
+  /** where a card is on screen, or its owner's leader if it isn't on the board */
+  private posOr(uid: number, side: Side): { x: number; y: number } {
+    return this.b.pos.has(uid) || this.lastPos.has(uid) ? this.posOf(uid) : this.b.g.leader[side];
+  }
+
+  private crestOf(side: Side, uid: number): { i: number; id: string } | null {
+    const i = this.b.s.players[side].crests.findIndex((c) => c.uid === uid);
+    return i < 0 ? null : { i, id: this.b.s.players[side].crests[i].id };
   }
 
   private clsOf(side: Side) {
@@ -356,6 +370,17 @@ export class Animator {
       case 'trigger': {
         const label = TRIGGER_LABEL[ev.kind];
         if (label === null || label === undefined) return;
+        const crest = this.crestOf(ev.side, ev.uid);
+        if (crest) {
+          // デコラー: a crest on the leader reacts
+          const L = g.leader[ev.side];
+          const stk = b.leaderRoot(ev.side).querySelectorAll<HTMLElement>('.crest-stk')[crest.i];
+          this.bump(stk, 'crest-go');
+          particles.burst(L.x, L.y, { n: 8, type: 'glyph', glyph: def(crest.id).art, speed: 6, size: 18, gravity: -0.05 });
+          popText(L.x + 80, L.y - 50, def(crest.id).name, { cls: 'pop-crest', size: 18, dy: -26, ms: 700 });
+          await wait(T(150));
+          return;
+        }
         const p = this.posOf(ev.uid);
         const el = b.els.get(ev.uid);
         this.bump(el, 'triggered');
@@ -790,6 +815,129 @@ export class Animator {
         this.bump(b.els.get(ev.uid), 'evo-flash');
         audio.play('gachaSR');
         await wait(T(420));
+        return;
+      }
+      // ------------------------------------------------ ノベラー
+      case 'flip': {
+        this.render(ev);
+        const L = g.leader[ev.side];
+        const black = ev.chapter === 1;
+        const el = h(`div.fx-pageflip.${black ? 'to-black' : 'to-white'}`, { style: { left: `${L.x}px`, top: `${L.y + (ev.side === 0 ? -150 : 150)}px` } }, h('div.pf-page.pf-a'), h('div.pf-page.pf-b'), h('div.pf-page.pf-c'));
+        b.root.append(el);
+        setTimeout(() => el.remove(), T(900));
+        audio.play('flip', { pitch: black ? 0.8 : 1.2 });
+        audio.play('whoosh', { pitch: 1.6, vol: 0.4 });
+        popText(L.x, L.y - 100, black ? '📕 黒の章' : '📖 白の章', { cls: black ? 'pop-ch-black' : 'pop-ch-white', size: 30, ms: 1000 });
+        particles.burst(L.x, L.y, { n: 14, type: 'glyph', glyph: black ? '🖋️' : '🪶', speed: 7, size: 18, gravity: black ? 0.2 : -0.1 });
+        await wait(T(360));
+        return;
+      }
+      case 'chapterHit': {
+        const p = this.posOr(ev.uid, ev.side);
+        const black = ev.chapter === 1;
+        popText(p.x, p.y - 64, black ? '【黒の章】' : '【白の章】', { cls: black ? 'pop-ch-black' : 'pop-ch-white', size: 24, dy: -34, ms: 800 });
+        particles.ring(p.x, p.y, black ? '#8a3cff' : '#fff6d8', 110, 0.4, 8);
+        if (black) particles.burst(p.x, p.y, { n: 12, colors: ['#1a0b2e', '#4a2a7a', '#8a3cff'], speed: 7, size: 7 });
+        else particles.burst(p.x, p.y, { n: 12, colors: ['#fff', '#fff3c4', '#ffe7a0'], speed: 6, type: 'star', size: 6, gravity: -0.05 });
+        await wait(T(200));
+        return;
+      }
+      // ------------------------------------------------ デコラー
+      case 'crest': {
+        this.render(ev);
+        const L = g.leader[ev.side];
+        const d = def(ev.id);
+        popText(L.x, L.y - 100, `${d.art} ${d.name}`, { cls: 'pop-crest', size: 26, ms: 1000 });
+        particles.burst(L.x, L.y, { n: 18, colors: ['#ff9ad5', '#ffe14d', '#fff', '#9ae6ff'], speed: 8, type: 'star', size: 6 });
+        particles.ring(L.x, L.y, '#ff9ad5', 120, 0.45, 10);
+        audio.play('stamp', { vol: 0.7 });
+        audio.tone(1760, 0.12, { type: 'sine', vol: 0.05, at: 0.05 });
+        await wait(T(330));
+        return;
+      }
+      case 'crestHit': {
+        const p = this.posOr(ev.uid, ev.side);
+        popText(p.x, p.y - 60, `クレスト${ev.need}！`, { cls: 'pop-crest', size: 34, ms: 1000 });
+        particles.burst(p.x, p.y, { n: 22, type: 'glyph', glyph: '💝', speed: 9, size: 20, gravity: 0.1 });
+        audio.play('gachaSR', { vol: 0.6 });
+        await wait(T(320));
+        return;
+      }
+      // ------------------------------------------------ ゲキカラー
+      case 'spicy': {
+        this.render(ev);
+        const L = g.leader[ev.side];
+        popText(L.x, L.y - 95, `激辛${ev.n}！`, { cls: 'pop-spicy', size: 34, ms: 900 });
+        particles.burst(L.x, L.y, { n: 6 + ev.n * 4, type: 'glyph', glyph: '🌶️', speed: 9, size: 20, gravity: 0.25 });
+        particles.burst(L.x, L.y + 30, { n: 26, colors: ['#ff3b1f', '#ffb000', '#ffe14d'], speed: 9, size: 7, gravity: -0.15 });
+        this.bump(b.leaderRoot(ev.side), 'spicy-hit');
+        if (ev.side === 0) vignette('rgba(255,90,0,0.55)', 420);
+        audio.play('bigHit', { vol: 0.5, pitch: 1.4 });
+        await wait(T(240));
+        return;
+      }
+      case 'pinch': {
+        const p = this.posOr(ev.uid, ev.side);
+        popText(p.x, p.y - 62, `ピンチ${ev.need}！`, { cls: 'pop-pinch', size: 34, ms: 1000 });
+        particles.burst(p.x, p.y, { n: 28, colors: ['#ff2a00', '#ff8a00', '#ffe14d', '#fff'], speed: 11, size: 7, gravity: -0.2 });
+        audio.play('heartbeat', { vol: 0.8 });
+        await wait(T(320));
+        return;
+      }
+      // ------------------------------------------------ オマモラー
+      case 'pray': {
+        const p = this.posOr(ev.uid, ev.side);
+        popText(p.x, p.y - 62, '祈願', { cls: 'pop-pray', size: 30, ms: 900 });
+        particles.ring(p.x, p.y, '#ffd86b', 120, 0.5, 8);
+        // a glint flies to every own amulet
+        for (const c of b.s.players[ev.side].board) {
+          if (def(c.id).type !== 'amulet' || c.uid === ev.uid || !b.pos.has(c.uid)) continue;
+          const q = this.posOf(c.uid);
+          particles.orbs(p.x, p.y, q.x, q.y, 5, '#ffd86b');
+        }
+        audio.tone(1047, 0.5, { type: 'triangle', vol: 0.06 });
+        audio.tone(1568, 0.6, { type: 'triangle', vol: 0.04, at: 0.07 });
+        await wait(T(260));
+        return;
+      }
+      case 'fulfill': {
+        const p = this.posOr(ev.uid, ev.side);
+        this.bump(b.els.get(ev.uid), 'fulfill-glow');
+        popText(p.x, p.y - 64, '成就！', { cls: 'pop-fulfill', size: 36, ms: 1100 });
+        particles.burst(p.x, p.y, { n: 18, type: 'glyph', glyph: '🌸', speed: 7, size: 18, gravity: 0.06 });
+        particles.ring(p.x, p.y, '#ffd86b', 150, 0.6, 12);
+        particles.ring(p.x, p.y, '#ff5a5a', 100, 0.45, 8);
+        audio.play('gem', { vol: 0.7 });
+        audio.tone(784, 0.4, { type: 'sine', vol: 0.06, at: 0.05 });
+        audio.tone(1175, 0.5, { type: 'sine', vol: 0.05, at: 0.12 });
+        this.render(ev);
+        await wait(T(380));
+        return;
+      }
+      case 'fulfillHit': {
+        const p = this.posOr(ev.uid, ev.side);
+        popText(p.x, p.y - 60, `成就${ev.need}！`, { cls: 'pop-fulfill', size: 34, ms: 1000 });
+        particles.burst(p.x, p.y, { n: 22, type: 'glyph', glyph: '⛩️', speed: 9, size: 20, gravity: 0.15 });
+        audio.play('gachaSR', { vol: 0.6 });
+        await wait(T(320));
+        return;
+      }
+      // ------------------------------------------------ パペッター
+      case 'puppet': {
+        this.render(ev);
+        if (this.clsOf(ev.side).counter !== 'puppet') return;
+        const L = g.leader[ev.side];
+        popText(L.x + 90, L.y - 20, `操演${ev.total}`, { cls: 'pop-puppet', size: 22, dy: -36, ms: 600 });
+        await wait(T(40));
+        return;
+      }
+      case 'puppetHit': {
+        const p = this.posOr(ev.uid, ev.side);
+        popText(p.x, p.y - 60, `操演${ev.need}！`, { cls: 'pop-puppet', size: 34, ms: 1000 });
+        particles.burst(p.x, p.y, { n: 20, type: 'glyph', glyph: '🪆', speed: 9, size: 20, gravity: 0.2 });
+        particles.burst(p.x, p.y, { n: 16, colors: ['#b48cff', '#ff5a7a', '#fff'], speed: 9, type: 'star', size: 6 });
+        audio.play('combo', { pitch: 0.9 });
+        await wait(T(320));
         return;
       }
       case 'exp': {

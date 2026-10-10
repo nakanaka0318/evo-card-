@@ -818,3 +818,64 @@
 .flash-reduce .ci-rays {
   animation-duration: 18s;
 }
+
+/* ---- ノベラー / デコラー / ゲキカラー / オマモラー / パペッター pops */
+.pop-ch-white {
+  color: #fffaf0;
+  text-shadow:
+    0 0 0 #4a2a7a,
+    2px 2px 0 #4a2a7a,
+    -2px -2px 0 #4a2a7a,
+    2px -2px 0 #4a2a7a,
+    -2px 2px 0 #4a2a7a,
+    0 0 24px #fff3c4;
+}
+.pop-ch-black {
+  color: #d9c2ff;
+  text-shadow:
+    var(--outline),
+    0 0 22px #8a3cff,
+    0 0 40px #2a0b4e;
+}
+.pop-crest {
+  color: #ffe3f4;
+  text-shadow:
+    var(--outline),
+    0 0 20px #ff4fb8,
+    0 0 36px #ffe14d;
+}
+.pop-spicy {
+  color: #ffef9a;
+  font-style: italic;
+  text-shadow:
+    var(--outline),
+    0 0 18px #ff3b1f,
+    0 0 36px #ff8a00;
+}
+.pop-pinch {
+  color: #fff;
+  text-shadow:
+    var(--outline),
+    0 0 18px #ff2a00,
+    0 0 40px #ff2a00;
+}
+.pop-pray {
+  color: #fff3c4;
+  text-shadow:
+    var(--outline),
+    0 0 20px #ffd86b;
+}
+.pop-fulfill {
+  color: #fff;
+  text-shadow:
+    var(--outline),
+    0 0 18px #ff5a5a,
+    0 0 36px #ffd86b;
+}
+.pop-puppet {
+  color: #f0e4ff;
+  text-shadow:
+    var(--outline),
+    0 0 18px #b48cff,
+    0 0 34px #ff5a7a;
+}

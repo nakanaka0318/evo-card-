@@ -12,7 +12,7 @@ export interface ClassMeta {
   leaderArt: string;
   mechanic: string;
   mechanicDesc: string;
-  counter: 'luck' | 'likes' | 'sweet' | 'combo' | 'level' | 'parts' | 'treasure' | 'harmony' | 'broken' | 'rally' | 'spells' | 'handless' | 'jewel' | 'none';
+  counter: 'luck' | 'likes' | 'sweet' | 'combo' | 'level' | 'parts' | 'treasure' | 'harmony' | 'broken' | 'rally' | 'spells' | 'handless' | 'jewel' | 'chapter' | 'crest' | 'spicy' | 'fulfill' | 'puppet' | 'none';
   /** short pitch shown on class select */
   pitch: string;
   /** leader lines used in battle */
@@ -334,9 +334,124 @@ export const CLASSES: Record<ClassId, ClassMeta> = {
       fever: 'ブリリアント・フィーバー！',
     },
   },
+  novel: {
+    id: 'novel',
+    name: 'ノベラー',
+    tag: '白黒二面',
+    emoji: '📖',
+    color: '#e8dcc0',
+    color2: '#4a2a7a',
+    leaderName: 'ノベラー シオリ',
+    leaderArt: '🐈',
+    mechanic: '白の章・黒の章',
+    mechanicDesc:
+      'リーダーは「白の章」か「黒の章」のどちらかを開いている（最初は白）。【白の章】の効果は白のとき、【黒の章】の効果は黒のときに発動。「ページをめくる」と章が入れかわる。白は守りと回復、黒は攻撃と破壊！',
+    counter: 'chapter',
+    pitch: '白で守って、黒で刺す。物語は、めくるたびに転がる。',
+    lines: {
+      start: 'さあ、ページを開こうか。',
+      evolve: '物語は、ここからが本番！',
+      win: 'めでたし、めでたし。',
+      lose: 'バッドエンド……書き直し！',
+      hurt: '展開が重い……！',
+      fever: 'クライマックス、突入！',
+    },
+  },
+  deco: {
+    id: 'deco',
+    name: 'デコラー',
+    tag: '盛り盛り',
+    emoji: '💝',
+    color: '#ff9ad5',
+    color2: '#ffe14d',
+    leaderName: 'デコラー ミル',
+    leaderArt: '🐹',
+    mechanic: 'クレスト（デコ）',
+    mechanicDesc:
+      '【クレスト】はリーダーに貼る「デコ」。一度貼ったら試合が終わるまでずっと効果が続き、重ねて貼れる（最大8個）。貼ったデコの数が【クレストX】の条件。盛れば盛るほど強くなる！',
+    counter: 'crest',
+    pitch: 'デコって、盛って、ずっとかわいく強い。',
+    lines: {
+      start: '今日も盛れてる？',
+      evolve: 'デコ盛り、マシマシ！',
+      win: '映えすぎて勝っちゃった♡',
+      lose: '……デコが、はがれた。',
+      hurt: 'ネイル欠けたんだけど！？',
+      fever: 'キラッキラ、フルデコ！',
+    },
+  },
+  spicy: {
+    id: 'spicy',
+    name: 'ゲキカラー',
+    tag: '激辛上等',
+    emoji: '🌶️',
+    color: '#ff3b1f',
+    color2: '#ffb000',
+    leaderName: 'ゲキカラー ホムラ',
+    leaderArt: '🐵',
+    mechanic: '激辛・ピンチ',
+    mechanicDesc:
+      '【激辛X】は自分のリーダーがXダメージを受けるかわりに強い効果。自分のリーダーの体力が少ないほど【ピンチX】（体力X以下で発動）が火を噴く。攻めて攻めて、汗だくで勝て！',
+    counter: 'spicy',
+    pitch: 'からい！ いたい！ でも止まらない！',
+    lines: {
+      start: '激辛チャレンジ、スタート！',
+      evolve: '辛さレベル、MAX！',
+      win: '完食！ ごちそうさま！',
+      lose: '……水、ください……',
+      hurt: 'からっ！ いてっ！',
+      fever: '地獄の激辛、いっきまーす！',
+    },
+  },
+  shrine: {
+    id: 'shrine',
+    name: 'オマモラー',
+    tag: '願掛け',
+    emoji: '⛩️',
+    color: '#ff5a5a',
+    color2: '#f2e6c8',
+    leaderName: 'オマモラー コマ',
+    leaderArt: '🐶',
+    mechanic: '成就・祈願',
+    mechanicDesc:
+      'お守り（カウントダウン付きアミュレット）をたくさん置こう。カウントダウンが0になって願いが叶う（成就）と、お守りの【ラストワード】と「成就するたび」の効果が発動！ 「祈願」でカウントダウンを早められる。成就した数が【成就X】の条件。',
+    counter: 'fulfill',
+    pitch: 'お願い、叶えて。叶ったら、ぜんぶ力になる。',
+    lines: {
+      start: 'お参り、すませてきました！',
+      evolve: 'ご利益、いただきます！',
+      win: '願いは、叶うもの！',
+      lose: '……おみくじ、凶だった。',
+      hurt: 'バチが当たった！？',
+      fever: '大吉フィーバー！',
+    },
+  },
+  puppet: {
+    id: 'puppet',
+    name: 'パペッター',
+    tag: '人形劇',
+    emoji: '🎭',
+    color: '#b48cff',
+    color2: '#ff5a7a',
+    leaderName: 'パペッター ノア',
+    leaderArt: '🤹',
+    mechanic: '人形・操演',
+    mechanicDesc:
+      '「人形」（0コスト 1/1 《突進》）を手札に加えて戦う。人形はタダで出せて、出たターンから攻撃できる！ 人形が出たり壊れたりするたびに動くカードも。このバトルで出した人形の数が【操演X】の条件。',
+    counter: 'puppet',
+    pitch: 'さあ、開演。糸の先で、全部踊らせる。',
+    lines: {
+      start: '開演のベルが鳴ったよ。',
+      evolve: '糸が、もっと強く張る……！',
+      win: 'カーテンコール、ありがとう。',
+      lose: '……糸が、切れちゃった。',
+      hurt: 'お人形が泣いてる！',
+      fever: '全員で、踊って！',
+    },
+  },
 };
 
-export const PLAYABLE_CLASSES: ClassId[] = ['gacha', 'stream', 'sweets', 'swipe', 'gamer', 'gadget', 'treasure', 'harmony', 'crash', 'ranger', 'witch', 'minimal', 'jewel'];
+export const PLAYABLE_CLASSES: ClassId[] = ['gacha', 'stream', 'sweets', 'swipe', 'gamer', 'gadget', 'treasure', 'harmony', 'crash', 'ranger', 'witch', 'minimal', 'jewel', 'novel', 'deco', 'spicy', 'shrine', 'puppet'];
 
 export interface KeywordMeta {
   name: string;
@@ -367,6 +482,7 @@ export const ABILITIES: Record<string, string> = {
   カウントダウン3: '自分のターン開始時に1減り、0になると破壊される。',
   カウントダウン2: '自分のターン開始時に1減り、0になると破壊される。',
   カウントダウン4: '自分のターン開始時に1減り、0になると破壊される。',
+  カウントダウン1: '自分のターン開始時に1減り、0になると破壊される。',
   '自分のターン開始時': '自分のターンのはじめに発動。',
   '自分のターン終了時': '自分のターンのおわりに発動。',
   ガチャ: 'N/R/SR/SSRのどれかを引く。SSR以外なら運気+1。運気6で次はSSR確定。',
@@ -377,6 +493,15 @@ export const ABILITIES: Record<string, string> = {
   バズ4: 'いいねが4以上あれば、4消費して発動。',
   バズ5: 'いいねが5以上あれば、5消費して発動。',
   パーツ: 'ガジェッターのトークン（ボルト・バネ・バッテリー・チップの4種類）。出しても合体に使ってもいい。',
+  ページをめくる: '白の章⇄黒の章を入れかえる。',
+  白の章: 'リーダーが白の章を開いているときに発動。',
+  黒の章: 'リーダーが黒の章を開いているときに発動。',
+  クレスト: 'リーダーに貼る永続効果（デコ）。試合が終わるまでずっと続き、重ねて貼れる（最大8個）。',
+  祈願: '自分のアミュレットすべてのカウントダウンを1進める。',
+  成就: 'アミュレットのカウントダウンが0になること（願いが叶う）。',
+  人形: 'パペッターのトークン（0コスト 1/1 《突進》、相手のターン終了時に消える）。マトリョーシカなど（人形）と書かれたカードも人形として数える。',
+  お守り: 'オマモラーのカウントダウン付きアミュレット。カウントダウンが0になると「成就」して、ラストワードが発動する。',
+  激辛: '自分のリーダーにダメージを与えて、強力な効果を得る。受けたダメージはこのバトル中ずっと数えられる。',
   いけにえ: '自分の場の他のカード1つを破壊する（「ガラクタ」→【ラストワード】持ち→コストの低いカードの順に選ばれる）。',
   ガラクタ: 'クラッシャーのトークン（0コストのアミュレット）。壊れると相手に1ダメージ。【いけにえ】で真っ先に選ばれる。',
   スペルブースト: '手札にあるあいだ、自分がスペルを使うたびにブースト+1（カードに✨で表示）。',

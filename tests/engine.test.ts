@@ -685,3 +685,177 @@ describe('minimal: picked discards / 予約ドロー', () => {
     expect(s.players[0].reserveDraw).toBe(0);
   });
 });
+
+describe('novel: 白の章 / 黒の章', () => {
+  it('starts in 白の章; flipping counts pages and fires onFlip', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    expect(s.players[0].chapter).toBe(0);
+    const ed = put(s, 0, 'b_editor');
+    const hp = s.players[1].hp;
+    const bm = give(s, 0, 'b_bookmark');
+    apply(s, { t: 'play', uid: bm.uid });
+    expect(s.players[0].chapter).toBe(1);
+    expect(s.players[0].flips).toBe(1);
+    // editor pinged the only enemy target: the leader
+    expect(s.players[1].hp).toBe(hp - 1);
+    expect(s.players[0].board.includes(ed)).toBe(true);
+    // opening an already open chapter is not a flip
+    expect(E.flipChapter(s, 0, 1)).toBe(false);
+    expect(s.players[0].flips).toBe(1);
+  });
+
+  it('chapter gates pick the matching branch', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].hp = 10;
+    const bear = put(s, 1, 'n_bear');
+    const bad = give(s, 0, 'b_badend');
+    apply(s, { t: 'play', uid: bad.uid, target: bear.uid });
+    expect(E.hpOf(bear)).toBe(4);
+    E.flipChapter(s, 0, 1);
+    const bad2 = give(s, 0, 'b_badend');
+    apply(s, { t: 'play', uid: bad2.uid, target: bear.uid });
+    expect(s.players[1].board.includes(bear)).toBe(false);
+  });
+});
+
+describe('deco: クレスト', () => {
+  it('crests stick to the leader, trigger like board cards and cap at 8', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].hp = 10;
+    put(s, 0, 'e_mirror');
+    const hand = s.players[0].hand.length;
+    const st = give(s, 0, 'e_sticker');
+    apply(s, { t: 'play', uid: st.uid });
+    expect(s.players[0].crests.map((c) => c.id)).toEqual(['t_dheart']);
+    // mirror drew for the crest
+    expect(s.players[0].hand.length).toBe(hand + 1);
+    apply(s, { t: 'end' });
+    // ハートデコ heals at own turn end
+    expect(s.players[0].hp).toBe(11);
+    for (let i = 0; i < 10; i++) E.addCrest(s, 0, 't_dstar');
+    expect(s.players[0].crests.length).toBe(8);
+    expect(E.view(s).p[0].crests.length).toBe(8);
+  });
+
+  it('デコ盛り城 gets cheaper per crest', () => {
+    const s = game();
+    const castle = give(s, 0, 'e_castle');
+    expect(E.playCost(s, castle).cost).toBe(8);
+    for (let i = 0; i < 3; i++) E.addCrest(s, 0, 't_dheart');
+    expect(E.playCost(s, castle).cost).toBe(5);
+  });
+});
+
+describe('spicy: 激辛 / ピンチ', () => {
+  it('self damage is tracked and triggers onLeaderHurt', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    put(s, 0, 'f_enma');
+    const ehp = s.players[1].hp;
+    const ch = give(s, 0, 'f_chili');
+    apply(s, { t: 'play', uid: ch.uid });
+    expect(s.players[0].selfDmg).toBe(2);
+    expect(s.players[0].hp).toBe(18);
+    // enma mirrors 2, chili pings 2 (only target: the leader)
+    expect(s.players[1].hp).toBe(ehp - 4);
+  });
+
+  it('enma mirrors at most 5 per turn', () => {
+    const s = game();
+    put(s, 0, 'f_enma');
+    const ehp = s.players[1].hp;
+    E.damage(s, null, leaderTgt(0), 4);
+    E.damage(s, null, leaderTgt(0), 4);
+    expect(s.players[1].hp).toBe(ehp - 5);
+  });
+
+  it('pinch discounts and gates', () => {
+    const s = game();
+    const champ = give(s, 0, 'f_champion');
+    expect(E.playCost(s, champ).cost).toBe(6);
+    s.players[0].hp = 10;
+    expect(E.playCost(s, champ).cost).toBe(3);
+  });
+});
+
+describe('shrine: お守り / 成就 / 祈願', () => {
+  it('countdown 0 is a 成就: counted, onFulfill fires, last words resolve', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].hp = 10;
+    put(s, 0, 'o_komainu');
+    const ema = put(s, 0, 'o_kenkou');
+    expect(ema.countdown).toBe(2);
+    const mk = give(s, 0, 'o_omikuji');
+    apply(s, { t: 'play', uid: mk.uid });
+    expect(ema.countdown).toBe(1);
+    const mk2 = give(s, 0, 'o_omikuji');
+    apply(s, { t: 'play', uid: mk2.uid });
+    expect(s.players[0].board.includes(ema)).toBe(false);
+    expect(s.players[0].fulfilled).toBe(1);
+    // komainu +2, 健康守り +4
+    expect(s.players[0].hp).toBe(16);
+  });
+
+  it('natural countdown also fulfills; 九尾 re-summons twice per turn', () => {
+    const s = game();
+    put(s, 0, 'o_kyubi');
+    const a = put(s, 0, 'o_gakugyo');
+    a.countdown = 1;
+    apply(s, { t: 'end' });
+    apply(s, { t: 'end' });
+    expect(s.players[0].fulfilled).toBe(1);
+    expect(s.players[0].board.filter((c) => c.id === 'o_gakugyo').length).toBe(1);
+  });
+});
+
+describe('puppet: 人形 / 操演', () => {
+  it('counts puppets entering the board and reacts to them', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    put(s, 0, 'p_workshop');
+    const par = give(s, 0, 'p_parade');
+    apply(s, { t: 'play', uid: par.uid });
+    const ps = s.players[0].board.filter((c) => c.id === 't_puppet');
+    expect(ps.length).toBe(3);
+    expect(s.players[0].puppets).toBe(3);
+    expect(ps.every((p) => E.has(p, 'bane') && E.has(p, 'rush'))).toBe(true);
+    const giga = give(s, 0, 'p_gigadoll');
+    expect(E.playCost(s, giga).cost).toBe(6);
+  });
+
+  it('人形 vanish at the end of the opponent turn', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    const par = give(s, 0, 'p_parade');
+    apply(s, { t: 'play', uid: par.uid });
+    const mat = put(s, 0, 'p_matryoshka');
+    apply(s, { t: 'end' });
+    expect(s.players[0].board.filter((c) => c.id === 't_puppet').length).toBe(3);
+    apply(s, { t: 'end' });
+    expect(s.players[0].board.some((c) => c.id === 't_puppet')).toBe(false);
+    // only the basic token is fleeting
+    expect(s.players[0].board.includes(mat)).toBe(true);
+    expect(s.players[0].puppets).toBe(3);
+  });
+
+  it('puppets from hand cost 0 and orca gives them storm', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].maxPp = 10;
+    s.players[0].hand = [];
+    const orca = give(s, 0, 'p_orca');
+    apply(s, { t: 'play', uid: orca.uid });
+    const dolls = s.players[0].hand.filter((c) => c.id === 't_puppet');
+    expect(dolls.length).toBe(4);
+    expect(E.playCost(s, dolls[0]).cost).toBe(0);
+    apply(s, { t: 'play', uid: dolls[0].uid });
+    expect(E.has(dolls[0], 'storm')).toBe(true);
+    expect(s.players[0].puppets).toBe(1);
+  });
+});

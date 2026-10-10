@@ -700,6 +700,289 @@ const SCENES: Record<string, Scene> = {
       for (let i = 0; i < 6; i++) particles.burst((c.W * (i + 1)) / 7, c.H * 0.3 + (i % 2) * 120, { n: 14, colors: ['#ff7ad9', '#7af0ff', '#ffe14d', '#fff'], speed: 8, type: 'star', size: 6 });
     });
   },
+
+  // ===================================================== ノベラー
+  // 白の女王シロナ: lines of ink are wiped back to a blank page, feathers fall, the queen rises
+  b_shirona: (c) => {
+    const text = ['むかしむかし、黒いインクの', '物語がありました。だれも', '結末を知らないまま、ページは', '黒く、黒く、塗りつぶされて——', 'そこで女王は言いました。'];
+    const lines = text.map((t, i) => h('div.lg-msline', { style: { top: `${14 + i * 11}%`, '--d': `${0.35 + i * 0.1}s` } }, t));
+    c.add(h('div.lg-parchment'), ...lines, h('div.lg-whiteout'), h('div.lg-shirolight'), h('div.lg-shirona', '👸🏻'), h('div.lg-shiro', '白'));
+    seq([[NOTE(76), 0.05, 0.5], [NOTE(79), 0.25, 0.5], [NOTE(84), 0.45, 0.5], [NOTE(88), 0.9, 1.0], [NOTE(84), 0.9, 1.0], [NOTE(79), 0.9, 1.0]], 'sine', 0.07);
+    for (let i = 0; i < 5; i++) c.at(350 + i * 100, () => audio.play('whoosh', { pitch: 1.6 + i * 0.1, vol: 0.25 }));
+    c.at(900, () => {
+      flash('#fffaf0', 0.7, 320);
+      particles.rain('🪶', 22, 30);
+    });
+    c.at(1150, () => particles.burst(c.W / 2, c.H * 0.45, { n: 50, colors: ['#ffffff', '#fff3c4', '#ffe7a0'], speed: 11, type: 'star', size: 7, gravity: -0.05 }));
+  },
+
+  // 黒の王クロウ: ink drops splash and swallow the screen, crows scatter, the king steps out
+  b_kurou: (c) => {
+    const blots = Array.from({ length: 7 }, (_, i) =>
+      h('span.lg-inkblot', { style: { left: `${10 + ((i * 37) % 80)}%`, top: `${15 + ((i * 53) % 70)}%`, '--d': `${0.1 + i * 0.12}s`, '--s': `${2 + (i % 3)}` } }),
+    );
+    const crows = Array.from({ length: 6 }, (_, i) => h('span.lg-crow', { style: { top: `${10 + i * 12}%`, '--d': `${0.9 + i * 0.07}s` } }, '🐦‍⬛'));
+    c.add(h('div.lg-inkpage'), ...blots, ...crows, h('div.lg-kuroglow'), h('div.lg-kurou', '🤴🏿'), h('div.lg-kuro', '黒'), h('div.lg-taijo', '全員退場'));
+    for (let i = 0; i < 7; i++) c.at(100 + i * 120, () => audio.tone(NOTE(45 + (i % 3) * 3), 0.25, { type: 'sine', vol: 0.09, slide: 40 }));
+    c.at(900, () => {
+      audio.play('whoosh', { pitch: 0.7 });
+      for (let i = 0; i < 4; i++) audio.tone(1800 + i * 200, 0.05, { type: 'square', vol: 0.02, at: i * 0.05 });
+    });
+    c.at(1150, () => {
+      audio.play('bigHit');
+      seq([[NOTE(38), 0, 0.9], [NOTE(45), 0, 0.9], [NOTE(50), 0, 0.9]], 'sawtooth', 0.06, { filter: 900 });
+      shake(16, 360);
+      flash('#2a0b4e', 0.6, 300);
+      particles.burst(c.W / 2, c.H * 0.45, { n: 50, colors: ['#1a0b2e', '#4a2a7a', '#8a3cff'], speed: 13, size: 8 });
+    });
+  },
+
+  // グランドフィナーレ: the giant book — white page and black page — slams shut on "Fin."
+  b_finale: (c) => {
+    c.add(h('div.lg-stagebg'), h('div.lg-bookwrap', h('div.lg-bookL', h('span', '白')), h('div.lg-bookR', h('span', '黒'))), h('div.lg-fin', 'Fin.'));
+    seq([[NOTE(67), 0.05, 0.3], [NOTE(72), 0.3, 0.3], [NOTE(76), 0.55, 0.3], [NOTE(79), 0.8, 0.3]], 'triangle', 0.08);
+    c.at(950, () => {
+      audio.play('bigHit');
+      audio.play('flip', { pitch: 0.6 });
+      shake(14, 280);
+    });
+    c.at(1150, () => {
+      audio.play('gachaSSR');
+      seq([[NOTE(72), 0, 0.9], [NOTE(76), 0, 0.9], [NOTE(79), 0, 0.9], [NOTE(84), 0.05, 1.1]], 'sawtooth', 0.05, { filter: 2600 });
+    });
+    for (let i = 0; i < 7; i++)
+      c.at(1150 + i * 160, () => {
+        const x = c.W * (0.12 + ((i * 0.37) % 0.76));
+        const y = c.H * (0.15 + (i % 3) * 0.12);
+        particles.burst(x, y, { n: 30, colors: i % 2 ? ['#fffaf0', '#ffe7a0', '#fff'] : ['#8a3cff', '#d9c2ff', '#ff7ad9'], speed: 10, type: 'star', size: 6, gravity: 0.12 });
+        audio.tone(200 + i * 30, 0.2, { type: 'triangle', vol: 0.05 });
+      });
+  },
+
+  // ===================================================== デコラー
+  // デコの女神デコリーナ: stickers rain down and stick everywhere, a halo descends on the goddess
+  e_decorina: (c) => {
+    const kinds = ['💗', '⭐', '🎀', '⚪', '💎', '💖', '🌟', '🦄'];
+    const stk = Array.from({ length: 26 }, (_, i) =>
+      h(
+        'span.lg-stk',
+        { style: { left: `${4 + ((i * 41) % 92)}%`, top: `${6 + ((i * 29) % 82)}%`, '--r': `${((i * 47) % 60) - 30}deg`, '--d': `${0.05 + i * 0.035}s` } },
+        kinds[i % kinds.length],
+      ),
+    );
+    c.add(h('div.lg-decobg'), ...stk, h('div.lg-halo2'), h('div.lg-decorina', '🧚‍♀️'), h('div.lg-dname', 'DECORINA'));
+    for (let i = 0; i < 13; i++) c.at(50 + i * 70, () => audio.play('stamp', { pitch: 1.2 + (i % 4) * 0.12, vol: 0.35 }));
+    c.at(1100, () => {
+      seq([[NOTE(84), 0, 0.5], [NOTE(88), 0.06, 0.5], [NOTE(91), 0.12, 0.5], [NOTE(96), 0.18, 0.8]], 'sine', 0.07);
+      flash('#ffe3f4', 0.6, 260);
+      particles.burst(c.W / 2, c.H * 0.45, { n: 60, colors: ['#ff9ad5', '#ffe14d', '#9ae6ff', '#fff'], speed: 13, type: 'star', size: 7 });
+    });
+  },
+
+  // 金ピカ社長: gold leaf sweeps the screen, bullion stacks up, "金ピカ" stamps down
+  e_president: (c) => {
+    const bars = Array.from({ length: 12 }, (_, i) =>
+      h('span.lg-bar', { style: { left: `calc(50% + ${((i % 4) - 1.5) * 96 + (Math.floor(i / 4) % 2) * 48}px)`, bottom: `${Math.floor(i / 4) * 38}px`, '--d': `${0.1 + i * 0.06}s` } }),
+    );
+    c.add(h('div.lg-goldbg'), h('div.lg-goldfoil'), ...bars, h('div.lg-ceo', '🤑'), h('div.lg-kinpika', '金ピカ'));
+    for (let i = 0; i < 12; i++) c.at(100 + i * 60, () => audio.play('coin', { pitch: 0.9 + i * 0.05, vol: 0.5 }));
+    c.at(1100, () => {
+      audio.play('cash');
+      audio.play('gachaSSR');
+      flash('#fff3b0', 0.6, 280);
+      shake(10, 260);
+      particles.rain('🪙', 26, 30);
+      particles.burst(c.W / 2, c.H * 0.4, { n: 50, colors: ['#ffc23d', '#fff3b0', '#fff'], speed: 12, type: 'star', size: 7 });
+    });
+  },
+
+  // デコ盛り城: the castle stacks up tier by tier, then gets bombed with deco
+  e_castle: (c) => {
+    const tiers = Array.from({ length: 4 }, (_, i) => h('div.lg-tier', { style: { '--i': String(i), '--d': `${0.1 + i * 0.18}s` } }));
+    const deco = ['💗', '⭐', '🎀', '💎', '💖', '🌸', '🍭', '✨', '🎀', '💗'].map((g, i) =>
+      h('span.lg-castdeco', { style: { left: `${30 + ((i * 23) % 40)}%`, top: `${26 + ((i * 31) % 50)}%`, '--d': `${0.95 + i * 0.05}s` } }, g),
+    );
+    c.add(h('div.lg-skypink'), ...tiers, h('div.lg-castle', '🏰'), ...deco, h('div.lg-cname', 'DECO CASTLE'));
+    for (let i = 0; i < 4; i++) c.at(100 + i * 180, () => audio.play('bigHit', { pitch: 0.7 + i * 0.1, vol: 0.4 }));
+    for (let i = 0; i < 10; i++) c.at(950 + i * 50, () => audio.play('stamp', { pitch: 1.3, vol: 0.3 }));
+    c.at(1250, () => {
+      audio.play('gachaSSR');
+      shake(12, 300);
+      for (let i = 0; i < 5; i++) particles.burst(c.W * (0.2 + i * 0.15), c.H * 0.25, { n: 18, colors: ['#ff9ad5', '#ffe14d', '#fff'], speed: 9, type: 'star', size: 6 });
+    });
+  },
+
+  // ===================================================== ゲキカラー
+  // 地獄の料理長エンマ: hellfire kitchen, the wok flips a storm of chilies, verdict: 激辛
+  f_enma: (c) => {
+    c.add(h('div.lg-hell'), h('div.lg-hellfire'), h('div.lg-wok', '🍳'), h('div.lg-enma', '👺'), h('div.lg-hanketsu', h('small', '判決'), '激辛'));
+    audio.noise(1.4 / fxConfig.speed, { type: 'lowpass', freq: 600, vol: 0.05 });
+    c.at(500, () => {
+      audio.play('whoosh', { pitch: 0.8 });
+      for (let i = 0; i < 3; i++) particles.burst(c.W / 2, c.H * 0.7, { n: 14, type: 'glyph', glyph: '🌶️', speed: 14, size: 26, gravity: 0.35 });
+    });
+    c.at(1050, () => {
+      audio.play('bigHit');
+      seq([[NOTE(40), 0, 0.8], [NOTE(47), 0, 0.8], [NOTE(52), 0.02, 0.8]], 'sawtooth', 0.07, { filter: 1200 });
+      flash('#ff3b1f', 0.6, 300);
+      shake(16, 340);
+    });
+    c.at(1300, () => {
+      audio.play('stamp');
+      particles.burst(c.W / 2, c.H * 0.5, { n: 50, colors: ['#ff3b1f', '#ffb000', '#ffe14d'], speed: 13, size: 8, gravity: -0.2 });
+    });
+  },
+
+  // 炎の不死鳥: an ember in the ashes flares, wings of fire unfold and it shoots upward
+  f_phoenix: (c) => {
+    c.add(h('div.lg-ashbg'), h('div.lg-ember'), h('div.lg-wingL'), h('div.lg-wingR'), h('div.lg-phoenix', '🐦‍🔥'), h('div.lg-rebirth', 'REBIRTH'));
+    for (let i = 0; i < 3; i++) c.at(150 + i * 200, () => audio.play('heartbeat', { vol: 0.5 + i * 0.15 }));
+    c.at(750, () => {
+      audio.play('whoosh', { pitch: 1.2 });
+      audio.tone(220, 0.6, { type: 'sawtooth', vol: 0.06, slide: 1760, filter: 3000 });
+      flash('#ffb000', 0.6, 260);
+      particles.burst(c.W / 2, c.H * 0.7, { n: 70, colors: ['#ff3b1f', '#ffb000', '#ffe14d', '#fff'], speed: 15, size: 8, gravity: -0.3 });
+    });
+    c.at(1100, () => {
+      audio.play('super');
+      particles.speedLines(0.5, 'rgba(255,170,60,0.9)');
+    });
+  },
+
+  // 激辛ドラゴン ハバネロス: the Scoville meter blows past its limit, then the dragon breathes fire
+  f_habaneros: (c) => {
+    const num = h('b', '0');
+    c.add(h('div.lg-hotbg'), h('div.lg-meter', h('div.lg-meterfill'), h('div.lg-meterbulb')), h('div.lg-shu', num, h('small', ' SHU')), h('div.lg-breath'), h('div.lg-habadragon', '🐉'), h('div.lg-hname', 'HABANEROS'));
+    const steps = [500, 5000, 30000, 100000, 350000, 800000, 1600000, 3000000];
+    steps.forEach((v, i) =>
+      c.at(80 + i * 100, () => {
+        num.textContent = v.toLocaleString('en-US');
+        audio.tone(NOTE(55 + i * 3), 0.09, { type: 'square', vol: 0.04 });
+      }),
+    );
+    c.at(900, () => {
+      audio.play('shatter');
+      num.textContent = 'MAX!!';
+      shake(10, 200);
+      particles.burst(c.W * 0.15, c.H * 0.3, { n: 30, colors: ['#ff3b1f', '#fff'], speed: 12, size: 6 });
+    });
+    c.at(1150, () => {
+      audio.play('bigHit');
+      audio.noise(0.8, { type: 'lowpass', freq: 1500, vol: 0.12 });
+      flash('#ff5a00', 0.7, 320);
+      shake(20, 420);
+      particles.burst(c.W * 0.6, c.H * 0.5, { n: 70, colors: ['#ff3b1f', '#ffb000', '#ffe14d'], speed: 16, size: 9, gravity: -0.1 });
+    });
+  },
+
+  // ===================================================== オマモラー
+  // 太陽の女神アマテラス: the rock door of the cave slides open and sunlight floods out
+  o_amaterasu: (c) => {
+    c.add(h('div.lg-cavebg'), h('div.lg-sunrays'), h('div.lg-sunorb'), h('div.lg-amaterasu', '🌞'), h('div.lg-rockL'), h('div.lg-rockR'), h('div.lg-tensho', '天', h('br'), '照'));
+    audio.tone(55, 1.0 / fxConfig.speed, { type: 'sawtooth', vol: 0.05, filter: 300 });
+    c.at(300, () => {
+      audio.play('heartbeat', { vol: 0.6 });
+      shake(6, 600);
+    });
+    c.at(850, () => {
+      audio.play('whoosh', { pitch: 0.5 });
+      seq([[NOTE(64), 0, 1.2], [NOTE(69), 0.05, 1.2], [NOTE(76), 0.1, 1.2], [NOTE(81), 0.3, 1.2]], 'triangle', 0.07);
+      flash('#fff6c8', 0.8, 400);
+    });
+    c.at(1150, () => {
+      audio.play('gachaSSR');
+      particles.burst(c.W / 2, c.H * 0.42, { n: 70, colors: ['#ffe14d', '#fff6c8', '#ff9a3d', '#fff'], speed: 15, type: 'star', size: 8 });
+    });
+  },
+
+  // 九尾の白狐: under a full moon, nine tails fan open one by one and foxfire circles
+  o_kyubi: (c) => {
+    const tails = Array.from({ length: 9 }, (_, i) => h('span.lg-tail', { style: { '--a': `${-80 + i * 20}deg`, '--d': `${0.2 + i * 0.09}s` } }));
+    const fires = Array.from({ length: 6 }, (_, i) => h('span.lg-foxfire', { style: { '--a': `${i * 60}deg`, '--d': `${0.1 + i * 0.05}s` } }));
+    c.add(h('div.lg-nightbg'), h('div.lg-fullmoon'), ...tails, ...fires, h('div.lg-kyubi', '🦊'), h('div.lg-kyu', '九', h('br'), '尾'));
+    for (let i = 0; i < 9; i++) c.at(200 + i * 90, () => audio.tone(NOTE(69 + [0, 3, 5, 7, 10, 12, 15, 17, 19][i]), 0.25, { type: 'sine', vol: 0.06 }));
+    c.at(1150, () => {
+      audio.play('gachaSSR');
+      audio.tone(NOTE(57), 1.0, { type: 'triangle', vol: 0.06 });
+      flash('#dff4ff', 0.5, 280);
+      particles.burst(c.W / 2, c.H * 0.45, { n: 50, colors: ['#9ad8ff', '#ffffff', '#c9e8ff'], speed: 11, size: 7, gravity: -0.1 });
+    });
+  },
+
+  // 満願の大鳥居: rushing through a tunnel of a thousand torii into the sunrise
+  o_otorii: (c) => {
+    const gate = () => h('div.lg-gate', h('i.kasagi'), h('i.nuki'), h('i.hashira.l'), h('i.hashira.r'));
+    const gates = Array.from({ length: 7 }, (_, i) => {
+      const g = gate();
+      g.style.setProperty('--d', `${i * 0.12}s`);
+      return g;
+    });
+    c.add(h('div.lg-dawnbg'), h('div.lg-sunrise'), ...gates, h('div.lg-bigtorii', '⛩️'), h('div.lg-mangan', '満', h('br'), '願', h('br'), '成', h('br'), '就'));
+    for (let i = 0; i < 7; i++) c.at(i * 120, () => audio.play('whoosh', { pitch: 0.8 + i * 0.08, vol: 0.35 }));
+    c.at(950, () => {
+      audio.tone(NOTE(62), 1.4, { type: 'triangle', vol: 0.08 });
+      audio.tone(NOTE(69), 1.4, { type: 'triangle', vol: 0.06, at: 0.05 });
+      flash('#ffe0b0', 0.6, 300);
+    });
+    c.at(1250, () => {
+      audio.play('stamp');
+      audio.play('gachaSSR');
+      particles.burst(c.W / 2, c.H * 0.4, { n: 40, type: 'glyph', glyph: '🌸', speed: 10, size: 22, gravity: 0.1 });
+    });
+  },
+
+  // ===================================================== パペッター
+  // 人形姫オルカ: strings drop under a spotlight, the dolls start to dance on cue
+  p_orca: (c) => {
+    const n = 7;
+    const strings = Array.from({ length: n }, (_, i) =>
+      h('span.lg-pstring', { style: { left: `${12 + i * 12.6}%`, '--len': `${30 + ((i * 17) % 3) * 8}%`, '--d': `${0.1 + i * 0.06}s` } }, h('b', '🪆')),
+    );
+    c.add(h('div.lg-theater'), h('div.lg-spot'), ...strings, h('div.lg-controlbar'), h('div.lg-orca', '👸'), h('div.lg-oname', 'ORCA'));
+    for (let i = 0; i < n; i++) c.at(100 + i * 60, () => audio.tone(NOTE(76 + ((i * 2) % 7)), 0.08, { type: 'triangle', vol: 0.05 }));
+    c.at(600, () => seq([[NOTE(72), 0, 0.15], [NOTE(76), 0.15, 0.15], [NOTE(79), 0.3, 0.15], [NOTE(76), 0.45, 0.15], [NOTE(84), 0.6, 0.5]], 'square', 0.04, { filter: 2000 }));
+    c.at(1150, () => {
+      audio.play('gachaSSR');
+      flash('#f0e4ff', 0.5, 260);
+      particles.burst(c.W / 2, c.H * 0.45, { n: 50, colors: ['#b48cff', '#ff5a7a', '#fff'], speed: 12, type: 'star', size: 7 });
+    });
+  },
+
+  // 終幕の人形劇: the curtain opens on bowing dolls, then falls under the moon — 終幕
+  p_curtain: (c) => {
+    const dolls = ['🪆', '🤡', '🎎', '🪆', '🧸'].map((g, i) => h('span.lg-bowdoll', { style: { left: `${18 + i * 16}%`, '--d': `${0.55 + i * 0.07}s` } }, g));
+    c.add(h('div.lg-stagefloor'), h('div.lg-moon2'), ...dolls, h('div.lg-curtL'), h('div.lg-curtR'), h('div.lg-shumaku', '終幕'));
+    c.at(100, () => audio.play('whoosh', { pitch: 0.6 }));
+    c.at(500, () => seq([[NOTE(67), 0, 0.3], [NOTE(64), 0.3, 0.3], [NOTE(60), 0.6, 0.6]], 'triangle', 0.06));
+    c.at(1050, () => {
+      audio.play('whoosh', { pitch: 0.5 });
+      audio.play('bigHit', { vol: 0.5, pitch: 0.7 });
+    });
+    c.at(1300, () => {
+      audio.tone(NOTE(48), 1.2, { type: 'sine', vol: 0.08 });
+      particles.rain('🌙', 10, 26);
+    });
+  },
+
+  // 巨大人形ギガドール: hundreds of little dolls march to the center and fuse into a giant
+  p_gigadoll: (c) => {
+    const minis = Array.from({ length: 22 }, (_, i) => {
+      const a = (i / 22) * Math.PI * 2;
+      return h('span.lg-minidoll', { style: { '--x': `${Math.cos(a) * 720}px`, '--y': `${Math.sin(a) * 480}px`, '--d': `${(i % 6) * 0.05}s` } }, '🪆');
+    });
+    c.add(h('div.lg-gigabg'), ...minis, h('div.lg-fusion'), h('div.lg-giga', '🗿'), h('div.lg-gigaeyes'), h('div.lg-gname', 'GIGADOLL'));
+    for (let i = 0; i < 8; i++) c.at(100 + i * 100, () => audio.play('bigHit', { pitch: 1.5 - i * 0.05, vol: 0.2 }));
+    c.at(950, () => {
+      flash('#ffffff', 0.8, 300);
+      audio.play('shatter');
+    });
+    c.at(1100, () => {
+      audio.play('bigHit');
+      seq([[NOTE(33), 0, 1.0], [NOTE(40), 0, 1.0]], 'sawtooth', 0.08, { filter: 700 });
+      shake(24, 500);
+      particles.burst(c.W / 2, c.H * 0.85, { n: 60, colors: ['#8a7a6a', '#b48cff', '#fff'], speed: 12, size: 8, gravity: 0.3 });
+    });
+  },
 };
 
 export function hasLegendIntro(id: string): boolean {

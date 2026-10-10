@@ -3,7 +3,7 @@
 // Card behaviour lives in CardDef hook functions, looked up by id.
 
 export type Side = 0 | 1;
-export type ClassId = 'neutral' | 'gacha' | 'stream' | 'sweets' | 'swipe' | 'gamer' | 'gadget' | 'treasure' | 'harmony' | 'crash' | 'ranger' | 'witch' | 'minimal' | 'jewel';
+export type ClassId = 'neutral' | 'gacha' | 'stream' | 'sweets' | 'swipe' | 'gamer' | 'gadget' | 'treasure' | 'harmony' | 'crash' | 'ranger' | 'witch' | 'minimal' | 'jewel' | 'novel' | 'deco' | 'spicy' | 'shrine' | 'puppet';
 export type CardType = 'follower' | 'spell' | 'amulet';
 export type Rarity = 'bronze' | 'silver' | 'gold' | 'legend';
 export type Keyword = 'ward' | 'storm' | 'rush' | 'bane' | 'drain' | 'ambush' | 'barrier' | 'aura' | 'twin';
@@ -101,6 +101,18 @@ export interface Player {
   discarded: number;
   /** ステラー: cards drawn at the start of the next own turn (予約ドロー) */
   reserveDraw: number;
+  /** ノベラー: open chapter — 0 = 白の章, 1 = 黒の章 */
+  chapter: 0 | 1;
+  /** ノベラー: pages turned this battle */
+  flips: number;
+  /** デコラー: permanent leader effects (【クレスト】), stored as hidden cards */
+  crests: Card[];
+  /** ゲキカラー: damage this player dealt to their own leader (【激辛】) */
+  selfDmg: number;
+  /** オマモラー: own amulets whose countdown reached 0 (【成就】) */
+  fulfilled: number;
+  /** パペッター: 「人形」 that entered the own board */
+  puppets: number;
   /** ジュエラー: cards played via 【アクセラレート】 / 【結晶】 / 【エンハンス・課金】 */
   accels: number;
   crystals: number;
@@ -170,6 +182,8 @@ export interface CardDef {
   evoText?: string;
   flavor?: string;
   token?: boolean;
+  /** banished at the end of the opponent's turn (パペッター's 人形) */
+  fleeting?: boolean;
   countdown?: number;
   target?: TargetSpec;
   evoTarget?: TargetSpec;
@@ -225,6 +239,14 @@ export interface CardDef {
   crystalCd?: number;
   /** ジュエラー: entered the board out of a 「結晶」 */
   onHatch?: Hook;
+  /** ノベラー: the owner turned the page (白⇄黒) */
+  onFlip?: Hook;
+  /** デコラー: the owner put on a 【クレスト】 (incl. this one, if it's a crest) */
+  onCrest?: Hook;
+  /** ゲキカラー: the owner's leader took damage (ctx.amount) */
+  onLeaderHurt?: Hook;
+  /** オマモラー: an own amulet's countdown reached 0 (ctx.other) */
+  onFulfill?: Hook;
 }
 
 // ---------- events (for the UI animator) ----------
@@ -273,6 +295,12 @@ export interface PlayerView {
   rally: number;
   discarded: number;
   reserveDraw: number;
+  chapter: 0 | 1;
+  flips: number;
+  crests: string[];
+  selfDmg: number;
+  fulfilled: number;
+  puppets: number;
   spells: number;
   accels: number;
   crystals: number;
@@ -345,6 +373,17 @@ export type GameEvent = { snap?: View } & (
   | { t: 'handless'; side: Side; uid: number; need: number }
   | { t: 'reserve'; side: Side; n: number; total: number }
   | { t: 'reserveDraw'; side: Side; n: number }
+  | { t: 'flip'; side: Side; chapter: 0 | 1; total: number }
+  | { t: 'chapterHit'; side: Side; uid: number; chapter: 0 | 1 }
+  | { t: 'crest'; side: Side; id: string; total: number }
+  | { t: 'crestHit'; side: Side; uid: number; need: number }
+  | { t: 'spicy'; side: Side; uid: number; n: number; total: number }
+  | { t: 'pinch'; side: Side; uid: number; need: number }
+  | { t: 'pray'; side: Side; uid: number; n: number }
+  | { t: 'fulfill'; side: Side; uid: number; id: string; total: number }
+  | { t: 'fulfillHit'; side: Side; uid: number; need: number }
+  | { t: 'puppet'; side: Side; total: number }
+  | { t: 'puppetHit'; side: Side; uid: number; need: number }
   | { t: 'accel'; side: Side; uid: number; id: string }
   | { t: 'crystal'; side: Side; uid: number; id: string }
   | { t: 'hatch'; side: Side; uid: number; id: string }

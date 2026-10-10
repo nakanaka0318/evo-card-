@@ -12,6 +12,11 @@ const CURVES: Partial<Record<ClassId, number[]>> = {
 };
 const CURVE = [0, 5, 7, 6, 5, 3, 2, 2];
 
+/** classes whose best-rated cards are mostly spells/amulets still need early bodies */
+const MIN_EARLY_FOLLOWERS: Partial<Record<ClassId, number>> = {
+  novel: 6,
+};
+
 export interface DeckOptions {
   /** limit to owned copies; undefined = unlimited */
   owned?: Record<string, number>;
@@ -74,6 +79,28 @@ export function buildDeck(cls: ClassId, opts: DeckOptions = {}): string[] {
   for (const { d } of scored) {
     if (deck.length >= RULES.deckSize) break;
     add(d.id, 3);
+  }
+  // pass 3: swap the weakest cheap non-followers for the best cheap followers
+  const minEarly = MIN_EARLY_FOLLOWERS[cls] ?? 0;
+  const early = (d: CardDef) => d.type === 'follower' && d.cost <= 3;
+  const rank = new Map(scored.map((x, i) => [x.d.id, i]));
+  let have = deck.filter((id) => early(def(id))).length;
+  for (const { d } of scored) {
+    if (have >= minEarly) break;
+    if (!early(d)) continue;
+    while (have < minEarly && avail(d.id) > 0) {
+      let worst = -1;
+      for (let i = 0; i < deck.length; i++) {
+        const x = def(deck[i]);
+        if (early(x) || x.cost > 3) continue;
+        if (worst < 0 || (rank.get(deck[i]) ?? 0) > (rank.get(deck[worst]) ?? 0)) worst = i;
+      }
+      if (worst < 0) break;
+      counts.set(deck[worst], (counts.get(deck[worst]) ?? 1) - 1);
+      deck[worst] = d.id;
+      counts.set(d.id, (counts.get(d.id) ?? 0) + 1);
+      have++;
+    }
   }
   return sortDeck(deck);
 }

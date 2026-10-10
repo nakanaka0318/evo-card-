@@ -85,6 +85,7 @@ interface LeaderHud {
   hpNum: HTMLElement;
   evo: HTMLElement;
   counter: HTMLElement;
+  crests: HTMLElement;
   ring: SVGCircleElement;
   dopaNum: HTMLElement;
   pp: HTMLElement;
@@ -93,6 +94,8 @@ interface LeaderHud {
 }
 
 const RING_R = 70;
+/** angles (deg, 0 = top, clockwise) where crest stickers sit on the leader */
+const CREST_SLOTS = [-130, 130, -160, 160, -100, 100, -55, 55];
 const RING_C = 2 * Math.PI * RING_R;
 
 export class Battle {
@@ -255,6 +258,7 @@ export class Battle {
     const hp = h('div.leader-hp', hpNum);
     const evo = h('div.leader-evo');
     const counter = h('div.leader-counter');
+    const crests = h('div.leader-crests');
     const dopaNum = h('div.leader-dopa', '0');
     const lethal = h('div.leader-lethal', 'LETHAL!');
     const art = side === ENEMY && this.cfg.enemyArt ? this.cfg.enemyArt : cm.leaderArt;
@@ -272,11 +276,12 @@ export class Battle {
       hp,
       evo,
       counter,
+      crests,
       lethal,
     );
     const pp = h(`div.pp.side-${side}`, h('div.pp-label', 'PP'), h('div.pp-num'), h('div.pp-gems'));
     const deck = h(`div.deck-count.side-${side}`, h('span.deck-icon', '🂠'), h('span.deck-num', '30'));
-    return { root, hp, hpNum, evo, counter, ring, dopaNum, pp, deck, lethal };
+    return { root, hp, hpNum, evo, counter, crests, ring, dopaNum, pp, deck, lethal };
   }
 
   private applyGeo(): void {
@@ -570,6 +575,10 @@ export class Battle {
       }
       // counter
       this.renderCounter(side, L.counter, pv);
+      this.renderCrests(L, pv);
+      // ノベラー's open chapter and ゲキカラー's pinch tint the leader
+      L.root.classList.toggle('ch-black', pv.chapter === 1);
+      L.root.classList.toggle('in-pinch', pv.hp <= 10 && pv.hp > 0);
       // pp
       const ppNum = L.pp.querySelector('.pp-num')!;
       ppNum.innerHTML = `${pv.pp}<small>/${pv.maxPp}</small>`;
@@ -631,7 +640,8 @@ export class Battle {
     } else if (kind === 'harmony') {
       const on = pv.deck % 2 === 0;
       sig = `h${on ? 1 : 0}/${pv.harmonies}`;
-      content = [h('span.ctr-icon', on ? '🎶' : '🎤'), h(`span.ctr-label${on ? '.ctr-on' : ''}`, on ? 'ハモり中' : 'ハモり待ち'), h('span.ctr-num', String(pv.harmonies))];    } else if (kind === 'broken') {
+      content = [h('span.ctr-icon', on ? '🎶' : '🎤'), h(`span.ctr-label${on ? '.ctr-on' : ''}`, on ? 'ハモり中' : 'ハモり待ち'), h('span.ctr-num', String(pv.harmonies))];
+    } else if (kind === 'broken') {
       sig = `b${pv.broken}`;
       content = [h('span.ctr-icon', '💥'), h('span.ctr-label', '破壊'), h('span.ctr-num', String(pv.broken))];
     } else if (kind === 'rally') {
@@ -652,6 +662,35 @@ export class Battle {
     } else if (kind === 'jewel') {
       sig = `j${pv.accels}/${pv.crystals}/${pv.enhances}`;
       content = [h('span.ctr-icon', '💎'), h('span.ctr-sub', `⚡${pv.accels}`), h('span.ctr-sub', `💠${pv.crystals}`), h('span.ctr-sub', `✨${pv.enhances}`)];
+    } else if (kind === 'chapter') {
+      const black = pv.chapter === 1;
+      sig = `n${pv.chapter}/${pv.flips}`;
+      content = [
+        h(`span.ctr-chapter${black ? '.black' : '.white'}`, h('span.ctr-book', black ? '📕' : '📖'), black ? '黒の章' : '白の章'),
+        h('span.ctr-sub', `🔖${pv.flips}`),
+      ];
+    } else if (kind === 'crest') {
+      sig = `e${pv.crests.length}`;
+      content = [
+        h('span.ctr-icon', '💝'),
+        h('span.ctr-label', 'クレスト'),
+        h('span.ctr-stars', Array.from({ length: 8 }, (_, i) => h(`span.star.dot${i < pv.crests.length ? '.on' : ''}`, '●'))),
+      ];
+    } else if (kind === 'spicy') {
+      const pinch = pv.hp <= 10;
+      sig = `f${pv.selfDmg}/${pinch ? 1 : 0}`;
+      content = [
+        h('span.ctr-icon', '🌶️'),
+        h('span.ctr-label', '激辛'),
+        h('span.ctr-num', String(pv.selfDmg)),
+        pinch ? h('span.ctr-pinch', 'ピンチ!') : '',
+      ];
+    } else if (kind === 'fulfill') {
+      sig = `o${pv.fulfilled}`;
+      content = [h('span.ctr-icon', '⛩️'), h('span.ctr-label', '成就'), h('span.ctr-num', String(pv.fulfilled))];
+    } else if (kind === 'puppet') {
+      sig = `u${pv.puppets}`;
+      content = [h('span.ctr-icon', '🪆'), h('span.ctr-label', '操演'), h('span.ctr-num', String(pv.puppets))];
     }
     if (el.dataset.sig !== sig) {
       el.dataset.sig = sig;
@@ -660,6 +699,19 @@ export class Battle {
       void el.offsetWidth;
       el.classList.add('pulse');
     }
+  }
+
+  /** デコラー: crests are stickers placed around the leader portrait */
+  private renderCrests(L: LeaderHud, pv: View['p'][0]): void {
+    const sig = pv.crests.join(',');
+    if (L.crests.dataset.sig === sig) return;
+    const before = L.crests.dataset.sig ? L.crests.dataset.sig.split(',').length : 0;
+    L.crests.dataset.sig = sig;
+    L.crests.replaceChildren(
+      ...pv.crests.map((id, i) =>
+        h(`span.crest-stk${i >= before ? '.new' : ''}${id === 't_dhalo' || id === 't_dgold' ? '.legend' : ''}`, { style: { '--a': `${CREST_SLOTS[i]}deg` }, title: def(id).name }, def(id).art),
+      ),
+    );
   }
 
   // ================================================================== idle state
@@ -1263,6 +1315,14 @@ export class Battle {
           h('div.li-name', side === ENEMY ? this.cfg.enemyName : `${save.data.name}（${cm.name}）`),
           h('div.li-mech', h('b', cm.mechanic), h('p', cm.mechanicDesc)),
           h('div.li-stats', `体力 ${p.hp}/${p.maxHp}　手札 ${p.hand.length}　山札 ${p.deck.length}　DOPA ${p.dopa}/${RULES.dopaMax}`),
+          p.crests.length
+            ? h(
+                'div.li-mech.li-crests',
+                h('b', `クレスト ${p.crests.length}/8`),
+                ...p.crests.map((c) => h('div.li-crest', h('span.li-crest-art', def(c.id).art), h('span', h('b', def(c.id).name), h('small', def(c.id).text.replace(/^【クレスト】\n/, ''))))),
+              )
+            : null,
+          cls === 'novel' ? h('div.li-stats', `いま開いている章：${p.chapter === 1 ? '📕 黒の章' : '📖 白の章'}　ページをめくった回数 ${p.flips}`) : null,
           h('div.li-mech', h('b', 'FEVER'), h('p', 'DOPAゲージ（リーダーの周りのリング）が満タンになると発動できる。カードを1枚引き、そのターン中は自分のフォロワーの攻撃力+1、手札のコスト-1！')),
         ),
       ),

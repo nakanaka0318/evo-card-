@@ -615,41 +615,67 @@
   max-width: 100%;
 }
 
+.landscape .class-picks {
+  gap: 8px;
+}
+
+/* 18 classes: 6 per row */
 .landscape .class-picks .class-pick {
-  width: 200px;
+  width: 166px;
 }
 
 .landscape .class-pick {
-  padding: 8px 8px 10px;
-  gap: 3px;
+  padding: 6px 6px 8px;
+  gap: 2px;
+  border-radius: 18px;
 }
 
 .landscape .cp-art {
-  font-size: 44px;
+  font-size: 36px;
 }
 
 .landscape .cp-emoji {
-  font-size: 20px;
+  font-size: 17px;
+  right: 8px;
+  top: 6px;
+}
+
+.landscape .cp-tag {
+  font-size: 11px;
+  padding: 3px 6px;
 }
 
 .portrait .class-picks {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
   width: 100%;
 }
 
 .portrait .class-pick {
-  padding: 10px 6px;
-  gap: 4px;
+  padding: 6px 4px 8px;
+  gap: 2px;
+  border-radius: 18px;
 }
 
 .portrait .cp-art {
-  font-size: 56px;
+  font-size: 40px;
+}
+
+.portrait .cp-emoji {
+  font-size: 18px;
+  right: 6px;
+  top: 6px;
 }
 
 .portrait .cp-name {
-  font-size: 24px;
-  letter-spacing: -0.04em;
+  font-size: 21px;
+  letter-spacing: -0.05em;
+}
+
+.portrait .cp-tag {
+  font-size: 11px;
+  padding: 3px 5px;
 }
 
 .cp-detail {
@@ -762,8 +788,8 @@
 }
 
 .landscape .cp-name {
-  font-size: 26px;
-  letter-spacing: -0.03em;
+  font-size: 21px;
+  letter-spacing: -0.05em;
 }
 
 .cp-tag {

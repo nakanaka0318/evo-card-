@@ -1,7 +1,7 @@
 // Print a turn-by-turn log of one AI vs AI game: npx tsx scripts/log-game.ts swipe gamer
 import { apply, buildDeck, chooseAction, chooseMulligan, def, E, type ClassId } from '../src/engine';
 const a = (process.argv[2] ?? 'swipe') as ClassId, b = (process.argv[3] ?? 'gacha') as ClassId;
-const d0 = buildDeck(a), d1 = buildDeck(b);
+const d0 = buildDeck(a, { quality: 1, smart: true }), d1 = buildDeck(b, { quality: 1, smart: true });
 console.log(a, d0.map(id=>def(id).name+'('+def(id).cost+')').join(' '));
 console.log(b, d1.map(id=>def(id).name+'('+def(id).cost+')').join(' '));
 const s = E.createGame({ decks:[d0,d1], classes:[a,b], leaders:[a,b], seed: 42, record:false });

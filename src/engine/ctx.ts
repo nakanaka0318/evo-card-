@@ -17,6 +17,8 @@ export interface TriggerExtra {
 /** the four ガジェッター パーツ tokens */
 export const PART_IDS = ['t_pbolt', 't_pspring', 't_pbattery', 't_pchip'];
 export const TREASURE_IDS = ['t_tcoin', 't_tgem', 't_tcup', 't_tcrown'];
+/** the five common デコ crests */
+export const CREST_IDS = ['t_dheart', 't_dstar', 't_dribbon', 't_dpearl', 't_dstone'];
 
 type GachaTable = Partial<Record<GachaTier, (c: Ctx) => void>>;
 
@@ -448,12 +450,101 @@ export class Ctx {
   advanceCrystals(n: number): void {
     for (const c of this.crystals()) this.advanceCountdown(c, n);
   }
-  /** move an amulet's countdown n steps closer to 0 (0 → destroyed) */
+  /** move an amulet's countdown n steps closer to 0 (0 → destroyed / 【成就】) */
   advanceCountdown(c: Card, n: number): void {
     if (c.countdown <= 0 || c.doomed) return;
     c.countdown = Math.max(0, c.countdown - n);
     E.emit(this.s, { t: 'countdown', uid: c.uid, value: c.countdown });
-    if (c.countdown === 0) c.doomed = true;
+    if (c.countdown === 0) E.expire(this.s, c);
+  }
+
+  // ------------------------------------------------ ノベラー
+  get white(): boolean {
+    return this.P.chapter === 0;
+  }
+  get black(): boolean {
+    return this.P.chapter === 1;
+  }
+  /** 【白の章】 check (emits for the animator) */
+  whiteCh(): boolean {
+    if (!this.white) return false;
+    E.emit(this.s, { t: 'chapterHit', side: this.me, uid: this.self.uid, chapter: 0 });
+    return true;
+  }
+  /** 【黒の章】 check */
+  blackCh(): boolean {
+    if (!this.black) return false;
+    E.emit(this.s, { t: 'chapterHit', side: this.me, uid: this.self.uid, chapter: 1 });
+    return true;
+  }
+  /** ページをめくる (白⇄黒); with `to`, open that chapter */
+  flip(to?: 0 | 1): boolean {
+    return E.flipChapter(this.s, this.me, to);
+  }
+
+  // ------------------------------------------------ デコラー
+  crest(id: string): Card | undefined {
+    return E.addCrest(this.s, this.me, id);
+  }
+  randomCrest(n = 1): void {
+    for (let i = 0; i < n; i++) this.crest(CREST_IDS[E.rndInt(this.s, CREST_IDS.length)]);
+  }
+  get crestCount(): number {
+    return this.P.crests.length;
+  }
+  /** 【クレストX】 X or more crests on the leader */
+  crestAt(x: number): boolean {
+    if (this.P.crests.length < x) return false;
+    E.emit(this.s, { t: 'crestHit', side: this.me, uid: this.self.uid, need: x });
+    return true;
+  }
+
+  // ------------------------------------------------ ゲキカラー
+  /** 【激辛X】 damage the own leader */
+  selfDamage(n: number): void {
+    if (n <= 0) return;
+    this.P.selfDmg += n;
+    E.emit(this.s, { t: 'spicy', side: this.me, uid: this.self.uid, n, total: this.P.selfDmg });
+    E.damage(this.s, this.self, leaderTgt(this.me), n);
+  }
+  /** 【ピンチX】 own leader HP ≤ X */
+  pinch(x: number): boolean {
+    if (this.P.hp > x) return false;
+    E.emit(this.s, { t: 'pinch', side: this.me, uid: this.self.uid, need: x });
+    return true;
+  }
+
+  // ------------------------------------------------ オマモラー
+  amulets(): Card[] {
+    return this.P.board.filter((c) => def(c.id).type === 'amulet' && E.alive(c) && !c.doomed);
+  }
+  /** 祈願: advance every own amulet's countdown by n */
+  pray(n = 1): void {
+    E.emit(this.s, { t: 'pray', side: this.me, uid: this.self.uid, n });
+    for (const c of this.amulets()) if (c !== this.self) this.advanceCountdown(c, n);
+  }
+  /** 【成就X】 X amulets fulfilled this battle */
+  fulfilledAt(x: number): boolean {
+    if (this.P.fulfilled < x) return false;
+    E.emit(this.s, { t: 'fulfillHit', side: this.me, uid: this.self.uid, need: x });
+    return true;
+  }
+
+  // ------------------------------------------------ パペッター
+  isPuppet(c: Card | undefined): boolean {
+    return !!c && !!def(c.id).tags?.includes('puppet');
+  }
+  puppetsOnBoard(): Card[] {
+    return this.allies().filter((c) => this.isPuppet(c));
+  }
+  addPuppets(n: number): Card[] {
+    return this.addHand('t_puppet', n);
+  }
+  /** 【操演X】 X 「人形」 entered the own board this battle */
+  puppetAt(x: number): boolean {
+    if (this.P.puppets < x) return false;
+    E.emit(this.s, { t: 'puppetHit', side: this.me, uid: this.self.uid, need: x });
+    return true;
   }
   hatch(): Card | undefined {
     return E.hatch(this.s, this.self);
