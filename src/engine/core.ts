@@ -1031,9 +1031,10 @@ export function hatch(s: GameState, cr: Card): Card | undefined {
   if (!cr.hold) return undefined;
   const [c] = summon(s, cr.owner, cr.hold, 1);
   if (!c) return undefined;
-  // it slept long enough: a hatched follower can attack right away
-  c.enteredOn = s.turn - 1;
+  // a hatched follower wakes up with 《突進》: it can hit followers right away, not the leader
+  c.enteredOn = s.turn;
   emit(s, { t: 'hatch', side: c.owner, uid: c.uid, id: c.id });
+  giveKw(s, c, 'rush');
   trigger(s, c, 'onHatch');
   return c;
 }

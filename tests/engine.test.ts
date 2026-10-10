@@ -623,8 +623,11 @@ describe('jewel: 結晶 / アクセラレート / エンハンス', () => {
     const hatched = s.players[0].board.find((c) => c.id === 'j_pearl')!;
     expect(hatched).toBeTruthy();
     expect(s.players[0].board.some((c) => c.id === 't_crystal')).toBe(false);
-    // hatched followers can attack on the turn they come out
-    expect(E.attackTargets(s, hatched).length).toBeGreaterThan(0);
+    // hatched followers get 突進: followers yes, leader no on the turn they come out
+    expect(E.has(hatched, 'rush')).toBe(true);
+    const tg = E.attackTargets(s, hatched);
+    expect(tg.length).toBeGreaterThan(0);
+    expect(tg.includes(leaderTgt(1))).toBe(false);
   });
 
   it('jewelia: hatch effect fires, fanfare does not', () => {
