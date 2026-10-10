@@ -12,9 +12,10 @@ export const SHRINE = [
     cost: 1,
     rarity: 'bronze',
     atk: 2,
-    hp: 3,
+    hp: 1,
+    kw: ['rush'],
     art: '👘',
-    text: '【ファンファーレ】祈願',
+    text: '《突進》\n【ファンファーレ】祈願',
     flavor: '鈴の鳴らし方は、まだ練習中。',
     fanfare: (c) => c.pray(1),
   }),
@@ -106,9 +107,13 @@ export const SHRINE = [
     atk: 3,
     hp: 4,
     art: '🧓',
-    text: '【ファンファーレ】「絵馬」を1つ出す。祈願',
+    text: '【ファンファーレ】「絵馬」を1つ出す。祈願\n【進化時】ファンファーレと同じ効果',
     flavor: '「願いごとは、具体的に書きなさい」',
     fanfare: (c) => {
+      c.summon('o_ema');
+      c.pray(1);
+    },
+    evolve: (c) => {
       c.summon('o_ema');
       c.pray(1);
     },
@@ -121,9 +126,14 @@ export const SHRINE = [
     rarity: 'bronze',
     countdown: 3,
     art: '⛩️',
-    text: '【カウントダウン3】\n【自分のターン開始時】ランダムな相手のフォロワーに2ダメージ\n【ラストワード】相手のフォロワーすべてに2ダメージ',
+    text: '【カウントダウン3】\n【ファンファーレ】相手のフォロワー1体に4ダメージ\n【自分のターン開始時】ランダムな相手のフォロワーに2ダメージ\n【ラストワード】相手のフォロワーすべてに2ダメージ',
     flavor: 'くぐるたびに、願いが近づく。',
     aiValue: 4,
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
+    fanfare: (c) => {
+      if (c.target !== null) c.dmg(c.target, 4);
+    },
     turnStart: (c) => c.pingFollowers(1, 2),
     lastWords: (c) => c.dmgAll(c.enemies(), 2),
   }),
@@ -169,11 +179,17 @@ export const SHRINE = [
     hp: 5,
     art: '🦊',
     art2: '🍙',
-    text: '【ファンファーレ】「絵馬」を1つ出す\n自分のお守りが成就するたび、ランダムな相手のフォロワーかリーダーに2ダメージ',
+    text: '【ファンファーレ】「絵馬」を1つ出す\n自分のお守りが成就するたび、ランダムな相手のフォロワーかリーダーに2ダメージ\n【超進化時】自分のアミュレットを1つランダムに選び、成就させる。その後、相手のフォロワーすべてに3ダメージ。ファンファーレの効果を3回発動する',
     flavor: 'お供えは、いなり寿司でお願いします。',
     aiValue: 3,
     fanfare: (c) => {
       c.summon('o_ema');
+    },
+    superEvolve: (c) => {
+      const a = c.pick(c.amulets());
+      if (a) c.advanceCountdown(a, 99);
+      c.dmgAll(c.enemies(), 3);
+      for (let i = 0; i < 3; i++) c.summon('o_ema');
     },
     onFulfill: (c) => c.ping(1, 2),
   }),
@@ -218,11 +234,14 @@ export const SHRINE = [
     hp: 4,
     art: '💃🏻',
     art2: '⛩️',
-    text: '【ファンファーレ】祈願\n【成就2】カードを2枚引く',
+    text: '【ファンファーレ】祈願\n【成就2】カードを2枚引く\n【進化時】自分の山札からコスト2以下のアミュレットをランダムに2枚選び、そのコピーを1つずつ出す',
     flavor: '願いが叶ったら、お礼に舞う。',
     fanfare: (c) => {
       c.pray(1);
       if (c.fulfilledAt(2)) c.draw(2);
+    },
+    evolve: (c) => {
+      c.deckAmuletCopies(2, 2);
     },
   }),
   // ---------------- gold
@@ -254,9 +273,10 @@ export const SHRINE = [
     rarity: 'gold',
     art: '🥁',
     art2: '⛩️',
-    text: '祈願を2回行う。相手のフォロワーすべてに1ダメージ。カードを1枚引く',
+    text: '自分の山札からコスト2以下のアミュレットをランダムに2枚選び、そのコピーを1つずつ出す。祈願を2回行う。相手のフォロワーすべてに1ダメージ。カードを1枚引く',
     flavor: '太鼓の音で、神さまが踊りだす。',
     spell: (c) => {
+      c.deckAmuletCopies(2, 2);
       c.pray(1);
       c.pray(1);
       c.dmgAll(c.enemies(), 1);
@@ -285,9 +305,14 @@ export const SHRINE = [
     rarity: 'gold',
     countdown: 2,
     art: '🎴',
-    text: '【カウントダウン2】\n【ラストワード】相手のフォロワーすべてに3ダメージ。カードを1枚引く',
+    text: '【カウントダウン2】\n【ファンファーレ】相手のフォロワー1体に6ダメージ\n【ラストワード】相手のフォロワーすべてに3ダメージ。カードを1枚引く',
     flavor: '効果抜群。値段も抜群。',
     aiValue: 4,
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
+    fanfare: (c) => {
+      if (c.target !== null) c.dmg(c.target, 6);
+    },
     lastWords: (c) => {
       c.dmgAll(c.enemies(), 3);
       c.draw(1);
@@ -298,17 +323,20 @@ export const SHRINE = [
     id: 'o_amaterasu',
     name: '太陽の女神アマテラス',
     cls: 'shrine',
-    cost: 7,
+    cost: 8,
     rarity: 'legend',
-    atk: 7,
-    hp: 7,
+    atk: 8,
+    hp: 8,
+    kw: ['ward'],
     art: '🌞',
     art2: '⛩️',
-    text: '【ファンファーレ】自分のアミュレットすべてのカウントダウンを0にする（すべて成就）。相手のフォロワーすべてに2ダメージ',
+    text: '《守護》\n【ファンファーレ】相手のフォロワーすべてを破壊する\n【進化時】【成就10】「日輪」を1枚手札に加える',
     flavor: '「岩戸は開いた。すべての願いを、今ここに」',
     fanfare: (c) => {
-      for (const a of c.amulets()) c.advanceCountdown(a, 99);
-      c.dmgAll(c.enemies(), 2);
+      for (const e of c.enemies()) c.destroy(e);
+    },
+    evolve: (c) => {
+      if (c.fulfilledAt(10)) c.addHand('t_nichirin');
     },
   }),
   follower({
@@ -321,9 +349,10 @@ export const SHRINE = [
     hp: 6,
     art: '🦊',
     art2: '🌕',
-    text: '自分のお守りが成就するたび、同じお守りを1つ出す（1ターンに2回まで）',
+    text: '自分のお守りが成就するたび、同じお守りを1つ出す（1ターンに2回まで）\n手札にある間、自分のお守りが成就するたび、このカードのコスト-1',
     flavor: '九つの尾に、九つの願い。',
     aiValue: 5,
+    fulfillDiscount: true,
     onFulfill: (c) => {
       const o = c.other;
       if (!o) return;

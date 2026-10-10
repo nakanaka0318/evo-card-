@@ -43,14 +43,13 @@ export const NOVEL = [
     rarity: 'bronze',
     atk: 2,
     hp: 3,
+    kw: ['ward'],
     art: '👼',
-    text: '【ファンファーレ】【白の章】《守護》を得て、自分のリーダーを2回復\n【黒の章】《突進》を得る',
+    text: '《守護》\n【ファンファーレ】【白の章】自分のリーダーを2回復\n【黒の章】《突進》を得る',
     flavor: '余白は、やさしさでできている。',
     fanfare: (c) => {
-      if (c.whiteCh()) {
-        c.give(c.self, 'ward');
-        c.heal(2);
-      } else if (c.blackCh()) c.give(c.self, 'rush');
+      if (c.whiteCh()) c.heal(2);
+      else if (c.blackCh()) c.give(c.self, 'rush');
     },
   }),
   follower({
@@ -61,8 +60,9 @@ export const NOVEL = [
     rarity: 'bronze',
     atk: 3,
     hp: 2,
+    kw: ['rush'],
     art: '😈',
-    text: '【ファンファーレ】【黒の章】相手のフォロワー1体に2ダメージ\n【白の章】カードを1枚引く',
+    text: '《突進》\n【ファンファーレ】【黒の章】相手のフォロワー1体に2ダメージ\n【白の章】カードを1枚引く',
     flavor: 'インクのしみから、生まれた。',
     target: { kind: 'enemyFollower', cond: (s, card) => s.players[card.owner].chapter === 1 },
     fanfare: (c) => {
@@ -110,15 +110,16 @@ export const NOVEL = [
     cls: 'novel',
     cost: 3,
     rarity: 'bronze',
-    atk: 3,
-    hp: 4,
+    atk: 2,
+    hp: 3,
     art: '🧑‍🏫',
-    text: '【ファンファーレ】カードを1枚引く。ページをめくる',
+    text: '【ファンファーレ】ページを3回めくる\n自分がページをめくるたび、ランダムな相手のフォロワーに1ダメージ',
     flavor: '「図書室では、お静かに」',
+    aiValue: 3,
     fanfare: (c) => {
-      c.draw(1);
-      c.flip();
+      for (let i = 0; i < 3; i++) c.flip();
     },
+    onFlip: (c) => c.pingFollowers(1, 1),
   }),
   follower({
     id: 'b_twins',
@@ -145,15 +146,18 @@ export const NOVEL = [
     cost: 3,
     rarity: 'silver',
     atk: 3,
-    hp: 4,
+    hp: 3,
     art: '🕴️',
-    text: '【ファンファーレ】ページをめくる\n自分がページをめくるたび、ランダムな相手のフォロワーかリーダーに1ダメージ',
+    text: '【ファンファーレ】ページをめくる。その後、このバトルでページをめくった回数が\n5回以上：ランダムな相手のフォロワー1体を破壊する\n10回以上：さらにカードを2枚引き、相手のリーダーに3ダメージ',
     flavor: '「ここ、もっと盛り上げましょう」',
-    aiValue: 2,
     fanfare: (c) => {
       c.flip();
+      if (c.P.flips >= 5) c.destroy(c.pick(c.enemies()));
+      if (c.P.flips >= 10) {
+        c.draw(2);
+        c.face(3);
+      }
     },
-    onFlip: (c) => c.ping(1, 1),
   }),
   spell({
     id: 'b_foreshadow',
@@ -223,8 +227,11 @@ export const NOVEL = [
     hp: 4,
     kw: ['ambush'],
     art: '🫥',
-    text: '《潜伏》\n【攻撃時】ページをめくる',
+    text: '《潜伏》\n【攻撃時】ページをめくる\n【進化時】「ゴーストライター」を2体出す',
     flavor: '本当の作者は、誰も知らない。',
+    evolve: (c) => {
+      c.summon('b_ghostwriter', 2);
+    },
     strike: (c) => {
       c.flip();
     },
@@ -239,11 +246,15 @@ export const NOVEL = [
     atk: 5,
     hp: 5,
     art: '🦹‍♂️',
-    text: '【ファンファーレ】黒の章を開く。相手のフォロワーすべてに2ダメージ',
+    text: '【ファンファーレ】黒の章を開く。相手のフォロワーすべてに3ダメージ\n【自分のターン終了時】【黒の章】ランダムな相手のフォロワー1体を破壊する',
     flavor: '「すべて、私のシナリオ通り」',
+    aiValue: 4,
     fanfare: (c) => {
       c.flip(1);
-      c.dmgAll(c.enemies(), 2);
+      c.dmgAll(c.enemies(), 3);
+    },
+    turnEnd: (c) => {
+      if (c.blackCh()) c.destroy(c.pick(c.enemies()));
     },
   }),
   follower({

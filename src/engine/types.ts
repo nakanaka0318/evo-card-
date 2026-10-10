@@ -188,6 +188,8 @@ export interface CardDef {
   token?: boolean;
   /** banished at the end of the opponent's turn (パペッター's 人形) */
   fleeting?: boolean;
+  /** -1 cost while in hand each time an own amulet is fulfilled (九尾の白狐) */
+  fulfillDiscount?: boolean;
   countdown?: number;
   target?: TargetSpec;
   evoTarget?: TargetSpec;
@@ -230,6 +232,8 @@ export interface CardDef {
   onTransform?: Hook;
   /** any card on the opponent's side breaks (destroyed, not banished) */
   onEnemyBreak?: Hook;
+  /** this card arrives on the board by any route */
+  onEnter?: Hook;
   /** スペラー: 【スペルブースト】 — +1 boost (card.data.sb) per spell cast while in hand */
   spellboost?: boolean;
   /** ステラー: how many hand cards the player picks to discard when this is played */

@@ -515,6 +515,8 @@ function placeOnBoard(s: GameState, c: Card, fromHand: boolean): void {
     emit(s, { t: 'rally', side: c.owner, total: p.rally });
     boardTrigger(s, c.owner, 'onSummon', { other: c }, c);
   }
+  // 「場に出た時」: fires however the card arrives (played, summoned, hatched)
+  if (def(c.id).onEnter) trigger(s, c, 'onEnter');
 }
 
 export function summon(s: GameState, side: Side, id: string, n = 1): Card[] {
@@ -733,6 +735,8 @@ export function expire(s: GameState, c: Card): void {
   p.fulfilled++;
   emit(s, { t: 'fulfill', side: c.owner, uid: c.uid, id: c.id, total: p.fulfilled });
   boardTrigger(s, c.owner, 'onFulfill', { other: c }, c);
+  // 九尾の白狐: cards in hand that get cheaper per 成就
+  for (const h of p.hand) if (def(h.id).fulfillDiscount) h.costMod -= 1;
 }
 
 /** ノベラー: turn the page (or open a given chapter; no flip if it's already open) */

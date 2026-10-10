@@ -10,11 +10,12 @@ export const SPICY = [
     cls: 'spicy',
     cost: 1,
     rarity: 'bronze',
-    atk: 2,
-    hp: 1,
+    atk: 1,
+    hp: 2,
+    kw: ['storm'],
     art: '🧒',
     art2: '🌶️',
-    text: '【ファンファーレ】【激辛1】ランダムな相手のフォロワーに2ダメージ',
+    text: '《疾走》\n【ファンファーレ】【激辛1】ランダムな相手のフォロワーに2ダメージ',
     flavor: '給食のカレーに、タバスコを持参。',
     fanfare: (c) => {
       c.selfDamage(1);
@@ -61,10 +62,13 @@ export const SPICY = [
     hp: 2,
     kw: ['rush'],
     art: '🥵',
-    text: '《突進》\n【ファンファーレ】【激辛2】',
+    text: '《突進》\n【ファンファーレ】【激辛2】\n【ラストワード】相手のリーダーに2ダメージ',
     flavor: '「いけます！（いけない）」',
     fanfare: (c) => {
       c.selfDamage(2);
+    },
+    lastWords: (c) => {
+      c.face(2);
     },
   }),
   follower({
@@ -122,11 +126,19 @@ export const SPICY = [
     atk: 3,
     hp: 3,
     art: '🍛',
-    text: '【ファンファーレ】【ピンチ12】相手のフォロワー1体に3ダメージ',
+    text: '【ファンファーレ】【ピンチ12】相手のフォロワー1体に3ダメージ。相手のリーダーに2ダメージ\n【進化時】ファンファーレと同じ効果',
     flavor: '辛さ50倍。完食者には、写真を飾る。',
     target: { kind: 'enemyFollower', cond: (s, card) => s.players[card.owner].hp <= 12 },
     fanfare: (c) => {
-      if (c.target !== null && c.pinch(12)) c.dmg(c.target, 3);
+      if (!c.pinch(12)) return;
+      if (c.target !== null) c.dmg(c.target, 3);
+      c.face(2);
+    },
+    evoTarget: { kind: 'enemyFollower', cond: (s, card) => s.players[card.owner].hp <= 12 },
+    evolve: (c) => {
+      if (!c.pinch(12)) return;
+      if (c.target !== null) c.dmg(c.target, 3);
+      c.face(2);
     },
   }),
   // ---------------- silver
@@ -185,9 +197,9 @@ export const SPICY = [
     rarity: 'silver',
     atk: 5,
     hp: 4,
-    kw: ['rush'],
+    kw: ['rush', 'barrier'],
     art: '😤',
-    text: '《突進》\n【ファンファーレ】【ピンチ10】《連撃》を得る',
+    text: '《突進》《バリア》\n【ファンファーレ】【ピンチ10】《連撃》を得る',
     flavor: '追いつめられてからが、本番。',
     fanfare: (c) => {
       if (c.pinch(10)) c.give(c.self, 'twin');
@@ -203,9 +215,12 @@ export const SPICY = [
     hp: 5,
     kw: ['ward'],
     art: '💪',
-    text: '《守護》\n【ファンファーレ】自分のリーダーを3回復',
+    text: '《守護》\n【ファンファーレ】自分のリーダーを3回復\n【進化時】ファンファーレと同じ効果',
     flavor: '辛さは、筋肉で受け止める。',
     fanfare: (c) => {
+      c.heal(3);
+    },
+    evolve: (c) => {
       c.heal(3);
     },
   }),
@@ -301,35 +316,36 @@ export const SPICY = [
     cost: 5,
     rarity: 'legend',
     atk: 5,
-    hp: 6,
+    hp: 5,
     art: '👺',
     art2: '🍳',
-    text: '自分のリーダーがダメージを受けるたび、相手のリーダーに同じだけダメージ（1ターンに5ダメージまで）',
+    text: '【ファンファーレ】【激辛3】相手のフォロワーすべてに3ダメージ\n自分のリーダーがダメージを受けるたび、相手のリーダーに同じだけダメージ',
     flavor: '「わしの料理を残す者は、地獄行きじゃ」',
-    aiValue: 5,
+    aiValue: 6,
+    fanfare: (c) => {
+      c.selfDamage(3);
+      c.dmgAll(c.enemies(), 3);
+    },
     onLeaderHurt: (c) => {
-      if (c.self.data.turn !== c.s.turn) {
-        c.self.data.turn = c.s.turn;
-        c.self.data.used = 0;
-      }
-      const n = Math.min(c.amount, 5 - (c.self.data.used ?? 0));
-      if (n <= 0) return;
-      c.self.data.used = (c.self.data.used ?? 0) + n;
-      c.face(n);
+      if (c.amount > 0) c.face(c.amount);
     },
   }),
   follower({
     id: 'f_phoenix',
     name: '炎の不死鳥',
     cls: 'spicy',
-    cost: 4,
+    cost: 6,
     rarity: 'legend',
     atk: 4,
     hp: 3,
     kw: ['storm'],
     art: '🐦‍🔥',
-    text: '《疾走》\n【ラストワード】【ピンチ10】「炎の不死鳥」を手札に加える',
+    text: '《疾走》\n【ラストワード】【ピンチ10】「炎の不死鳥」を手札に加える\n【進化時】相手のフォロワー1体を破壊する',
     flavor: '燃え尽きても、また燃える。',
+    evoTarget: { kind: 'enemyFollower' },
+    evolve: (c) => {
+      c.destroy(c.targetCard());
+    },
     lastWords: (c) => {
       if (c.pinch(10)) c.addHand('f_phoenix');
     },

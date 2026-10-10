@@ -207,6 +207,25 @@ export class Ctx {
     p.maxPp = Math.min(RULES.ppMax, p.maxPp + n);
     if (p.maxPp !== before) E.emit(this.s, { t: 'pp', side: this.me, amount: p.maxPp - before, max: true });
   }
+  /** lower the opponent leader's max HP (never below 1) */
+  enemyMaxHp(n: number): void {
+    const p = this.O;
+    const d = Math.min(n, p.maxHp - 1);
+    if (d <= 0) return;
+    p.maxHp -= d;
+    p.hp = Math.min(p.hp, p.maxHp);
+    E.emit(this.s, { t: 'maxHp', side: E.other(this.me), amount: -d });
+  }
+  /** copies of up to n random amulets of cost ≤ maxCost from the own deck (the deck keeps them) */
+  deckAmuletCopies(n: number, maxCost: number): Card[] {
+    const pool = this.P.deck.filter((c) => def(c.id).type === 'amulet' && def(c.id).cost <= maxCost);
+    const out: Card[] = [];
+    for (let i = 0; i < n && pool.length; i++) {
+      const c = pool.splice(E.rndInt(this.s, pool.length), 1)[0];
+      out.push(...this.summon(c.id));
+    }
+    return out;
+  }
   maxHp(n: number): void {
     const p = this.P;
     p.maxHp += n;

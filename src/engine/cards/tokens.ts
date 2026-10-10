@@ -553,4 +553,43 @@ export const TOKENS = [
     },
     onDiscard: (c) => c.dmgAll(c.enemies(), 3),
   }),
+  spell({
+    id: 't_nichirin',
+    name: '日輪',
+    cls: 'shrine',
+    cost: 1,
+    rarity: 'legend',
+    art: '☀️',
+    text: '自分のアミュレットを1つランダムに破壊する。そうしたら、「日輪」を1枚手札に加え、相手のリーダーに2ダメージ。自分のリーダーを2回復',
+    flavor: '沈まない太陽。',
+    token: true,
+    spell: (c) => {
+      const a = c.pick(c.amulets());
+      if (!a) return;
+      c.destroy(a);
+      c.addHand('t_nichirin');
+      c.face(2);
+      c.heal(2);
+    },
+  }),
+  follower({
+    id: 't_rebel',
+    name: '叛逆の人形',
+    cls: 'puppet',
+    cost: 1,
+    rarity: 'legend',
+    atk: 2,
+    hp: 2,
+    kw: ['rush'],
+    art: '🪆',
+    art2: '🔪',
+    text: '《突進》\n（人形）\nこのフォロワーが場に出たとき、相手のリーダーの最大体力-2。カードを1枚引く',
+    flavor: '糸を、自分で切った。',
+    token: true,
+    tags: ['puppet'],
+    onEnter: (c) => {
+      c.enemyMaxHp(2);
+      c.draw(1);
+    },
+  }),
 ];

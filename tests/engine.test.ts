@@ -702,14 +702,14 @@ describe('novel: 白の章 / 黒の章', () => {
     s.players[0].pp = 10;
     s.players[0].maxPp = 10;
     expect(s.players[0].chapter).toBe(0);
-    const ed = put(s, 0, 'b_editor');
-    const hp = s.players[1].hp;
+    const ed = put(s, 0, 'b_librarian');
+    const foe = put(s, 1, 'n_bear');
     const bm = give(s, 0, 'b_bookmark');
     apply(s, { t: 'play', uid: bm.uid });
     expect(s.players[0].chapter).toBe(1);
     expect(s.players[0].flips).toBe(1);
-    // editor pinged the only enemy target: the leader
-    expect(s.players[1].hp).toBe(hp - 1);
+    // 図書委員 pinged the only enemy follower
+    expect(E.hpOf(foe)).toBe(6);
     expect(s.players[0].board.includes(ed)).toBe(true);
     // opening an already open chapter is not a flip
     expect(E.flipChapter(s, 0, 1)).toBe(false);
@@ -737,12 +737,12 @@ describe('deco: クレスト', () => {
     s.players[0].pp = 10;
     s.players[0].hp = 10;
     put(s, 0, 'e_mirror');
-    const hand = s.players[0].hand.length;
+    const foe = put(s, 1, 'n_bear');
     const st = give(s, 0, 'e_sticker');
     apply(s, { t: 'play', uid: st.uid });
     expect(s.players[0].crests.map((c) => c.id)).toEqual(['t_dheart']);
-    // mirror drew for the crest
-    expect(s.players[0].hand.length).toBe(hand + 1);
+    // デコミラー pinged a follower for the crest
+    expect(E.hpOf(foe)).toBe(6);
     apply(s, { t: 'end' });
     // ハートデコ heals at own turn end
     expect(s.players[0].hp).toBe(11);
@@ -774,13 +774,13 @@ describe('spicy: 激辛 / ピンチ', () => {
     expect(s.players[1].hp).toBe(ehp - 4);
   });
 
-  it('enma mirrors at most 5 per turn', () => {
+  it('enma mirrors every point of damage to the own leader', () => {
     const s = game();
     put(s, 0, 'f_enma');
     const ehp = s.players[1].hp;
     E.damage(s, null, leaderTgt(0), 4);
     E.damage(s, null, leaderTgt(0), 4);
-    expect(s.players[1].hp).toBe(ehp - 5);
+    expect(s.players[1].hp).toBe(ehp - 8);
   });
 
   it('pinch discounts and gates', () => {
@@ -1006,5 +1006,42 @@ describe('patch: card adjustments (part 2)', () => {
     apply(s, { t: 'play', uid: zen.uid, target: other.uid });
     expect(s.players[1].board.includes(other)).toBe(false);
     expect(E.hpOf(foe)).toBe(4);
+  });
+});
+
+describe('patch: card adjustments (part 3)', () => {
+  it('叛逆の人形 lowers the enemy max HP and draws however it enters', () => {
+    const s = game();
+    s.players[0].hand = [];
+    const max = s.players[1].maxHp;
+    E.summon(s, 0, 't_rebel', 2);
+    expect(s.players[1].maxHp).toBe(max - 4);
+    expect(s.players[0].hand.length).toBe(2);
+    expect(s.players[0].puppets).toBe(2);
+  });
+
+  it('九尾の白狐 gets cheaper in hand for every 成就', () => {
+    const s = game();
+    const fox = give(s, 0, 'o_kyubi');
+    const a = put(s, 0, 'o_gakugyo');
+    const b = put(s, 0, 'o_ema');
+    E.expire(s, a);
+    E.expire(s, b);
+    expect(E.playCost(s, fox).cost).toBe(def('o_kyubi').cost - 2);
+  });
+
+  it('日輪 trades an amulet for damage, healing and another 日輪', () => {
+    const s = game();
+    s.players[0].pp = 10;
+    s.players[0].hp = 10;
+    s.players[0].hand = [];
+    put(s, 0, 'o_torii');
+    const ehp = s.players[1].hp;
+    const n = give(s, 0, 't_nichirin');
+    apply(s, { t: 'play', uid: n.uid });
+    expect(s.players[0].board.some((c) => c.id === 'o_torii')).toBe(false);
+    expect(s.players[0].hand.some((c) => c.id === 't_nichirin')).toBe(true);
+    expect(s.players[0].hp).toBe(12);
+    expect(s.players[1].hp).toBeLessThan(ehp);
   });
 });

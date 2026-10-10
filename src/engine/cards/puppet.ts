@@ -90,13 +90,13 @@ export const PUPPET = [
     atk: 2,
     hp: 4,
     art: '🥷',
-    text: '自分の人形が破壊されるたび、カードを1枚引く（1ターンに1回）',
+    text: '自分の人形が破壊されるたび、「人形」を1枚手札に加え、ランダムな相手のフォロワーに1ダメージ',
     flavor: '見えないことに、なっている。',
-    aiValue: 2,
+    aiValue: 3,
     onAllyDestroyed: (c) => {
-      if (!c.isPuppet(c.other) || c.self.data.turn === c.s.turn) return;
-      c.self.data.turn = c.s.turn;
-      c.draw(1);
+      if (!c.isPuppet(c.other)) return;
+      c.addPuppets(1);
+      c.pingFollowers(1, 1);
     },
   }),
   follower({
@@ -108,10 +108,13 @@ export const PUPPET = [
     atk: 3,
     hp: 3,
     art: '💂',
-    text: '【ファンファーレ】「人形」を1体出す',
+    text: '【ファンファーレ】「人形」を1体出す\n【進化時】自分の山札に「叛逆の人形」を5枚加える',
     flavor: 'ゼンマイが切れるまで、行進する。',
     fanfare: (c) => {
       c.summon('t_puppet');
+    },
+    evolve: (c) => {
+      c.toDeck('t_rebel', 5);
     },
   }),
   spell({
@@ -121,12 +124,14 @@ export const PUPPET = [
     cost: 2,
     rarity: 'bronze',
     art: '✂️',
-    text: '相手のフォロワー1体に3ダメージ\n【操演4】かわりに5ダメージ',
+    text: '自分の場の人形を1体破壊する。そうしたら、ランダムな相手のフォロワー1体を破壊し、カードを2枚引く',
     flavor: '切れない糸は、ない。',
-    target: { kind: 'enemyFollower' },
-    aiPrefer: 'big',
     spell: (c) => {
-      c.dmg(c.target, c.puppetAt(4) ? 5 : 3);
+      const mine = c.pick(c.puppetsOnBoard().filter((p) => !p.doomed));
+      if (!mine) return;
+      c.destroy(mine);
+      c.destroy(c.pick(c.enemies().filter((e) => !e.doomed)));
+      c.draw(2);
     },
   }),
   // ---------------- silver
@@ -165,8 +170,11 @@ export const PUPPET = [
     atk: 1,
     hp: 1,
     art: '🎎',
-    text: '【ラストワード】ランダムな相手のフォロワー1体を破壊する',
+    text: '【ラストワード】ランダムな相手のフォロワー1体を破壊する\n【進化時】自分の山札に「叛逆の人形」を5枚加える',
     flavor: '夜中に、髪が伸びている。',
+    evolve: (c) => {
+      c.toDeck('t_rebel', 5);
+    },
     lastWords: (c) => {
       c.destroy(c.pick(c.enemies()));
     },
@@ -212,11 +220,14 @@ export const PUPPET = [
     atk: 3,
     hp: 3,
     art: '🃏',
-    text: '【ファンファーレ】「人形」を2体出す\n【操演6】さらにカードを1枚引く',
+    text: '【ファンファーレ】「人形」を2体出す\n【操演6】さらにカードを1枚引く\n【超進化時】自分の山札に「叛逆の人形」を20枚加える',
     flavor: '笑っているのは、顔だけ。',
     fanfare: (c) => {
       c.summon('t_puppet', 2);
       if (c.puppetAt(6)) c.draw(1);
+    },
+    superEvolve: (c) => {
+      c.toDeck('t_rebel', 20);
     },
   }),
   // ---------------- gold
@@ -260,11 +271,12 @@ export const PUPPET = [
     rarity: 'gold',
     art: '🎺',
     art2: '🪆',
-    text: '自分の場がいっぱいになるまで「人形」を出す\n【操演10】それらは《疾走》を得る',
+    text: '自分の場がいっぱいになるまで「人形」を出す\n【操演10】それらは《疾走》を得る\n【操演15】かわりに「叛逆の人形」を出す\n【操演25】その後、自分の場の人形すべてを+1/-1する',
     flavor: '真夜中のおもちゃ箱から、行進曲。',
     spell: (c) => {
-      const ps = c.summon('t_puppet', c.boardFree());
+      const ps = c.summon(c.puppetAt(15) ? 't_rebel' : 't_puppet', c.boardFree());
       if (c.puppetAt(10)) for (const p of ps) c.give(p, 'storm');
+      if (c.puppetAt(25)) for (const p of c.puppetsOnBoard()) c.buff(p, 1, -1);
     },
   }),
   follower({
@@ -308,14 +320,19 @@ export const PUPPET = [
     id: 'p_curtain',
     name: '終幕の人形劇',
     cls: 'puppet',
-    cost: 3,
+    cost: 4,
     rarity: 'legend',
     countdown: 3,
     art: '🎭',
     art2: '🌙',
-    text: '【カウントダウン3】\n自分の人形が破壊されるたび、ランダムな相手のフォロワーかリーダーに2ダメージ\n【ラストワード】「人形」を3体出す',
+    text: '【カウントダウン3】\n【ファンファーレ】相手のフォロワー1体を破壊する\n自分の人形が破壊されるたび、ランダムな相手のフォロワーかリーダーに2ダメージ\n【ラストワード】「人形」を3体出す',
     flavor: '幕が下りても、人形たちは踊りつづける。',
     aiValue: 5,
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
+    fanfare: (c) => {
+      c.destroy(c.targetCard());
+    },
     onAllyDestroyed: (c) => {
       if (c.isPuppet(c.other)) c.ping(1, 2);
     },

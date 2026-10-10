@@ -35,6 +35,7 @@ const TRIGGER_LABEL: Record<string, string | null> = {
   onLeaderHurt: '発動！',
   onFulfill: '発動！',
   onTransform: '変身！',
+  onEnter: '発動！',
   onEnemyBreak: '発動！',
 };
 
@@ -996,8 +997,13 @@ export class Animator {
       case 'maxHp': {
         this.render(ev);
         const L = g.leader[ev.side];
-        popText(L.x, L.y - 70, `最大体力+${ev.amount}`, { cls: 'pop-heal', size: 30 });
-        audio.play('heal');
+        if (ev.amount < 0) {
+          popText(L.x, L.y - 70, `最大体力${ev.amount}`, { cls: 'pop-dmg', size: 30 });
+          audio.play('shatter', { vol: 0.6 });
+        } else {
+          popText(L.x, L.y - 70, `最大体力+${ev.amount}`, { cls: 'pop-heal', size: 30 });
+          audio.play('heal');
+        }
         await wait(T(260));
         return;
       }

@@ -40,13 +40,11 @@ export const DECO = [
     cost: 2,
     rarity: 'bronze',
     atk: 2,
-    hp: 3,
+    hp: 2,
     art: '📱',
-    text: '【ファンファーレ】【クレスト2】カードを1枚引く',
+    text: '【ファンファーレ】ランダムなデコのクレストを1つ貼る',
     flavor: '中身より、ケースのほうが高い。',
-    fanfare: (c) => {
-      if (c.crestAt(2)) c.draw(1);
-    },
+    fanfare: (c) => c.randomCrest(1),
   }),
   spell({
     id: 'e_glitter',
@@ -55,9 +53,13 @@ export const DECO = [
     cost: 1,
     rarity: 'bronze',
     art: '✨',
-    text: 'ランダムな相手のフォロワーに2ダメージ\n【クレスト3】かわりに4ダメージ',
+    text: '相手のフォロワー1体に、自分のクレストの数+1のダメージ（最大6）',
     flavor: '目に入ると、ちょっと痛い。',
-    spell: (c) => c.pingFollowers(1, c.crestAt(3) ? 4 : 2),
+    target: { kind: 'enemyFollower' },
+    aiPrefer: 'big',
+    spell: (c) => {
+      c.dmg(c.target, Math.min(6, c.crestCount + 1));
+    },
   }),
   follower({
     id: 'e_kawaii',
@@ -139,14 +141,16 @@ export const DECO = [
     cost: 3,
     rarity: 'silver',
     atk: 2,
-    hp: 4,
+    hp: 3,
     art: '🪞',
-    text: '自分がクレストを貼るたび、カードを1枚引く',
+    text: '【ファンファーレ】自分のクレストからランダムに1つ選び、同じクレストをもう1つ貼る\n自分がクレストを貼るたび、ランダムな相手のフォロワーに1ダメージ',
     flavor: '映るたびに、もっと盛りたくなる。',
     aiValue: 3,
-    onCrest: (c) => {
-      c.draw(1);
+    fanfare: (c) => {
+      const pick = c.pick(c.P.crests);
+      if (pick) c.crest(pick.id);
     },
+    onCrest: (c) => c.pingFollowers(1, 1),
   }),
   amulet({
     id: 'e_popup',
@@ -182,7 +186,7 @@ export const DECO = [
     id: 'e_flash',
     name: 'フラッシュ撮影',
     cls: 'deco',
-    cost: 3,
+    cost: 2,
     rarity: 'silver',
     art: '📸',
     text: '相手のフォロワーすべてに1ダメージ\n【クレスト4】かわりに2ダメージ',
@@ -216,10 +220,13 @@ export const DECO = [
     countdown: 3,
     art: '👜',
     art2: '💝',
-    text: '【カウントダウン3】\n【ファンファーレ】ランダムなデコのクレストを3つ貼る',
+    text: '【カウントダウン3】\n【ファンファーレ】ランダムなデコのクレストを3つ貼る\n【ラストワード】相手のリーダーに4ダメージ',
     flavor: '缶バッジ200個。肩がもげそう。',
     aiValue: 2,
     fanfare: (c) => c.randomCrest(3),
+    lastWords: (c) => {
+      c.face(4);
+    },
   }),
   follower({
     id: 'e_princess',
@@ -246,9 +253,9 @@ export const DECO = [
     cost: 4,
     rarity: 'gold',
     art: '🔦',
-    text: '自分のクレスト1つにつき、ランダムな相手のフォロワーに2ダメージ（最大5回）',
+    text: '自分のクレスト1つにつき、ランダムな相手のフォロワーかリーダーに2ダメージ（最大5回）',
     flavor: '暗くすると、デコが本気を出す。',
-    spell: (c) => c.pingFollowers(Math.min(5, c.crestCount), 2),
+    spell: (c) => c.ping(Math.min(5, c.crestCount), 2),
   }),
   follower({
     id: 'e_knight',
@@ -311,12 +318,15 @@ export const DECO = [
     kw: ['ward'],
     art: '🏰',
     art2: '💝',
-    text: '《守護》\n自分のクレスト1つにつき、このカードのコスト-1\n【ファンファーレ】自分のクレスト1つにつき、相手のフォロワーすべてに1ダメージ（最大4）',
+    text: '《守護》\n自分のクレスト1つにつき、このカードのコスト-1\n【ファンファーレ】自分のクレスト1つにつき、相手のフォロワーすべてに1ダメージ（最大4）\n【超進化時】《疾走》を得る',
     flavor: 'デコを盛りすぎて、ついに城になった。',
     costFn: (s, card) => -s.players[card.owner].crests.length,
     fanfare: (c) => {
       const n = Math.min(4, c.crestCount);
       if (n) c.dmgAll(c.enemies(), n);
+    },
+    superEvolve: (c) => {
+      c.give(c.self, 'storm');
     },
   }),
 ];

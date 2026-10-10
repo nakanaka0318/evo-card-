@@ -30,11 +30,13 @@ export const WITCH = [
     cost: 1,
     rarity: 'bronze',
     art: '🏹',
-    text: '相手のフォロワー1体に2ダメージ',
+    text: '相手のフォロワー1体に2ダメージ\n【エンハンス2】さらにカードを1枚引く',
     flavor: '狙ったところに、だいたい飛ぶ。',
+    enhance: 2,
     target: { kind: 'enemyFollower' },
     spell: (c) => {
       c.dmg(c.target, 2);
+      if (c.enhanced) c.draw(1);
     },
   }),
   spell({
@@ -192,8 +194,8 @@ export const WITCH = [
     cls: 'witch',
     cost: 7,
     rarity: 'silver',
-    atk: 6,
-    hp: 6,
+    atk: 10,
+    hp: 10,
     art: '🧌',
     text: '【スペルブースト】このカードのコスト-1',
     flavor: '魔力を吸って、大きくなる。食費はかからない。',
